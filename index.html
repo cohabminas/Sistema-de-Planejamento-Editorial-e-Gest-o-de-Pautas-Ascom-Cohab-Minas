@@ -52,12 +52,27 @@
       background: #7A7A7A;
     }
     .calendar-cell {
-      min-height: 145px;
+      min-height: 155px;
+      min-width: 0;
       transition: all 0.15s ease-in-out;
+    }
+    @media (min-width: 1440px) {
+      .calendar-cell {
+        min-height: 175px;
+      }
     }
     @media (max-width: 768px) {
       .calendar-cell {
         min-height: auto;
+      }
+    }
+    /* Garante que as 7 colunas do calendário tenham exatamente a mesma largura em tela cheia */
+    .calendar-grid-7 {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+    @media (max-width: 767px) {
+      .calendar-grid-7 {
+        grid-template-columns: minmax(0, 1fr);
       }
     }
     mark.search-highlight {
@@ -66,6 +81,32 @@
       padding: 0 2px;
       border-radius: 3px;
       font-weight: 700;
+    }
+    /* Garantia absoluta de destaque visual para o dia de hoje */
+    .calendar-today {
+      background-color: #FDF3F1 !important;
+      box-shadow: inset 0 0 0 2px #B84231 !important;
+    }
+    /* Alinhamento uniforme para todas as caixas de seleção (setinhas perfeitamente enquadradas) */
+    select.cohab-select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234A4A4A'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.6rem center;
+      background-size: 1rem 1rem;
+      padding-right: 2rem !important;
+    }
+    select.cohab-select-light {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23FFFFFF'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.6rem center;
+      background-size: 1rem 1rem;
+      padding-right: 2rem !important;
     }
   </style>
 </head>
@@ -96,7 +137,7 @@
     <!-- Filete superior terracota institucional -->
     <div class="h-1.5 w-full bg-cohab-terracotta"></div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         
         <!-- Logo Geométrico Hexagonal Cohab Minas (Triângulos Pretos + Destaque Terracota) -->
@@ -147,10 +188,10 @@
 
         <!-- Seletor de Membro da Equipe (Autor do Log) + Ações -->
         <div class="flex flex-wrap items-center gap-2.5">
-          <div class="flex items-center bg-cohab-bg border border-cohab-border rounded-xl px-3 py-1.5 text-xs">
+          <div class="flex items-center bg-cohab-bg border border-cohab-border rounded-xl pl-3 pr-1.5 py-1 text-xs">
             <i class="fa-solid fa-user-check text-cohab-terracotta mr-2"></i>
             <span class="text-cohab-medium font-medium mr-1.5 hidden sm:inline">Responsável Log:</span>
-            <select id="teamMemberSelect" onchange="handleTeamMemberChange()" class="bg-transparent text-cohab-graphite font-bold focus:outline-none cursor-pointer pr-1">
+            <select id="teamMemberSelect" onchange="handleTeamMemberChange()" class="cohab-select bg-transparent text-cohab-graphite font-bold py-0.5 focus:outline-none cursor-pointer">
               <option value="Fábio Vieira Felício (Estagiário - Ascom)">Fábio Vieira Felício</option>
               <option value="Amanda Ferreira (Ascom)">Amanda Ferreira</option>
               <option value="Adriana (Comunicação / Cadastro)">Adriana</option>
@@ -175,57 +216,34 @@
       </div>
     </div>
 
-    <!-- Barra Secundária: Navegação por Abas e Filtros -->
+    <!-- Barra Secundária: Navegação por Abas -->
     <div class="bg-cohab-bg/80 border-t border-cohab-border">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
         
-        <!-- Abas de Visualização -->
-        <nav class="flex flex-wrap items-center gap-1.5 bg-white p-1 rounded-xl border border-cohab-border w-fit">
-          <button onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-cohab-graphite text-white shadow-2xs cursor-pointer">
+        <!-- Abas de Visualização (Alinhadas perfeitamente com a largura da barra de pesquisa) -->
+        <nav class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 bg-white p-1.5 rounded-2xl border border-cohab-border w-full shadow-2xs">
+          <button onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn active w-full justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-cohab-graphite text-white shadow-2xs cursor-pointer">
             <i class="fa-regular fa-calendar-days"></i>
             <span>Calendário Mensal</span>
           </button>
-          <button onclick="switchTab('hierarchy')" id="tab-hierarchy" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer">
+          <button onclick="switchTab('hierarchy')" id="tab-hierarchy" class="tab-btn w-full justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer">
             <i class="fa-solid fa-layer-group text-cohab-terracotta"></i>
-            <span>Hierarquia &amp; Prioridades</span>
+            <span>Prioridades</span>
             <span id="badgeCountPautas" class="text-[11px] bg-cohab-bg text-cohab-graphite font-bold px-1.5 py-0.2 rounded-full border border-cohab-border">5</span>
           </button>
-          <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer">
+          <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn w-full justify-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer">
             <i class="fa-solid fa-clock-rotate-left text-cohab-medium"></i>
             <span>Log de Atividades</span>
             <span id="badgeCountLogs" class="text-[11px] bg-cohab-terracottaLight text-cohab-terracotta font-bold px-1.5 py-0.2 rounded-full">1</span>
           </button>
         </nav>
 
-        <!-- Filtros Rápidos (Temperatura e Status) -->
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <!-- Filtro Temperatura -->
-          <div class="flex rounded-xl bg-white p-0.5 border border-cohab-border">
-            <button onclick="setFilterType('ALL')" data-filter-type="ALL" class="filter-type-btn px-2.5 py-1 rounded-lg font-bold bg-cohab-graphite text-white transition cursor-pointer">Todas</button>
-            <button onclick="setFilterType('QUENTE')" data-filter-type="QUENTE" class="filter-type-btn px-2.5 py-1 rounded-lg font-semibold text-cohab-terracotta hover:bg-cohab-terracottaLight transition flex items-center gap-1 cursor-pointer">
-              <i class="fa-solid fa-fire"></i> Quentes
-            </button>
-            <button onclick="setFilterType('FRIA')" data-filter-type="FRIA" class="filter-type-btn px-2.5 py-1 rounded-lg font-semibold text-cohab-graphite hover:bg-cohab-bg transition flex items-center gap-1 cursor-pointer">
-              <i class="fa-regular fa-snowflake text-cohab-medium"></i> Frias
-            </button>
-          </div>
-
-          <!-- Filtro Status -->
-          <select id="filterStatus" onchange="applyFilters()" class="bg-white text-cohab-graphite border border-cohab-border rounded-xl px-2.5 py-1.5 font-semibold focus:outline-none focus:border-cohab-terracotta cursor-pointer">
-            <option value="ALL">Todos os Status</option>
-            <option value="A Fazer">⏳ A Fazer</option>
-            <option value="Em Produção">🎬 Em Produção</option>
-            <option value="Aprovado">👍 Aprovado</option>
-            <option value="Publicado">✅ Publicado</option>
-          </select>
-        </div>
-
       </div>
     </div>
   </header>
 
   <!-- BARRA DE PESQUISA GLOBAL LOGO APÓS O HEADER -->
-  <section class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1">
+  <section class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1">
     <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-cohab-border shadow-2xs flex flex-col sm:flex-row sm:items-center gap-3">
       <div class="relative flex-1">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-cohab-terracotta text-sm"></i>
@@ -263,14 +281,14 @@
   </section>
 
   <!-- CONTEÚDO PRINCIPAL -->
-  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3 flex-1">
+  <main class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-3 flex-1">
 
     <!-- ABA 1: CALENDÁRIO MENSAL (TODOS OS MESES E ANOS) -->
     <div id="view-calendar" class="space-y-4">
       <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border overflow-hidden">
         
         <!-- Barra Superior do Calendário: Navegação de Todos os Meses e Anos -->
-        <div class="px-4 sm:px-5 py-3.5 border-b border-cohab-border flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white">
+        <div class="px-4 sm:px-5 py-3.5 border-b border-cohab-border flex flex-wrap items-center justify-between gap-3 bg-white">
           
           <!-- Controles de Mês e Ano -->
           <div class="flex flex-wrap items-center gap-2">
@@ -288,7 +306,7 @@
               id="monthSelect" 
               onchange="onMonthYearSelectChange()" 
               aria-label="Selecionar Mês"
-              class="bg-cohab-graphite text-white font-extrabold text-xs sm:text-sm px-3.5 py-2 rounded-xl cursor-pointer focus:outline-none"
+              class="cohab-select-light bg-cohab-graphite text-white font-extrabold text-xs sm:text-sm pl-3.5 py-2 rounded-xl cursor-pointer focus:outline-none"
             >
               <option value="0">Janeiro</option>
               <option value="1">Fevereiro</option>
@@ -317,9 +335,9 @@
                 id="yearSelect" 
                 onchange="onMonthYearSelectChange()" 
                 aria-label="Selecionar Ano"
-                class="bg-transparent text-cohab-graphite font-extrabold text-xs sm:text-sm px-2 py-1 cursor-pointer focus:outline-none"
+                class="cohab-select bg-transparent text-cohab-graphite font-extrabold text-xs sm:text-sm pl-2.5 py-1 cursor-pointer focus:outline-none"
               >
-                <!-- Populado dinamicamente via JS (2024 a 2035+) -->
+                <!-- Populado dinamicamente via JS -->
               </select>
               <button 
                 onclick="changeYear(1)" 
@@ -339,7 +357,7 @@
               <i class="fa-solid fa-chevron-right text-xs"></i>
             </button>
 
-            <!-- Atalho para Hoje (Novembro 2026) -->
+            <!-- Atalho para Hoje -->
             <button 
               onclick="goToTodayMonth()" 
               class="text-xs font-bold px-3 py-2 rounded-xl bg-cohab-terracottaLight text-cohab-terracotta hover:bg-cohab-terracotta hover:text-white border border-cohab-terracotta/25 transition flex items-center gap-1.5 cursor-pointer"
@@ -349,24 +367,48 @@
             </button>
           </div>
 
-          <!-- Legenda Pauta Quente / Fria -->
-          <div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold">
-            <span class="flex items-center gap-1.5 text-cohab-terracotta bg-cohab-terracottaLight px-2.5 py-1 rounded-lg border border-cohab-terracotta/25">
-              <i class="fa-solid fa-fire"></i> PAUTA QUENTE
-            </span>
-            <span class="flex items-center gap-1.5 text-cohab-graphite bg-cohab-bg px-2.5 py-1 rounded-lg border border-cohab-border">
-              <i class="fa-regular fa-snowflake text-cohab-medium"></i> PAUTA FRIA
-            </span>
+          <!-- Filtro Unificado no Calendário (Todos os Status + Pauta Quente / Pauta Fria com bolinhas coloridas) -->
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <select id="filterUnified" onchange="applyFilters()" aria-label="Filtrar por status ou tipo de pauta" class="cohab-select bg-white text-cohab-graphite border border-cohab-border rounded-xl pl-3.5 py-2 font-bold focus:outline-none focus:border-cohab-terracotta cursor-pointer shadow-2xs">
+              <option value="ALL">Todos os Status</option>
+              <optgroup label="Classificação da Pauta">
+                <option value="TYPE:QUENTE">🔴 Pautas Quentes</option>
+                <option value="TYPE:FRIA">🔵 Pautas Frias</option>
+              </optgroup>
+              <optgroup label="Status de Produção">
+                <option value="STATUS:A Fazer">🟡 A Fazer</option>
+                <option value="STATUS:Em Produção">🟠 Em Produção</option>
+                <option value="STATUS:Aprovado">🩷 Aprovado</option>
+                <option value="STATUS:Publicado">🟢 Publicado</option>
+              </optgroup>
+            </select>
           </div>
         </div>
 
-        <!-- Barra Rápida com os 12 Meses do Ano Selecionado -->
-        <div id="quickMonthsBar" class="bg-cohab-bg/60 border-b border-cohab-border px-4 py-2 flex items-center gap-1 overflow-x-auto text-[11px] font-bold">
-          <!-- Renderizado via JS -->
+        <!-- Legenda discreta de Feriados Cidade Administrativa e Bolinhas -->
+        <div class="px-4 sm:px-5 py-2 bg-cohab-bg/50 border-b border-cohab-border flex flex-wrap items-center justify-between gap-2 text-[11px] text-cohab-medium">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 font-semibold text-cohab-graphite">
+              <span class="w-2.5 h-2.5 rounded-full bg-cohab-terracotta inline-block"></span> Hoje
+            </span>
+            <span class="inline-flex items-center gap-1.5 font-semibold text-amber-800">
+              <i class="fa-solid fa-landmark text-amber-600"></i> Feriado / Ponto Facultativo (Cidade Administrativa MG / BH)
+            </span>
+            <span class="hidden lg:inline-flex items-center gap-2 font-semibold text-cohab-graphite border-l border-cohab-border pl-3">
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color:#EF4444;"></span> Quente</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color:#38BDF8;"></span> Fria</span>
+              <span class="text-cohab-border">|</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color:#EAB308;"></span> A Fazer</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color:#F97316;"></span> Em Produção</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color:#EC4899;"></span> Aprovado</span>
+              <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color:#22C55E;"></span> Publicado</span>
+            </span>
+          </div>
+          <span class="text-[10px]">Fuso horário local detectado automaticamente</span>
         </div>
 
         <!-- Dias da Semana (Desktop) -->
-        <div class="hidden md:grid grid-cols-7 bg-cohab-bg border-b border-cohab-border text-center py-2.5 text-xs font-extrabold text-cohab-graphite uppercase tracking-wider">
+        <div class="hidden md:grid calendar-grid-7 bg-cohab-bg border-b border-cohab-border text-center py-2.5 text-xs font-extrabold text-cohab-graphite uppercase tracking-wider">
           <div class="text-cohab-terracotta">Domingo</div>
           <div>Segunda</div>
           <div>Terça</div>
@@ -377,7 +419,7 @@
         </div>
 
         <!-- Grade de Dias do Mês Selecionado -->
-        <div id="calendarGrid" class="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:gap-px bg-cohab-border">
+        <div id="calendarGrid" class="grid calendar-grid-7 divide-y md:divide-y-0 md:gap-px bg-cohab-border">
           <!-- Renderizado via JS -->
         </div>
       </div>
@@ -429,7 +471,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <select id="logFilterAction" onchange="renderLogs()" class="bg-cohab-bg text-cohab-graphite border border-cohab-border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none">
+            <select id="logFilterAction" onchange="renderLogs()" class="cohab-select bg-cohab-bg text-cohab-graphite border border-cohab-border rounded-xl pl-3 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer">
               <option value="ALL">Todas as ações</option>
               <option value="CRIAÇÃO">Criações</option>
               <option value="EDIÇÃO">Edições</option>
@@ -465,7 +507,7 @@
 
   <!-- RODAPÉ INSTITUCIONAL + EXPORTAÇÃO & RESTAURAÇÃO -->
   <footer class="bg-white border-t border-cohab-border mt-8 py-5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cohab-medium">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cohab-medium">
       <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left">
         <span class="font-bold text-cohab-graphite">Assessoria de Comunicação Social &bull; Cohab Minas</span>
         <span class="hidden sm:inline">&bull;</span>
@@ -536,14 +578,14 @@
             <div class="grid grid-cols-2 gap-2">
               <label class="cursor-pointer">
                 <input type="radio" name="pautaTipo" value="QUENTE" class="peer sr-only" checked />
-                <div class="rounded-xl border border-cohab-border peer-checked:border-cohab-terracotta peer-checked:bg-cohab-terracotta peer-checked:text-white text-cohab-graphite p-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5">
-                  <i class="fa-solid fa-fire"></i> PAUTA QUENTE
+                <div class="rounded-xl border border-cohab-border peer-checked:border-cohab-graphite peer-checked:bg-cohab-graphite peer-checked:text-white text-cohab-graphite p-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:#EF4444;"></span> PAUTA QUENTE
                 </div>
               </label>
               <label class="cursor-pointer">
                 <input type="radio" name="pautaTipo" value="FRIA" class="peer sr-only" />
                 <div class="rounded-xl border border-cohab-border peer-checked:border-cohab-graphite peer-checked:bg-cohab-graphite peer-checked:text-white text-cohab-graphite p-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5">
-                  <i class="fa-regular fa-snowflake"></i> PAUTA FRIA
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:#38BDF8;"></span> PAUTA FRIA
                 </div>
               </label>
             </div>
@@ -567,11 +609,11 @@
 
           <div>
             <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Status de Produção</label>
-            <select id="pautaStatus" class="w-full rounded-xl border border-cohab-border px-3.5 py-2 text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta">
-              <option value="A Fazer">⏳ A Fazer</option>
-              <option value="Em Produção">🎬 Em Produção</option>
-              <option value="Aprovado">👍 Aprovado</option>
-              <option value="Publicado">✅ Publicado</option>
+            <select id="pautaStatus" class="cohab-select w-full rounded-xl border border-cohab-border pl-3.5 py-2 text-sm font-semibold text-cohab-graphite bg-white focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer">
+              <option value="A Fazer">🟡 A Fazer</option>
+              <option value="Em Produção">🟠 Em Produção</option>
+              <option value="Aprovado">🩷 Aprovado</option>
+              <option value="Publicado">🟢 Publicado</option>
             </select>
           </div>
         </div>
@@ -632,21 +674,41 @@
     // =========================================================================
     // CONFIGURAÇÃO E DADOS INICIAIS (ASCOM COHAB MINAS)
     // =========================================================================
-    const STORAGE_KEY_PAUTAS = 'cohab_minas_ascom_nov2026_pautas_v2';
-    const STORAGE_KEY_LOGS = 'cohab_minas_ascom_nov2026_logs_v2';
+    const STORAGE_KEY_PAUTAS = 'cohab_minas_ascom_nov2026_pautas_v3';
+    const STORAGE_KEY_LOGS = 'cohab_minas_ascom_nov2026_logs_v3';
 
     const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const MESES_CURTOS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     const DIAS = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-    const STATUS_ICON = { 'A Fazer': '⏳', 'Em Produção': '🎬', 'Aprovado': '👍', 'Publicado': '✅' };
-    // Ícones (Font Awesome) por ação / tipo de conteúdo
-    const STATUS_FA = {
-      'A Fazer': 'fa-regular fa-clock text-cohab-medium',
-      'Em Produção': 'fa-solid fa-clapperboard text-cohab-terracotta',
-      'Aprovado': 'fa-solid fa-thumbs-up text-cohab-graphite',
-      'Publicado': 'fa-solid fa-circle-check text-green-600'
+
+    // Bolinhas coloridas padronizadas (sem ícones)
+    const TYPE_DOT_INFO = {
+      QUENTE: { color: '#EF4444', label: 'Pauta Quente' },
+      FRIA:   { color: '#38BDF8', label: 'Pauta Fria' }
     };
-    const statusIcon = (st) => `<i class="${STATUS_FA[st] || 'fa-regular fa-circle'}"></i>`;
+    const STATUS_DOT_INFO = {
+      'A Fazer':     { color: '#EAB308', selectDot: '🟡' },
+      'Em Produção': { color: '#F97316', selectDot: '🟠' },
+      'Aprovado':    { color: '#EC4899', selectDot: '🩷' },
+      'Publicado':   { color: '#22C55E', selectDot: '🟢' }
+    };
+    const STATUS_ICON = {
+      'A Fazer': '🟡',
+      'Em Produção': '🟠',
+      'Aprovado': '🩷',
+      'Publicado': '🟢'
+    };
+    const colorDot = (hex, title) =>
+      `<span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" style="background-color:${hex};" title="${esc(title)}"></span>`;
+    const typeDot = (tipo) => {
+      const info = TYPE_DOT_INFO[tipo] || TYPE_DOT_INFO.FRIA;
+      return colorDot(info.color, info.label);
+    };
+    const statusDot = (st) => {
+      const info = STATUS_DOT_INFO[st] || { color: '#9CA3AF' };
+      return colorDot(info.color, st);
+    };
+
     function formatIconClass(fmt) {
       const f = String(fmt || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
       if (/live|transmiss|ao vivo/.test(f)) return 'fa-solid fa-tower-broadcast';
@@ -661,20 +723,158 @@
       return 'fa-solid fa-shapes';
     }
 
-    // Pautas que já vêm carregadas na primeira abertura / ao "Restaurar Padrão".
-    // Formato: { id, titulo, data: 'AAAA-MM-DD', tipo: 'QUENTE'|'FRIA', prioridade, status, formato, editoria, descricao }
-    const DEFAULT_PAUTAS = [];
+    // Pautas pré-carregadas de Novembro 2026
+    const DEFAULT_PAUTAS = [
+      {
+        id: 'pauta-arcos',
+        titulo: 'Audiência pública em Arcos',
+        data: '2026-11-16',
+        tipo: 'QUENTE',
+        prioridade: 1,
+        status: 'Publicado',
+        formato: 'Vídeo / Convite',
+        editoria: 'Institucional (Cohab + Sede)',
+        descricao: 'Amanda Ferreira convida o público a comparecer nas próximas audiências públicas que acontecerão ao longo dos próximos meses. (Realizado pela Cohab + Sede)'
+      },
+      {
+        id: 'pauta-timoteo',
+        titulo: '2ª Etapa cadastral em Timóteo',
+        data: '2026-11-19',
+        tipo: 'QUENTE',
+        prioridade: 2,
+        status: 'Em Produção',
+        formato: 'Vídeo',
+        editoria: 'Cadastro / Habitação',
+        descricao: 'Vídeo da Adriana convidando o público para a segunda etapa cadastral em Timóteo.'
+      },
+      {
+        id: 'pauta-zezinho',
+        titulo: 'Palestra Zezinho (story e reels)',
+        data: '2026-11-17',
+        tipo: 'FRIA',
+        prioridade: 3,
+        status: 'Em Produção',
+        formato: 'Story e Reels',
+        editoria: 'Cobertura / Eventos',
+        descricao: 'Vídeo no estilo selfie'
+      },
+      {
+        id: 'pauta-escrituras',
+        titulo: 'Cohab informa',
+        data: '2026-11-18',
+        tipo: 'FRIA',
+        prioridade: 4,
+        status: 'A Fazer',
+        formato: 'Reels',
+        editoria: 'Cohab Informa',
+        descricao: 'ROTEIRO REELS - ESCRITURAS'
+      },
+      {
+        id: 'pauta-consciencia-negra',
+        titulo: 'Data sem prestação de serviço',
+        data: '2026-11-20',
+        tipo: 'FRIA',
+        prioridade: 5,
+        status: 'A Fazer',
+        formato: 'Post estático',
+        editoria: 'SERVIÇOS',
+        descricao: 'Post estático (Consciência Negra).'
+      }
+    ];
 
     // =========================================================================
-    // ESTADO
+    // FERIADOS E PONTOS FACULTATIVOS — CIDADE ADMINISTRATIVA (MG / BH / NACIONAL)
     // =========================================================================
-    const TODAY = new Date();
+    function getEasterSunday(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month, day);
+    }
+
+    function addDaysToDate(dateObj, days) {
+      const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() + days);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    const _holidaysCache = {};
+    function getHolidaysForYear(year) {
+      if (_holidaysCache[year]) return _holidaysCache[year];
+
+      const map = {};
+      const addH = (mmdd, name, scope) => {
+        map[`${year}-${mmdd}`] = { name, scope };
+      };
+
+      // Feriados Fixos (Nacionais, Estaduais MG, Municipais BH e Servidor Público)
+      addH('01-01', 'Confraternização Universal', 'Nacional');
+      addH('04-21', 'Tiradentes / Data Magna de MG', 'Nacional / MG');
+      addH('05-01', 'Dia Mundial do Trabalho', 'Nacional');
+      addH('08-15', 'Assunção de Nossa Senhora', 'Municipal BH');
+      addH('09-07', 'Independência do Brasil', 'Nacional');
+      addH('10-12', 'Nossa Senhora Aparecida', 'Nacional');
+      addH('10-28', 'Dia do Servidor Público (Ponto Facultativo)', 'Cidade Adm. / MG');
+      addH('11-02', 'Finados', 'Nacional');
+      addH('11-15', 'Proclamação da República', 'Nacional');
+      addH('11-20', 'Dia Nacional de Zumbi e da Consciência Negra', 'Nacional');
+      addH('12-08', 'Imaculada Conceição', 'Municipal BH');
+      addH('12-24', 'Véspera de Natal (Ponto Facultativo)', 'Cidade Adm. / MG');
+      addH('12-25', 'Natal', 'Nacional');
+      addH('12-31', 'Véspera de Ano Novo (Ponto Facultativo)', 'Cidade Adm. / MG');
+
+      // Datas Móveis (baseadas na Páscoa)
+      const easter = getEasterSunday(year);
+      map[addDaysToDate(easter, -48)] = { name: 'Segunda de Carnaval (Ponto Facultativo)', scope: 'Cidade Adm. / MG' };
+      map[addDaysToDate(easter, -47)] = { name: 'Terça de Carnaval (Ponto Facultativo)', scope: 'Cidade Adm. / MG' };
+      map[addDaysToDate(easter, -46)] = { name: 'Quarta-feira de Cinzas (Ponto Facultativo)', scope: 'Cidade Adm. / MG' };
+      map[addDaysToDate(easter, -3)]  = { name: 'Quinta-feira Santa (Ponto Facultativo)', scope: 'Cidade Adm. / MG' };
+      map[addDaysToDate(easter, -2)]  = { name: 'Paixão de Cristo (Sexta-feira Santa)', scope: 'Nacional / BH' };
+      map[addDaysToDate(easter, 0)]   = { name: 'Páscoa', scope: 'Nacional' };
+      map[addDaysToDate(easter, 60)]  = { name: 'Corpus Christi', scope: 'Municipal BH / MG' };
+
+      _holidaysCache[year] = map;
+      return map;
+    }
+
+    function getHolidayForKey(dateKey) {
+      const p = parseKey(dateKey);
+      if (!p) return null;
+      const yearHolidays = getHolidaysForYear(p.y);
+      return yearHolidays[dateKey] || null;
+    }
+
+    // =========================================================================
+    // DATA ATUAL DINÂMICA BASEADA NO TIMEZONE LOCAL DO NAVEGADOR
+    // =========================================================================
+    function getLocalToday() {
+      const now = new Date();
+      return {
+        dateObj: now,
+        year: now.getFullYear(),
+        month: now.getMonth(),
+        day: now.getDate(),
+        key: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+      };
+    }
+
     let pautas = [];
     let logs = [];
-    let viewMonth = TODAY.getMonth();
-    let viewYear = TODAY.getFullYear();
+    const _initToday = getLocalToday();
+    let lastKnownTodayKey = _initToday.key;
+    let viewMonth = _initToday.month;
+    let viewYear = _initToday.year;
     let currentTab = 'calendar';
-    let filterType = 'ALL';
     let confirmCallback = null;
 
     // =========================================================================
@@ -701,7 +901,13 @@
       const p = parseKey(key);
       return p ? new Date(p.y, p.m, p.d).getDay() : 0;
     }
-    const todayKey = () => toKey(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+    const todayKey = () => getLocalToday().key;
+
+    function updateTodayButtonLabel() {
+      const t = getLocalToday();
+      const lbl = $('todayLabel');
+      if (lbl) lbl.textContent = `Ir para Hoje (${pad(t.day)}/${pad(t.month + 1)}/${t.year})`;
+    }
 
     function esc(s) {
       return String(s == null ? '' : s)
@@ -709,8 +915,6 @@
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    // Normalização sem acento, minúscula, mantendo o MESMO comprimento do texto original
-    // (necessário para destacar corretamente os trechos encontrados).
     function normMap(text) {
       const src = String(text == null ? '' : text).normalize('NFC');
       let out = '';
@@ -724,7 +928,7 @@
     }
 
     // =========================================================================
-    // PESQUISA
+    // PESQUISA E FILTRO UNIFICADO
     // =========================================================================
     function getTerms() {
       const raw = ($('searchInput').value || '').trim();
@@ -734,8 +938,13 @@
 
     function haystack(p) {
       const k = parseKey(p.data);
+      const hol = getHolidayForKey(p.data);
       const extra = k
-        ? [fmtBR(p.data), p.data, MESES[k.m], MESES_CURTOS[k.m], String(k.y), DIAS[weekdayOf(p.data)], `dia ${k.d}`, `${MESES[k.m]} ${k.y}`]
+        ? [
+            fmtBR(p.data), p.data, MESES[k.m], MESES_CURTOS[k.m], String(k.y),
+            DIAS[weekdayOf(p.data)], `dia ${k.d}`, `${MESES[k.m]} ${k.y}`,
+            hol ? `feriado ${hol.name} ${hol.scope}` : ''
+          ]
         : [];
       return normMap([
         p.titulo, p.descricao, p.formato, p.editoria, p.status,
@@ -788,9 +997,12 @@
     }
 
     function passesFilters(p, terms) {
-      const st = $('filterStatus').value;
-      if (filterType !== 'ALL' && p.tipo !== filterType) return false;
-      if (st !== 'ALL' && p.status !== st) return false;
+      const val = ($('filterUnified') ? $('filterUnified').value : 'ALL');
+      if (val.startsWith('TYPE:')) {
+        if (p.tipo !== val.slice(5)) return false;
+      } else if (val.startsWith('STATUS:')) {
+        if (p.status !== val.slice(7)) return false;
+      }
       return matchesSearch(p, terms);
     }
 
@@ -823,7 +1035,13 @@
       pautas = base.map(normalizePauta).filter(Boolean);
       logs = Array.isArray(rawL) ? rawL.filter((l) => l && l.texto) : [];
       if (!logs.length) {
-        logs = [{ id: uid(), ts: new Date().toISOString(), autor: 'Sistema', acao: 'CRIAÇÃO', texto: 'Planejamento editorial iniciado.' }];
+        logs = [{
+          id: uid(),
+          ts: new Date().toISOString(),
+          autor: 'Sistema',
+          acao: 'CRIAÇÃO',
+          texto: 'Planejamento editorial de Novembro carregado com as 5 pautas oficiais (16/11 a 20/11).'
+        }];
       }
     }
     function saveData() {
@@ -872,7 +1090,7 @@
     }
 
     // =========================================================================
-    // NAVEGAÇÃO: ABAS, MESES E ANOS (QUALQUER MÊS, QUALQUER ANO)
+    // NAVEGAÇÃO: ABAS, MESES E ANOS
     // =========================================================================
     function switchTab(tab) {
       currentTab = tab;
@@ -900,7 +1118,7 @@
     function initYearSelect() {
       const sel = $('yearSelect');
       sel.innerHTML = '';
-      const base = TODAY.getFullYear();
+      const base = getLocalToday().year;
       for (let y = base - 3; y <= base + 12; y++) {
         const o = document.createElement('option');
         o.value = y; o.textContent = y;
@@ -926,23 +1144,14 @@
     }
     function changeYear(delta) { goTo(viewYear + delta, viewMonth); }
     function onMonthYearSelectChange() { goTo(+$('yearSelect').value, +$('monthSelect').value); }
-    function goToTodayMonth() { goTo(TODAY.getFullYear(), TODAY.getMonth()); }
+    function goToTodayMonth() {
+      const t = getLocalToday();
+      goTo(t.year, t.month);
+    }
 
     // =========================================================================
-    // FILTROS E PESQUISA (AÇÕES DA INTERFACE)
+    // FILTROS E PESQUISA
     // =========================================================================
-    function setFilterType(type) {
-      filterType = type;
-      document.querySelectorAll('.filter-type-btn').forEach((b) => {
-        const t = b.dataset.filterType;
-        const a = t === type;
-        b.classList.toggle('bg-cohab-graphite', a);
-        b.classList.toggle('text-white', a);
-        b.classList.toggle('text-cohab-terracotta', !a && t === 'QUENTE');
-        b.classList.toggle('text-cohab-graphite', !a && t !== 'QUENTE');
-      });
-      renderAll();
-    }
     function applyFilters() { renderAll(); }
     function clearSearch() {
       $('searchInput').value = '';
@@ -953,10 +1162,8 @@
     // =========================================================================
     // RENDER: CALENDÁRIO
     // =========================================================================
-    function pautaCardClasses(p) {
-      return p.tipo === 'QUENTE'
-        ? 'bg-cohab-terracottaLight border-cohab-terracotta/30 text-cohab-terracottaDark'
-        : 'bg-cohab-bg border-cohab-border text-cohab-graphite';
+    function pautaCardClasses() {
+      return 'bg-white border-cohab-border text-cohab-graphite hover:border-cohab-graphite/50';
     }
 
     function renderCalendar(terms) {
@@ -976,37 +1183,84 @@
         const key = toKey(viewYear, viewMonth, d);
         const wd = new Date(viewYear, viewMonth, d).getDay();
         const isToday = key === tKey;
+        const isPast = key < tKey;
+        const holiday = getHolidayForKey(key);
         const list = (byDay[key] || []).sort((a, b) => a.prioridade - b.prioridade);
+
         const numCls = isToday
-          ? 'bg-cohab-terracotta text-white w-6 h-6 rounded-full flex items-center justify-center'
-          : (wd === 0 ? 'text-cohab-terracotta' : (wd === 6 ? 'text-cohab-medium' : 'text-cohab-graphite'));
+          ? 'w-6 h-6 rounded-full inline-flex items-center justify-center shadow-xs font-extrabold'
+          : isPast
+            ? 'text-cohab-medium/70 line-through decoration-cohab-medium/60'
+            : holiday
+              ? 'text-amber-800'
+              : (wd === 0 ? 'text-cohab-terracotta' : (wd === 6 ? 'text-cohab-medium' : 'text-cohab-graphite'));
+
+        const numInlineStyle = isToday
+          ? 'background-color:#B84231;color:#FFFFFF;'
+          : '';
+
+        const holidayBadge = holiday
+          ? `<div title="${esc(holiday.name)} (${esc(holiday.scope)})"
+               class="rounded-md px-1.5 py-1 text-[10px] leading-tight font-bold border flex items-start gap-1 ${
+                 isPast
+                   ? 'bg-amber-100/60 border-amber-300/60 text-amber-900/75'
+                   : 'bg-amber-50 border-amber-300 text-amber-900'
+               }">
+               <i class="fa-solid fa-landmark text-amber-600 mt-0.5 shrink-0"></i>
+               <span class="line-clamp-2">${highlight(holiday.name, terms)}</span>
+             </div>`
+          : '';
 
         const cards = list.map((p) => {
           const desc = terms.length ? snippet(p.descricao, terms) : '';
+          const tipoLabel = p.tipo === 'QUENTE' ? 'Pauta Quente' : 'Pauta Fria';
+          const hasMiddle = p.formato || p.editoria || desc;
           return `
-            <button type="button" onclick="openPautaModal('${p.id}')" title="${esc(p.titulo)}"
-              class="text-left w-full rounded-lg border px-2 py-1.5 text-[11px] leading-snug transition hover:shadow-xs cursor-pointer ${pautaCardClasses(p)}">
-              <div class="flex items-start gap-1">
-                <i class="${p.tipo === 'QUENTE' ? 'fa-solid fa-fire' : 'fa-regular fa-snowflake'} mt-0.5 shrink-0"></i>
-                <span class="font-bold">${highlight(p.titulo, terms)}</span>
+            <button type="button" onclick="openPautaModal('${p.id}')" title="${esc(p.titulo)} (${tipoLabel} · ${esc(p.status)})"
+              class="text-left w-full rounded-lg border px-2 py-1.5 text-[11px] leading-snug transition hover:shadow-xs cursor-pointer ${pautaCardClasses()} ${isPast ? 'opacity-80' : ''}">
+              <!-- Topo: Bolinha Quente/Fria + Nome resumido em 1 linha + Linha divisória -->
+              <div class="flex items-center gap-1.5 pb-1 border-b border-cohab-border/70">
+                ${typeDot(p.tipo)}
+                <span class="font-bold text-cohab-graphite truncate flex-1">${highlight(p.titulo, terms)}</span>
               </div>
-              ${p.formato ? `<div class="text-[10px] opacity-80 mt-0.5 flex items-center gap-1"><i class="${formatIconClass(p.formato)} w-3 text-center"></i>${highlight(p.formato, terms)}</div>` : ''}
-              ${p.editoria ? `<div class="text-[10px] opacity-80 flex items-center gap-1"><i class="fa-solid fa-tag w-3 text-center"></i>${highlight(p.editoria, terms)}</div>` : ''}
-              ${desc ? `<div class="text-[10px] mt-1 italic opacity-90 flex items-start gap-1"><i class="fa-regular fa-file-lines w-3 text-center mt-0.5"></i><span>${desc}</span></div>` : ''}
-              <div class="text-[10px] mt-0.5 font-semibold flex items-center gap-1">${statusIcon(p.status)} ${highlight(p.status, terms)}</div>
+              <!-- Meio: Formato do post e Editoria -->
+              ${hasMiddle ? `
+                <div class="py-1 space-y-0.5">
+                  ${p.formato ? `<div class="text-[10px] text-cohab-graphite/90 font-medium flex items-center gap-1 truncate"><i class="${formatIconClass(p.formato)} w-3 text-center text-cohab-medium shrink-0"></i><span class="truncate">${highlight(p.formato, terms)}</span></div>` : ''}
+                  ${p.editoria ? `<div class="text-[10px] text-cohab-medium flex items-center gap-1 truncate"><i class="fa-solid fa-tag w-3 text-center shrink-0"></i><span class="truncate">${highlight(p.editoria, terms)}</span></div>` : ''}
+                  ${desc ? `<div class="text-[10px] pt-0.5 italic text-cohab-graphite/90 flex items-start gap-1"><i class="fa-regular fa-file-lines w-3 text-center mt-0.5 shrink-0"></i><span>${desc}</span></div>` : ''}
+                </div>
+              ` : ''}
+              <!-- Base: Status atual de produção -->
+              <div class="text-[10px] pt-1 border-t border-cohab-border/70 font-semibold text-cohab-graphite flex items-center gap-1.5">
+                ${statusDot(p.status)}
+                <span class="truncate">${highlight(p.status, terms)}</span>
+              </div>
             </button>`;
         }).join('');
 
+        const cellBg = isToday
+          ? 'calendar-today'
+          : isPast
+            ? 'bg-neutral-200/75'
+            : holiday
+              ? 'bg-amber-50/35'
+              : 'bg-white';
+
         html += `
-          <div class="calendar-cell bg-white p-2 group flex flex-col gap-1 ${isToday ? 'ring-2 ring-inset ring-cohab-terracotta/60' : ''}">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-extrabold ${numCls}">${d}</span>
-              <span class="md:hidden text-[10px] font-semibold text-cohab-medium uppercase">${DIAS[wd]}</span>
+          <div class="calendar-cell ${cellBg} p-2 group flex flex-col gap-1 relative">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-extrabold ${numCls}" style="${numInlineStyle}">${d}</span>
+                ${isToday ? '<span class="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background-color:#B84231;color:#FFFFFF;">Hoje</span>' : ''}
+                <span class="md:hidden text-[10px] font-semibold text-cohab-medium uppercase">${DIAS[wd]}</span>
+              </div>
               <button type="button" onclick="openPautaModal(null,'${key}')" title="Nova pauta neste dia"
                 class="md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 w-5 h-5 rounded-md text-cohab-medium hover:text-cohab-terracotta hover:bg-cohab-terracottaLight flex items-center justify-center transition cursor-pointer">
                 <i class="fa-solid fa-plus text-[10px]"></i>
               </button>
             </div>
+            ${holidayBadge}
             ${cards}
           </div>`;
       }
@@ -1014,25 +1268,6 @@
       const trailing = (7 - ((first + total) % 7)) % 7;
       for (let i = 0; i < trailing; i++) html += '<div class="hidden md:block bg-cohab-bg/60"></div>';
       grid.innerHTML = html;
-    }
-
-    function renderQuickMonths(terms) {
-      const counts = Array(12).fill(0);
-      pautas.forEach((p) => {
-        const k = parseKey(p.data);
-        if (k && k.y === viewYear && passesFilters(p, terms)) counts[k.m]++;
-      });
-      $('quickMonthsBar').innerHTML = MESES_CURTOS.map((nm, i) => {
-        const a = i === viewMonth;
-        const cls = a
-          ? 'bg-cohab-terracotta text-white'
-          : 'bg-white text-cohab-graphite border border-cohab-border hover:bg-cohab-terracottaLight';
-        const badge = counts[i]
-          ? `<span class="ml-1 ${a ? 'bg-white/25' : 'bg-cohab-terracottaLight text-cohab-terracotta'} px-1.5 rounded-full">${counts[i]}</span>`
-          : '';
-        return `<button type="button" onclick="goTo(${viewYear},${i})" title="${MESES[i]} ${viewYear}"
-          class="shrink-0 px-2.5 py-1 rounded-lg transition cursor-pointer ${cls}">${nm}${badge}</button>`;
-      }).join('');
     }
 
     function renderSearchFeedback(terms) {
@@ -1097,25 +1332,25 @@
         const opts = Object.keys(STATUS_ICON).map((s) =>
           `<option value="${s}" ${s === p.status ? 'selected' : ''}>${STATUS_ICON[s]} ${s}</option>`).join('');
         return `
-          <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl border ${p.tipo === 'QUENTE' ? 'border-cohab-terracotta/30 bg-cohab-terracottaLight/50' : 'border-cohab-border bg-white'}">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl border border-cohab-border bg-white">
             <div class="flex items-center gap-3 flex-1 min-w-0">
               <div class="w-9 h-9 rounded-xl bg-cohab-graphite text-white font-extrabold text-sm flex items-center justify-center shrink-0">${p.prioridade}</div>
               <div class="min-w-0">
                 <div class="font-bold text-sm text-cohab-graphite flex items-center gap-1.5">
-                  <i class="${p.tipo === 'QUENTE' ? 'fa-solid fa-fire text-cohab-terracotta' : 'fa-regular fa-snowflake text-cohab-medium'}"></i>
+                  ${typeDot(p.tipo)}
                   <span>${highlight(p.titulo, terms)}</span>
                 </div>
                 <div class="text-[11px] text-cohab-medium flex flex-wrap items-center gap-x-3 gap-y-0.5">
                   <span><i class="fa-regular fa-calendar mr-1"></i>${fmtBR(p.data)} · ${DIAS[weekdayOf(p.data)]}</span>
                   ${p.formato ? `<span><i class="${formatIconClass(p.formato)} mr-1"></i>${highlight(p.formato, terms)}</span>` : ''}
                   ${p.editoria ? `<span><i class="fa-solid fa-tag mr-1"></i>${highlight(p.editoria, terms)}</span>` : ''}
-                  <span>${statusIcon(p.status)} ${esc(p.status)}</span>
+                  <span class="inline-flex items-center gap-1 font-semibold text-cohab-graphite">${statusDot(p.status)} ${esc(p.status)}</span>
                 </div>
                 ${desc ? `<div class="text-[11px] italic text-cohab-graphite mt-0.5"><i class="fa-regular fa-file-lines mr-1"></i>${desc}</div>` : ''}
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <select onchange="changeStatus('${p.id}', this.value)" class="bg-white border border-cohab-border rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none">${opts}</select>
+              <select onchange="changeStatus('${p.id}', this.value)" class="cohab-select bg-white border border-cohab-border rounded-lg pl-2.5 py-1 text-xs font-semibold cursor-pointer focus:outline-none">${opts}</select>
               <button type="button" onclick="movePriority('${p.id}', -1)" ${i === 0 ? 'disabled' : ''} title="Subir" class="w-8 h-8 rounded-lg bg-white border border-cohab-border hover:bg-cohab-bg disabled:opacity-30 cursor-pointer"><i class="fa-solid fa-arrow-up text-xs"></i></button>
               <button type="button" onclick="movePriority('${p.id}', 1)" ${i === list.length - 1 ? 'disabled' : ''} title="Descer" class="w-8 h-8 rounded-lg bg-white border border-cohab-border hover:bg-cohab-bg disabled:opacity-30 cursor-pointer"><i class="fa-solid fa-arrow-down text-xs"></i></button>
               <button type="button" onclick="openPautaModal('${p.id}')" title="Editar" class="w-8 h-8 rounded-lg bg-white border border-cohab-border hover:bg-cohab-terracottaLight text-cohab-terracotta cursor-pointer"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
@@ -1213,7 +1448,7 @@
       $('badgeCountPautas').textContent = pautas.length;
       $('badgeCountLogs').textContent = logs.length;
       renderSearchFeedback(terms);
-      if (currentTab === 'calendar') { renderQuickMonths(terms); renderCalendar(terms); }
+      if (currentTab === 'calendar') { renderCalendar(terms); }
       if (currentTab === 'hierarchy') renderHierarchy(terms);
       if (currentTab === 'logs') renderLogs(terms);
     }
@@ -1228,10 +1463,11 @@
       if (mi) mi.className = p ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-circle-plus';
       $('pautaId').value = p ? p.id : '';
       $('pautaTitulo').value = p ? p.titulo : '';
+      const t = getLocalToday();
       let defDate = dateKey;
       if (!defDate) {
-        defDate = (viewYear === TODAY.getFullYear() && viewMonth === TODAY.getMonth())
-          ? todayKey() : toKey(viewYear, viewMonth, 1);
+        defDate = (viewYear === t.year && viewMonth === t.month)
+          ? t.key : toKey(viewYear, viewMonth, 1);
       }
       $('pautaData').value = p ? p.data : defDate;
       const tipo = p ? p.tipo : 'QUENTE';
@@ -1327,22 +1563,31 @@
       toast('JSON exportado');
     }
     function resetInitialDataConfirm() {
-      showConfirm('Restaurar padrão', 'Todas as pautas e registros atuais serão substituídos pelos dados iniciais. Deseja continuar?', () => {
+      showConfirm('Restaurar padrão', 'Todas as pautas e registros atuais serão substituídos pelas 5 pautas oficiais de Novembro. Deseja continuar?', () => {
         pautas = DEFAULT_PAUTAS.map(normalizePauta).filter(Boolean);
         logs = [];
-        addLog('CRIAÇÃO', 'Dados restaurados para o padrão.');
+        addLog('CRIAÇÃO', 'Dados restaurados para as 5 pautas oficiais de Novembro.');
         saveData(); goToTodayMonth();
         toast('Dados restaurados');
       }, 'Restaurar');
     }
 
     // =========================================================================
-    // INICIALIZAÇÃO
+    // INICIALIZAÇÃO E ATUALIZAÇÃO AUTOMÁTICA NA VIRADA DO DIA (TIMEZONE LOCAL)
     // =========================================================================
+    function checkDayRollover() {
+      const current = getLocalToday().key;
+      if (current !== lastKnownTodayKey) {
+        lastKnownTodayKey = current;
+        updateTodayButtonLabel();
+        renderAll();
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadData();
       initYearSelect();
-      $('todayLabel').textContent = `Ir para Hoje (${pad(TODAY.getDate())}/${pad(TODAY.getMonth() + 1)}/${TODAY.getFullYear()})`;
+      updateTodayButtonLabel();
       $('confirmCancelBtn').addEventListener('click', hideConfirm);
       $('confirmAcceptBtn').addEventListener('click', () => { const cb = confirmCallback; hideConfirm(); if (cb) cb(); });
       $('confirmModal').addEventListener('click', (ev) => { if (ev.target === $('confirmModal')) hideConfirm(); });
@@ -1350,6 +1595,13 @@
       document.addEventListener('keydown', (ev) => {
         if (ev.key === 'Escape') { hideConfirm(); closePautaModal(); }
       });
+
+      // Atualiza automaticamente os dias passados conforme o timezone do navegador ao virar meia-noite ou retornar à aba
+      setInterval(checkDayRollover, 30000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) checkDayRollover();
+      });
+
       syncSelectors();
       renderAll();
     });
