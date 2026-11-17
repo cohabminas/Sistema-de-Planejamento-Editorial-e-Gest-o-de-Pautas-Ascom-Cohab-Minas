@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planejamento Editorial | Assessoria de Comunicação Social - Cohab Minas</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            cohab: {
+              terracotta: '#B84231',      // Vermelho terracota institucional
+              terracottaDark: '#963324',  // Hover terracota
+              terracottaLight: '#FDF3F1', // Fundo suave terracota
+              graphite: '#4A4A4A',        // Cinza escuro grafite principal
+              graphiteDark: '#333333',    // Grafite intenso
+              medium: '#7A7A7A',          // Cinza médio subtítulos
+              bg: '#F5F5F5',              // Fundo neutro claro
+              border: '#E2E2E2'           // Bordas sutis
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F5F5F5;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CCCCCC;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #7A7A7A;
+    }
+    .calendar-cell {
+      min-height: 145px;
+      transition: all 0.15s ease-in-out;
+    }
+    @media (max-width: 768px) {
+      .calendar-cell {
+        min-height: auto;
+      }
+    }
+    mark.search-highlight {
+      background-color: #FDE68A;
+      color: #1F2937;
+      padding: 0 2px;
+      border-radius: 3px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-cohab-bg text-cohab-graphite font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Toast de Notificação -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Modal de Confirmação Customizado -->
+  <div id="confirmModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-cohab-border">
+      <div class="flex items-center gap-3 text-cohab-terracotta mb-3">
+        <div class="w-10 h-10 rounded-full bg-cohab-terracottaLight flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+        </div>
+        <h3 id="confirmTitle" class="text-lg font-bold text-cohab-graphite">Confirmar ação</h3>
+      </div>
+      <p id="confirmMessage" class="text-sm text-cohab-medium mb-6 leading-relaxed">Tem certeza que deseja continuar?</p>
+      <div class="flex justify-end gap-3">
+        <button id="confirmCancelBtn" class="px-4 py-2 rounded-xl text-sm font-semibold text-cohab-medium hover:bg-cohab-bg transition cursor-pointer"><i class="fa-solid fa-xmark mr-1.5"></i>Cancelar</button>
+        <button id="confirmAcceptBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-cohab-terracotta text-white hover:bg-cohab-terracottaDark shadow-xs transition cursor-pointer">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER INSTITUCIONAL -->
+  <header class="bg-white border-b border-cohab-border shadow-2xs sticky top-0 z-30">
+    <!-- Filete superior terracota institucional -->
+    <div class="h-1.5 w-full bg-cohab-terracotta"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        
+        <!-- Logo Geométrico Hexagonal Cohab Minas (Triângulos Pretos + Destaque Terracota) -->
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3 shrink-0">
+            <svg width="46" height="50" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Cohab Minas">
+              <!-- Triângulo Superior Esquerdo (Preto #000000) -->
+              <polygon points="48,4 8,27 48,50" fill="#000000" />
+              <!-- Triângulo Superior Direito (Preto #000000) -->
+              <polygon points="52,4 92,27 52,50" fill="#000000" />
+              <!-- Triângulo Esquerdo (Preto #000000) -->
+              <polygon points="6,31 6,79 46,55" fill="#000000" />
+              <!-- Triângulo Direito Destaque Terracota (#B84231) -->
+              <polygon points="94,31 94,79 54,55" fill="#B84231" />
+              <!-- Triângulo Inferior Esquerdo (Preto #000000) -->
+              <polygon points="8,83 48,106 48,60" fill="#000000" />
+              <!-- Triângulo Inferior Direito (Preto #000000) -->
+              <polygon points="92,83 52,106 52,60" fill="#000000" />
+            </svg>
+
+            <div class="border-r border-cohab-border pr-4 hidden sm:block">
+              <div class="flex items-center gap-1">
+                <span class="font-extrabold text-sm tracking-tight text-cohab-terracotta">COHAB</span>
+                <span class="font-extrabold text-sm tracking-tight text-cohab-graphite">MINAS</span>
+                <i class="fa-solid fa-chevron-right text-[10px] text-cohab-medium ml-0.5"></i>
+              </div>
+              <p class="text-[8.5px] leading-tight font-semibold text-cohab-medium uppercase tracking-wider">
+                Companhia de Habitação<br/>do Estado de Minas Gerais
+              </p>
+            </div>
+          </div>
+
+          <!-- Título Principal da Ferramenta -->
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="text-base sm:text-lg font-extrabold text-cohab-graphite tracking-tight">
+                Planejamento Editorial
+              </h1>
+              <span id="headerPeriodBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-cohab-terracottaLight text-cohab-terracotta border border-cohab-terracotta/20">
+                Novembro 2026
+              </span>
+            </div>
+            <p class="text-xs font-medium text-cohab-medium">
+              Assessoria de Comunicação Social &bull; Cohab Minas
+            </p>
+          </div>
+        </div>
+
+        <!-- Seletor de Membro da Equipe (Autor do Log) + Ações -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <div class="flex items-center bg-cohab-bg border border-cohab-border rounded-xl px-3 py-1.5 text-xs">
+            <i class="fa-solid fa-user-check text-cohab-terracotta mr-2"></i>
+            <span class="text-cohab-medium font-medium mr-1.5 hidden sm:inline">Responsável Log:</span>
+            <select id="teamMemberSelect" onchange="handleTeamMemberChange()" class="bg-transparent text-cohab-graphite font-bold focus:outline-none cursor-pointer pr-1">
+              <option value="Fábio Vieira Felício (Estagiário - Ascom)">Fábio Vieira Felício</option>
+              <option value="Amanda Ferreira (Ascom)">Amanda Ferreira</option>
+              <option value="Adriana (Comunicação / Cadastro)">Adriana</option>
+              <option value="Zezinho (Conteúdo / Vídeo)">Zezinho</option>
+              <option value="Coordenação Ascom">Coordenação Ascom</option>
+              <option value="CUSTOM">Outro membro...</option>
+            </select>
+            <input 
+              type="text" 
+              id="customMemberInput" 
+              placeholder="Digite seu nome..." 
+              class="hidden ml-2 bg-white border border-cohab-border rounded-lg px-2 py-0.5 text-cohab-graphite font-semibold w-32 focus:outline-none focus:border-cohab-terracotta"
+            />
+          </div>
+
+          <button onclick="openPautaModal()" class="bg-cohab-terracotta hover:bg-cohab-terracottaDark active:scale-95 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nova Pauta</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Barra Secundária: Navegação por Abas e Filtros -->
+    <div class="bg-cohab-bg/80 border-t border-cohab-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        
+        <!-- Abas de Visualização -->
+        <nav class="flex flex-wrap items-center gap-1.5 bg-white p-1 rounded-xl border border-cohab-border w-fit">
+          <button onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-cohab-graphite text-white shadow-2xs cursor-pointer">
+            <i class="fa-regular fa-calendar-days"></i>
+            <span>Calendário Mensal</span>
+          </button>
+          <button onclick="switchTab('hierarchy')" id="tab-hierarchy" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer">
+            <i class="fa-solid fa-layer-group text-cohab-terracotta"></i>
+            <span>Hierarquia &amp; Prioridades</span>
+            <span id="badgeCountPautas" class="text-[11px] bg-cohab-bg text-cohab-graphite font-bold px-1.5 py-0.2 rounded-full border border-cohab-border">5</span>
+          </button>
+          <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer">
+            <i class="fa-solid fa-clock-rotate-left text-cohab-medium"></i>
+            <span>Log de Atividades</span>
+            <span id="badgeCountLogs" class="text-[11px] bg-cohab-terracottaLight text-cohab-terracotta font-bold px-1.5 py-0.2 rounded-full">1</span>
+          </button>
+        </nav>
+
+        <!-- Filtros Rápidos (Temperatura e Status) -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <!-- Filtro Temperatura -->
+          <div class="flex rounded-xl bg-white p-0.5 border border-cohab-border">
+            <button onclick="setFilterType('ALL')" data-filter-type="ALL" class="filter-type-btn px-2.5 py-1 rounded-lg font-bold bg-cohab-graphite text-white transition cursor-pointer">Todas</button>
+            <button onclick="setFilterType('QUENTE')" data-filter-type="QUENTE" class="filter-type-btn px-2.5 py-1 rounded-lg font-semibold text-cohab-terracotta hover:bg-cohab-terracottaLight transition flex items-center gap-1 cursor-pointer">
+              <i class="fa-solid fa-fire"></i> Quentes
+            </button>
+            <button onclick="setFilterType('FRIA')" data-filter-type="FRIA" class="filter-type-btn px-2.5 py-1 rounded-lg font-semibold text-cohab-graphite hover:bg-cohab-bg transition flex items-center gap-1 cursor-pointer">
+              <i class="fa-regular fa-snowflake text-cohab-medium"></i> Frias
+            </button>
+          </div>
+
+          <!-- Filtro Status -->
+          <select id="filterStatus" onchange="applyFilters()" class="bg-white text-cohab-graphite border border-cohab-border rounded-xl px-2.5 py-1.5 font-semibold focus:outline-none focus:border-cohab-terracotta cursor-pointer">
+            <option value="ALL">Todos os Status</option>
+            <option value="A Fazer">⏳ A Fazer</option>
+            <option value="Em Produção">🎬 Em Produção</option>
+            <option value="Aprovado">👍 Aprovado</option>
+            <option value="Publicado">✅ Publicado</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- BARRA DE PESQUISA GLOBAL LOGO APÓS O HEADER -->
+  <section class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1">
+    <div class="bg-white rounded-2xl p-3 sm:p-3.5 border border-cohab-border shadow-2xs flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="relative flex-1">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-cohab-terracotta text-sm"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          oninput="applyFilters()"
+          placeholder="Pesquisar qualquer palavra no calendário (título, roteiro, descrição, formato, editoria, cidade, data)..." 
+          class="w-full bg-cohab-bg/70 focus:bg-white text-cohab-graphite placeholder-cohab-medium border border-cohab-border rounded-xl pl-10 pr-9 py-2.5 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta transition"
+        />
+        <button 
+          id="clearSearchBtn" 
+          onclick="clearSearch()" 
+          title="Limpar pesquisa"
+          class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-cohab-medium hover:text-cohab-terracotta cursor-pointer"
+        >
+          <i class="fa-solid fa-circle-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Feedback de Resultados da Pesquisa -->
+      <div id="searchFeedback" class="hidden items-center gap-2 text-xs font-semibold text-cohab-medium shrink-0 px-2">
+        <span id="searchCountText">0 resultados</span>
+      </div>
+    </div>
+
+    <!-- Resultados encontrados em outros meses/anos quando o usuário pesquisa uma palavra -->
+    <div id="otherMonthsSearchAlert" class="hidden mt-2 bg-cohab-terracottaLight border border-cohab-terracotta/30 rounded-xl px-4 py-2.5 text-xs text-cohab-graphite flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-calendar-check text-cohab-terracotta"></i>
+        <span id="otherMonthsSearchText">Encontramos pautas com este termo em outros meses:</span>
+      </div>
+      <div id="otherMonthsButtons" class="flex flex-wrap items-center gap-1.5"></div>
+    </div>
+  </section>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3 flex-1">
+
+    <!-- ABA 1: CALENDÁRIO MENSAL (TODOS OS MESES E ANOS) -->
+    <div id="view-calendar" class="space-y-4">
+      <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border overflow-hidden">
+        
+        <!-- Barra Superior do Calendário: Navegação de Todos os Meses e Anos -->
+        <div class="px-4 sm:px-5 py-3.5 border-b border-cohab-border flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white">
+          
+          <!-- Controles de Mês e Ano -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Botão Mês Anterior -->
+            <button 
+              onclick="changeMonth(-1)" 
+              title="Mês anterior"
+              class="w-9 h-9 rounded-xl bg-cohab-bg hover:bg-cohab-graphite hover:text-white text-cohab-graphite border border-cohab-border flex items-center justify-center transition cursor-pointer"
+            >
+              <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+
+            <!-- Seletor de Todos os Meses do Ano -->
+            <select 
+              id="monthSelect" 
+              onchange="onMonthYearSelectChange()" 
+              aria-label="Selecionar Mês"
+              class="bg-cohab-graphite text-white font-extrabold text-xs sm:text-sm px-3.5 py-2 rounded-xl cursor-pointer focus:outline-none"
+            >
+              <option value="0">Janeiro</option>
+              <option value="1">Fevereiro</option>
+              <option value="2">Março</option>
+              <option value="3">Abril</option>
+              <option value="4">Maio</option>
+              <option value="5">Junho</option>
+              <option value="6">Julho</option>
+              <option value="7">Agosto</option>
+              <option value="8">Setembro</option>
+              <option value="9">Outubro</option>
+              <option value="10" selected>Novembro</option>
+              <option value="11">Dezembro</option>
+            </select>
+
+            <!-- Seletor de Ano (Permite avançar para os próximos anos livremente) -->
+            <div class="flex items-center bg-cohab-bg border border-cohab-border rounded-xl px-1 py-0.5">
+              <button 
+                onclick="changeYear(-1)" 
+                title="Ano anterior"
+                class="w-7 h-7 rounded-lg hover:bg-white text-cohab-graphite flex items-center justify-center transition cursor-pointer"
+              >
+                <i class="fa-solid fa-minus text-[10px]"></i>
+              </button>
+              <select 
+                id="yearSelect" 
+                onchange="onMonthYearSelectChange()" 
+                aria-label="Selecionar Ano"
+                class="bg-transparent text-cohab-graphite font-extrabold text-xs sm:text-sm px-2 py-1 cursor-pointer focus:outline-none"
+              >
+                <!-- Populado dinamicamente via JS (2024 a 2035+) -->
+              </select>
+              <button 
+                onclick="changeYear(1)" 
+                title="Próximo ano"
+                class="w-7 h-7 rounded-lg hover:bg-white text-cohab-graphite flex items-center justify-center transition cursor-pointer"
+              >
+                <i class="fa-solid fa-plus text-[10px]"></i>
+              </button>
+            </div>
+
+            <!-- Botão Próximo Mês -->
+            <button 
+              onclick="changeMonth(1)" 
+              title="Próximo mês"
+              class="w-9 h-9 rounded-xl bg-cohab-bg hover:bg-cohab-graphite hover:text-white text-cohab-graphite border border-cohab-border flex items-center justify-center transition cursor-pointer"
+            >
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+
+            <!-- Atalho para Hoje (Novembro 2026) -->
+            <button 
+              onclick="goToTodayMonth()" 
+              class="text-xs font-bold px-3 py-2 rounded-xl bg-cohab-terracottaLight text-cohab-terracotta hover:bg-cohab-terracotta hover:text-white border border-cohab-terracotta/25 transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <i class="fa-regular fa-calendar-check"></i>
+              <span id="todayLabel">Ir para Hoje</span>
+            </button>
+          </div>
+
+          <!-- Legenda Pauta Quente / Fria -->
+          <div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold">
+            <span class="flex items-center gap-1.5 text-cohab-terracotta bg-cohab-terracottaLight px-2.5 py-1 rounded-lg border border-cohab-terracotta/25">
+              <i class="fa-solid fa-fire"></i> PAUTA QUENTE
+            </span>
+            <span class="flex items-center gap-1.5 text-cohab-graphite bg-cohab-bg px-2.5 py-1 rounded-lg border border-cohab-border">
+              <i class="fa-regular fa-snowflake text-cohab-medium"></i> PAUTA FRIA
+            </span>
+          </div>
+        </div>
+
+        <!-- Barra Rápida com os 12 Meses do Ano Selecionado -->
+        <div id="quickMonthsBar" class="bg-cohab-bg/60 border-b border-cohab-border px-4 py-2 flex items-center gap-1 overflow-x-auto text-[11px] font-bold">
+          <!-- Renderizado via JS -->
+        </div>
+
+        <!-- Dias da Semana (Desktop) -->
+        <div class="hidden md:grid grid-cols-7 bg-cohab-bg border-b border-cohab-border text-center py-2.5 text-xs font-extrabold text-cohab-graphite uppercase tracking-wider">
+          <div class="text-cohab-terracotta">Domingo</div>
+          <div>Segunda</div>
+          <div>Terça</div>
+          <div>Quarta</div>
+          <div>Quinta</div>
+          <div>Sexta</div>
+          <div class="text-cohab-medium">Sábado</div>
+        </div>
+
+        <!-- Grade de Dias do Mês Selecionado -->
+        <div id="calendarGrid" class="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:gap-px bg-cohab-border">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 2: HIERARQUIA & PRIORIDADES -->
+    <div id="view-hierarchy" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-cohab-border">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2">
+              <i class="fa-solid fa-arrow-down-wide-short text-cohab-terracotta"></i>
+              Hierarquia &amp; Ordem de Prioridade das Pautas
+            </h2>
+            <p class="text-xs text-cohab-medium mt-0.5">
+              Use as setas para definir a hierarquia estratégica da equipe, atualize status de produção ou clique em editar para ver detalhes completos.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <label class="flex items-center gap-1.5 text-xs font-semibold text-cohab-graphite bg-cohab-bg px-3 py-2 rounded-xl border border-cohab-border cursor-pointer">
+              <input type="checkbox" id="hierarchyOnlyCurrentMonth" onchange="renderHierarchy()" class="accent-cohab-terracotta rounded cursor-pointer" />
+              <span>Apenas mês selecionado</span>
+            </label>
+            <button onclick="sortByHotAndDate()" class="text-xs font-bold px-3.5 py-2 rounded-xl bg-cohab-bg hover:bg-cohab-border/60 text-cohab-graphite border border-cohab-border transition flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-fire text-cohab-terracotta"></i>
+              Priorizar Quentes + Data
+            </button>
+          </div>
+        </div>
+
+        <div id="hierarchyList" class="mt-4 space-y-3">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 3: LOG DE ATIVIDADES -->
+    <div id="view-logs" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-cohab-border">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-cohab-terracotta"></i>
+              Log de Atividades da Equipe
+            </h2>
+            <p class="text-xs text-cohab-medium mt-0.5">
+              Registro cronológico de criações, edições, mudanças de status, alterações de hierarquia e anotações da equipe.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select id="logFilterAction" onchange="renderLogs()" class="bg-cohab-bg text-cohab-graphite border border-cohab-border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none">
+              <option value="ALL">Todas as ações</option>
+              <option value="CRIAÇÃO">Criações</option>
+              <option value="EDIÇÃO">Edições</option>
+              <option value="STATUS">Mudanças de Status</option>
+              <option value="HIERARQUIA">Hierarquia</option>
+              <option value="NOTA">Notas Manuais</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Campo para Adicionar Nota Manual no Log -->
+        <form onsubmit="addManualLogNote(event)" class="mt-4 bg-cohab-bg p-3 rounded-xl border border-cohab-border flex flex-col sm:flex-row gap-2">
+          <input 
+            type="text" 
+            id="manualLogInput" 
+            placeholder="Registrar observação manual no log (ex: Roteiro de escrituras enviado para aprovação)..." 
+            class="flex-1 bg-white border border-cohab-border rounded-xl px-3.5 py-2 text-xs sm:text-sm text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
+            required
+          />
+          <button type="submit" class="px-4 py-2 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+            <i class="fa-solid fa-pen-clip"></i>
+            Registrar Nota
+          </button>
+        </form>
+
+        <div id="logsContainer" class="mt-4 space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RODAPÉ INSTITUCIONAL + EXPORTAÇÃO & RESTAURAÇÃO -->
+  <footer class="bg-white border-t border-cohab-border mt-8 py-5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cohab-medium">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left">
+        <span class="font-bold text-cohab-graphite">Assessoria de Comunicação Social &bull; Cohab Minas</span>
+        <span class="hidden sm:inline">&bull;</span>
+        <span>Rod. Papa João Paulo II, 4001 - 14º andar (Prédio Gerais), Belo Horizonte - MG</span>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <button onclick="exportToCSV()" class="px-3 py-1.5 rounded-xl bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite font-bold border border-cohab-border transition flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-file-csv text-cohab-terracotta"></i> Exportar CSV
+        </button>
+        <button onclick="exportToJSON()" class="px-3 py-1.5 rounded-xl bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite font-bold border border-cohab-border transition flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-file-code text-cohab-graphite"></i> Exportar JSON
+        </button>
+        <button onclick="resetInitialDataConfirm()" class="px-3 py-1.5 rounded-xl bg-cohab-terracottaLight hover:bg-cohab-terracotta hover:text-white text-cohab-terracotta font-bold border border-cohab-terracotta/25 transition flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-rotate-left"></i> Restaurar Padrão
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE CRIAÇÃO / EDIÇÃO DE PAUTA -->
+  <div id="pautaModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-cohab-border overflow-hidden my-8">
+      <!-- Topo Terracota + Cabeçalho -->
+      <div class="h-1.5 w-full bg-cohab-terracotta"></div>
+      <div class="bg-white border-b border-cohab-border px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <h3 id="modalTitle" class="font-extrabold text-base text-cohab-graphite">Nova Pauta</h3>
+        </div>
+        <button onclick="closePautaModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Formulário -->
+      <form id="pautaForm" onsubmit="savePauta(event)" class="p-6 space-y-4">
+        <input type="hidden" id="pautaId" />
+
+        <!-- Título -->
+        <div>
+          <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Título da Pauta *</label>
+          <input 
+            type="text" 
+            id="pautaTitulo" 
+            required 
+            placeholder="Ex: Audiência pública em Arcos"
+            class="w-full rounded-xl border border-cohab-border px-3.5 py-2.5 text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+          />
+        </div>
+
+        <!-- Linha 2: Data (Qualquer mês/ano) e Classificação (Quente / Fria) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data da Pauta *</label>
+            <input 
+              type="date" 
+              id="pautaData" 
+              required
+              class="w-full rounded-xl border border-cohab-border px-3.5 py-2 text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Classificação da Pauta *</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="pautaTipo" value="QUENTE" class="peer sr-only" checked />
+                <div class="rounded-xl border border-cohab-border peer-checked:border-cohab-terracotta peer-checked:bg-cohab-terracotta peer-checked:text-white text-cohab-graphite p-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-fire"></i> PAUTA QUENTE
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="pautaTipo" value="FRIA" class="peer sr-only" />
+                <div class="rounded-xl border border-cohab-border peer-checked:border-cohab-graphite peer-checked:bg-cohab-graphite peer-checked:text-white text-cohab-graphite p-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5">
+                  <i class="fa-regular fa-snowflake"></i> PAUTA FRIA
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linha 3: Prioridade (Hierarquia) e Status -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Posição na Hierarquia (Prioridade)</label>
+            <input 
+              type="number" 
+              id="pautaPrioridade" 
+              min="1" 
+              max="999" 
+              value="1"
+              required
+              class="w-full rounded-xl border border-cohab-border px-3.5 py-2 text-sm font-bold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Status de Produção</label>
+            <select id="pautaStatus" class="w-full rounded-xl border border-cohab-border px-3.5 py-2 text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta">
+              <option value="A Fazer">⏳ A Fazer</option>
+              <option value="Em Produção">🎬 Em Produção</option>
+              <option value="Aprovado">👍 Aprovado</option>
+              <option value="Publicado">✅ Publicado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Linha 4: Formato e Editoria -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Formato</label>
+            <input 
+              type="text" 
+              id="pautaFormato" 
+              placeholder="Ex: Vídeo / Convite, Story e Reels, Post Estático..."
+              class="w-full rounded-xl border border-cohab-border px-3.5 py-2 text-sm text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Editoria / Núcleo</label>
+            <input 
+              type="text" 
+              id="pautaEditoria" 
+              placeholder="Ex: SERVIÇOS, Institucional, Regularização..."
+              class="w-full rounded-xl border border-cohab-border px-3.5 py-2 text-sm text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+            />
+          </div>
+        </div>
+
+        <!-- Briefing / Descrição -->
+        <div>
+          <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Briefing / Roteiro / Observações</label>
+          <textarea 
+            id="pautaDescricao" 
+            rows="3" 
+            placeholder="Descreva os detalhes da pauta, porta-vozes, roteiro ou orientações..."
+            class="w-full rounded-xl border border-cohab-border px-3.5 py-2 text-sm text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+          ></textarea>
+        </div>
+
+        <!-- Rodapé Ações Modal -->
+        <div class="pt-3 border-t border-cohab-border flex items-center justify-between gap-3">
+          <button type="button" id="deletePautaBtn" onclick="deleteCurrentPauta()" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold text-cohab-terracotta bg-cohab-terracottaLight hover:bg-cohab-terracotta hover:text-white transition items-center gap-1.5 cursor-pointer">
+            <i class="fa-regular fa-trash-can"></i> Excluir Pauta
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closePautaModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-cohab-medium hover:bg-cohab-bg transition cursor-pointer">
+              <i class="fa-solid fa-xmark mr-1"></i>Cancelar
+            </button>
+            <button type="submit" class="px-5 py-2 rounded-xl text-sm font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition cursor-pointer">
+              <i class="fa-solid fa-floppy-disk mr-1"></i>Salvar Pauta
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // CONFIGURAÇÃO E DADOS INICIAIS (ASCOM COHAB MINAS)
+    // =========================================================================
+    const STORAGE_KEY_PAUTAS = 'cohab_minas_ascom_nov2026_pautas_v2';
+    const STORAGE_KEY_LOGS = 'cohab_minas_ascom_nov2026_logs_v2';
+
+    const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const MESES_CURTOS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const DIAS = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    const STATUS_ICON = { 'A Fazer': '⏳', 'Em Produção': '🎬', 'Aprovado': '👍', 'Publicado': '✅' };
+    // Ícones (Font Awesome) por ação / tipo de conteúdo
+    const STATUS_FA = {
+      'A Fazer': 'fa-regular fa-clock text-cohab-medium',
+      'Em Produção': 'fa-solid fa-clapperboard text-cohab-terracotta',
+      'Aprovado': 'fa-solid fa-thumbs-up text-cohab-graphite',
+      'Publicado': 'fa-solid fa-circle-check text-green-600'
+    };
+    const statusIcon = (st) => `<i class="${STATUS_FA[st] || 'fa-regular fa-circle'}"></i>`;
+    function formatIconClass(fmt) {
+      const f = String(fmt || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      if (/live|transmiss|ao vivo/.test(f)) return 'fa-solid fa-tower-broadcast';
+      if (/podcast|audio|spot|radio/.test(f)) return 'fa-solid fa-microphone';
+      if (/video|reels|tv|filmagem|entrevista/.test(f)) return 'fa-solid fa-video';
+      if (/story|stories/.test(f)) return 'fa-solid fa-mobile-screen-button';
+      if (/carrossel|galeria/.test(f)) return 'fa-solid fa-images';
+      if (/foto|fotografia|cobertura/.test(f)) return 'fa-solid fa-camera';
+      if (/convite/.test(f)) return 'fa-regular fa-envelope';
+      if (/post|arte|card|estatic|banner|cartaz|infograf/.test(f)) return 'fa-regular fa-image';
+      if (/materia|noticia|release|texto|nota|artigo|site|blog|newsletter/.test(f)) return 'fa-regular fa-newspaper';
+      return 'fa-solid fa-shapes';
+    }
+
+    // Pautas que já vêm carregadas na primeira abertura / ao "Restaurar Padrão".
+    // Formato: { id, titulo, data: 'AAAA-MM-DD', tipo: 'QUENTE'|'FRIA', prioridade, status, formato, editoria, descricao }
+    const DEFAULT_PAUTAS = [];
+
+    // =========================================================================
+    // ESTADO
+    // =========================================================================
+    const TODAY = new Date();
+    let pautas = [];
+    let logs = [];
+    let viewMonth = TODAY.getMonth();
+    let viewYear = TODAY.getFullYear();
+    let currentTab = 'calendar';
+    let filterType = 'ALL';
+    let confirmCallback = null;
+
+    // =========================================================================
+    // UTILITÁRIOS
+    // =========================================================================
+    const $ = (id) => document.getElementById(id);
+    const pad = (n) => String(n).padStart(2, '0');
+    const toKey = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+    const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+    function parseKey(s) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+      if (!m) return null;
+      const y = +m[1], mo = +m[2] - 1, d = +m[3];
+      const dt = new Date(y, mo, d);
+      if (dt.getFullYear() !== y || dt.getMonth() !== mo || dt.getDate() !== d) return null;
+      return { y, m: mo, d };
+    }
+    function fmtBR(key) {
+      const p = parseKey(key);
+      return p ? `${pad(p.d)}/${pad(p.m + 1)}/${p.y}` : key;
+    }
+    function weekdayOf(key) {
+      const p = parseKey(key);
+      return p ? new Date(p.y, p.m, p.d).getDay() : 0;
+    }
+    const todayKey = () => toKey(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Normalização sem acento, minúscula, mantendo o MESMO comprimento do texto original
+    // (necessário para destacar corretamente os trechos encontrados).
+    function normMap(text) {
+      const src = String(text == null ? '' : text).normalize('NFC');
+      let out = '';
+      for (let i = 0; i < src.length; i++) {
+        const c = src[i];
+        let d = c.normalize('NFD')[0] || c;
+        d = (d.toLowerCase()[0]) || d;
+        out += d;
+      }
+      return out;
+    }
+
+    // =========================================================================
+    // PESQUISA
+    // =========================================================================
+    function getTerms() {
+      const raw = ($('searchInput').value || '').trim();
+      if (!raw) return [];
+      return normMap(raw).split(/\s+/).filter(Boolean);
+    }
+
+    function haystack(p) {
+      const k = parseKey(p.data);
+      const extra = k
+        ? [fmtBR(p.data), p.data, MESES[k.m], MESES_CURTOS[k.m], String(k.y), DIAS[weekdayOf(p.data)], `dia ${k.d}`, `${MESES[k.m]} ${k.y}`]
+        : [];
+      return normMap([
+        p.titulo, p.descricao, p.formato, p.editoria, p.status,
+        p.tipo === 'QUENTE' ? 'pauta quente quente' : 'pauta fria fria',
+        ...extra
+      ].join(' | '));
+    }
+
+    function matchesSearch(p, terms) {
+      if (!terms.length) return true;
+      const h = haystack(p);
+      return terms.every((t) => h.includes(t));
+    }
+
+    function highlight(text, terms) {
+      const raw = String(text == null ? '' : text);
+      if (!terms.length || !raw) return esc(raw);
+      const n = normMap(raw);
+      const ranges = [];
+      terms.forEach((t) => {
+        let i = n.indexOf(t);
+        while (i !== -1) { ranges.push([i, i + t.length]); i = n.indexOf(t, i + t.length); }
+      });
+      if (!ranges.length) return esc(raw);
+      ranges.sort((a, b) => a[0] - b[0]);
+      const merged = [ranges[0].slice()];
+      for (let i = 1; i < ranges.length; i++) {
+        const last = merged[merged.length - 1];
+        if (ranges[i][0] <= last[1]) last[1] = Math.max(last[1], ranges[i][1]);
+        else merged.push(ranges[i].slice());
+      }
+      const src = raw.normalize('NFC');
+      let out = '', pos = 0;
+      merged.forEach(([s, e]) => {
+        out += esc(src.slice(pos, s)) + '<mark class="search-highlight">' + esc(src.slice(s, e)) + '</mark>';
+        pos = e;
+      });
+      return out + esc(src.slice(pos));
+    }
+
+    function snippet(text, terms) {
+      const raw = String(text || '');
+      if (!terms.length || !raw) return '';
+      const n = normMap(raw);
+      let idx = -1;
+      terms.forEach((t) => { const i = n.indexOf(t); if (i !== -1 && (idx === -1 || i < idx)) idx = i; });
+      if (idx === -1) return '';
+      const s = Math.max(0, idx - 30), e = Math.min(raw.length, idx + 70);
+      return (s > 0 ? '…' : '') + highlight(raw.slice(s, e), terms) + (e < raw.length ? '…' : '');
+    }
+
+    function passesFilters(p, terms) {
+      const st = $('filterStatus').value;
+      if (filterType !== 'ALL' && p.tipo !== filterType) return false;
+      if (st !== 'ALL' && p.status !== st) return false;
+      return matchesSearch(p, terms);
+    }
+
+    // =========================================================================
+    // PERSISTÊNCIA
+    // =========================================================================
+    function normalizePauta(o, idx) {
+      if (!o || typeof o !== 'object') return null;
+      const data = o.data || o.date;
+      if (!parseKey(data)) return null;
+      const tipo = String(o.tipo || o.type || 'QUENTE').toUpperCase() === 'FRIA' ? 'FRIA' : 'QUENTE';
+      return {
+        id: String(o.id || uid()).replace(/[^\w-]/g, '_'),
+        titulo: String(o.titulo || o.title || o.name || 'Sem título'),
+        data,
+        tipo,
+        prioridade: Number(o.prioridade ?? o.priority) || idx + 1,
+        status: STATUS_ICON[o.status] ? o.status : 'A Fazer',
+        formato: String(o.formato || o.format || ''),
+        editoria: String(o.editoria || o.category || ''),
+        descricao: String(o.descricao || o.briefing || o.description || '')
+      };
+    }
+
+    function loadData() {
+      let rawP = null, rawL = null;
+      try { rawP = JSON.parse(localStorage.getItem(STORAGE_KEY_PAUTAS)); } catch (e) {}
+      try { rawL = JSON.parse(localStorage.getItem(STORAGE_KEY_LOGS)); } catch (e) {}
+      const base = Array.isArray(rawP) ? rawP : DEFAULT_PAUTAS;
+      pautas = base.map(normalizePauta).filter(Boolean);
+      logs = Array.isArray(rawL) ? rawL.filter((l) => l && l.texto) : [];
+      if (!logs.length) {
+        logs = [{ id: uid(), ts: new Date().toISOString(), autor: 'Sistema', acao: 'CRIAÇÃO', texto: 'Planejamento editorial iniciado.' }];
+      }
+    }
+    function saveData() {
+      try { localStorage.setItem(STORAGE_KEY_PAUTAS, JSON.stringify(pautas)); } catch (e) {}
+      try { localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs)); } catch (e) {}
+    }
+
+    // =========================================================================
+    // LOG / RESPONSÁVEL / TOAST / CONFIRMAÇÃO
+    // =========================================================================
+    function getAuthor() {
+      const sel = $('teamMemberSelect').value;
+      if (sel === 'CUSTOM') return ($('customMemberInput').value || '').trim() || 'Membro não identificado';
+      return sel;
+    }
+    function handleTeamMemberChange() {
+      const custom = $('teamMemberSelect').value === 'CUSTOM';
+      $('customMemberInput').classList.toggle('hidden', !custom);
+      if (custom) $('customMemberInput').focus();
+    }
+    function addLog(acao, texto) {
+      logs.unshift({ id: uid(), ts: new Date().toISOString(), autor: getAuthor(), acao, texto });
+      if (logs.length > 500) logs.length = 500;
+    }
+    function toast(msg, type) {
+      const el = document.createElement('div');
+      const color = type === 'error' ? 'bg-cohab-terracotta' : 'bg-cohab-graphite';
+      el.className = `${color} text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg transition-opacity duration-300`;
+      el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-check'} mr-2"></i>` + esc(msg);
+      $('toastContainer').appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 2800);
+    }
+    function showConfirm(title, message, onAccept, label) {
+      $('confirmTitle').textContent = title;
+      $('confirmMessage').textContent = message;
+      const ic = /Exclu/.test(label || '') ? 'fa-trash-can' : (/Restaur/.test(label || '') ? 'fa-rotate-left' : 'fa-check');
+      $('confirmAcceptBtn').innerHTML = `<i class="fa-solid ${ic} mr-1.5"></i>${esc(label || 'Confirmar')}`;
+      confirmCallback = onAccept;
+      $('confirmModal').classList.remove('hidden');
+      $('confirmModal').classList.add('flex');
+    }
+    function hideConfirm() {
+      $('confirmModal').classList.add('hidden');
+      $('confirmModal').classList.remove('flex');
+      confirmCallback = null;
+    }
+
+    // =========================================================================
+    // NAVEGAÇÃO: ABAS, MESES E ANOS (QUALQUER MÊS, QUALQUER ANO)
+    // =========================================================================
+    function switchTab(tab) {
+      currentTab = tab;
+      ['calendar', 'hierarchy', 'logs'].forEach((t) => {
+        $('view-' + t).classList.toggle('hidden', t !== tab);
+        const b = $('tab-' + t);
+        const a = t === tab;
+        b.classList.toggle('bg-cohab-graphite', a);
+        b.classList.toggle('text-white', a);
+        b.classList.toggle('shadow-2xs', a);
+        b.classList.toggle('text-cohab-graphite', !a);
+        b.classList.toggle('hover:bg-cohab-bg', !a);
+      });
+      renderAll();
+    }
+
+    function ensureYearOption(y) {
+      const sel = $('yearSelect');
+      if ([...sel.options].some((o) => +o.value === y)) return;
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      const next = [...sel.options].find((o) => +o.value > y);
+      sel.insertBefore(opt, next || null);
+    }
+    function initYearSelect() {
+      const sel = $('yearSelect');
+      sel.innerHTML = '';
+      const base = TODAY.getFullYear();
+      for (let y = base - 3; y <= base + 12; y++) {
+        const o = document.createElement('option');
+        o.value = y; o.textContent = y;
+        sel.appendChild(o);
+      }
+    }
+    function syncSelectors() {
+      ensureYearOption(viewYear);
+      $('monthSelect').value = String(viewMonth);
+      $('yearSelect').value = String(viewYear);
+      $('headerPeriodBadge').textContent = `${MESES[viewMonth]} ${viewYear}`;
+    }
+    function goTo(y, m) {
+      viewYear = y; viewMonth = m;
+      syncSelectors();
+      renderAll();
+    }
+    function changeMonth(delta) {
+      let m = viewMonth + delta, y = viewYear;
+      while (m < 0) { m += 12; y--; }
+      while (m > 11) { m -= 12; y++; }
+      goTo(y, m);
+    }
+    function changeYear(delta) { goTo(viewYear + delta, viewMonth); }
+    function onMonthYearSelectChange() { goTo(+$('yearSelect').value, +$('monthSelect').value); }
+    function goToTodayMonth() { goTo(TODAY.getFullYear(), TODAY.getMonth()); }
+
+    // =========================================================================
+    // FILTROS E PESQUISA (AÇÕES DA INTERFACE)
+    // =========================================================================
+    function setFilterType(type) {
+      filterType = type;
+      document.querySelectorAll('.filter-type-btn').forEach((b) => {
+        const t = b.dataset.filterType;
+        const a = t === type;
+        b.classList.toggle('bg-cohab-graphite', a);
+        b.classList.toggle('text-white', a);
+        b.classList.toggle('text-cohab-terracotta', !a && t === 'QUENTE');
+        b.classList.toggle('text-cohab-graphite', !a && t !== 'QUENTE');
+      });
+      renderAll();
+    }
+    function applyFilters() { renderAll(); }
+    function clearSearch() {
+      $('searchInput').value = '';
+      $('searchInput').focus();
+      renderAll();
+    }
+
+    // =========================================================================
+    // RENDER: CALENDÁRIO
+    // =========================================================================
+    function pautaCardClasses(p) {
+      return p.tipo === 'QUENTE'
+        ? 'bg-cohab-terracottaLight border-cohab-terracotta/30 text-cohab-terracottaDark'
+        : 'bg-cohab-bg border-cohab-border text-cohab-graphite';
+    }
+
+    function renderCalendar(terms) {
+      const grid = $('calendarGrid');
+      const first = new Date(viewYear, viewMonth, 1).getDay();
+      const total = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const tKey = todayKey();
+      const byDay = {};
+      pautas.filter((p) => passesFilters(p, terms)).forEach((p) => {
+        (byDay[p.data] = byDay[p.data] || []).push(p);
+      });
+
+      let html = '';
+      for (let i = 0; i < first; i++) html += '<div class="hidden md:block bg-cohab-bg/60"></div>';
+
+      for (let d = 1; d <= total; d++) {
+        const key = toKey(viewYear, viewMonth, d);
+        const wd = new Date(viewYear, viewMonth, d).getDay();
+        const isToday = key === tKey;
+        const list = (byDay[key] || []).sort((a, b) => a.prioridade - b.prioridade);
+        const numCls = isToday
+          ? 'bg-cohab-terracotta text-white w-6 h-6 rounded-full flex items-center justify-center'
+          : (wd === 0 ? 'text-cohab-terracotta' : (wd === 6 ? 'text-cohab-medium' : 'text-cohab-graphite'));
+
+        const cards = list.map((p) => {
+          const desc = terms.length ? snippet(p.descricao, terms) : '';
+          return `
+            <button type="button" onclick="openPautaModal('${p.id}')" title="${esc(p.titulo)}"
+              class="text-left w-full rounded-lg border px-2 py-1.5 text-[11px] leading-snug transition hover:shadow-xs cursor-pointer ${pautaCardClasses(p)}">
+              <div class="flex items-start gap-1">
+                <i class="${p.tipo === 'QUENTE' ? 'fa-solid fa-fire' : 'fa-regular fa-snowflake'} mt-0.5 shrink-0"></i>
+                <span class="font-bold">${highlight(p.titulo, terms)}</span>
+              </div>
+              ${p.formato ? `<div class="text-[10px] opacity-80 mt-0.5 flex items-center gap-1"><i class="${formatIconClass(p.formato)} w-3 text-center"></i>${highlight(p.formato, terms)}</div>` : ''}
+              ${p.editoria ? `<div class="text-[10px] opacity-80 flex items-center gap-1"><i class="fa-solid fa-tag w-3 text-center"></i>${highlight(p.editoria, terms)}</div>` : ''}
+              ${desc ? `<div class="text-[10px] mt-1 italic opacity-90 flex items-start gap-1"><i class="fa-regular fa-file-lines w-3 text-center mt-0.5"></i><span>${desc}</span></div>` : ''}
+              <div class="text-[10px] mt-0.5 font-semibold flex items-center gap-1">${statusIcon(p.status)} ${highlight(p.status, terms)}</div>
+            </button>`;
+        }).join('');
+
+        html += `
+          <div class="calendar-cell bg-white p-2 group flex flex-col gap-1 ${isToday ? 'ring-2 ring-inset ring-cohab-terracotta/60' : ''}">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold ${numCls}">${d}</span>
+              <span class="md:hidden text-[10px] font-semibold text-cohab-medium uppercase">${DIAS[wd]}</span>
+              <button type="button" onclick="openPautaModal(null,'${key}')" title="Nova pauta neste dia"
+                class="md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 w-5 h-5 rounded-md text-cohab-medium hover:text-cohab-terracotta hover:bg-cohab-terracottaLight flex items-center justify-center transition cursor-pointer">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+              </button>
+            </div>
+            ${cards}
+          </div>`;
+      }
+
+      const trailing = (7 - ((first + total) % 7)) % 7;
+      for (let i = 0; i < trailing; i++) html += '<div class="hidden md:block bg-cohab-bg/60"></div>';
+      grid.innerHTML = html;
+    }
+
+    function renderQuickMonths(terms) {
+      const counts = Array(12).fill(0);
+      pautas.forEach((p) => {
+        const k = parseKey(p.data);
+        if (k && k.y === viewYear && passesFilters(p, terms)) counts[k.m]++;
+      });
+      $('quickMonthsBar').innerHTML = MESES_CURTOS.map((nm, i) => {
+        const a = i === viewMonth;
+        const cls = a
+          ? 'bg-cohab-terracotta text-white'
+          : 'bg-white text-cohab-graphite border border-cohab-border hover:bg-cohab-terracottaLight';
+        const badge = counts[i]
+          ? `<span class="ml-1 ${a ? 'bg-white/25' : 'bg-cohab-terracottaLight text-cohab-terracotta'} px-1.5 rounded-full">${counts[i]}</span>`
+          : '';
+        return `<button type="button" onclick="goTo(${viewYear},${i})" title="${MESES[i]} ${viewYear}"
+          class="shrink-0 px-2.5 py-1 rounded-lg transition cursor-pointer ${cls}">${nm}${badge}</button>`;
+      }).join('');
+    }
+
+    function renderSearchFeedback(terms) {
+      const fb = $('searchFeedback'), alert = $('otherMonthsSearchAlert');
+      $('clearSearchBtn').classList.toggle('hidden', !($('searchInput').value));
+      if (!terms.length) {
+        fb.classList.add('hidden'); fb.classList.remove('flex');
+        alert.classList.add('hidden');
+        return;
+      }
+      const hits = pautas.filter((p) => passesFilters(p, terms));
+      const inView = hits.filter((p) => { const k = parseKey(p.data); return k && k.y === viewYear && k.m === viewMonth; });
+      const others = {};
+      hits.forEach((p) => {
+        const k = parseKey(p.data);
+        if (!k || (k.y === viewYear && k.m === viewMonth)) return;
+        const key = `${k.y}-${k.m}`;
+        (others[key] = others[key] || { y: k.y, m: k.m, n: 0 }).n++;
+      });
+
+      fb.classList.remove('hidden'); fb.classList.add('flex');
+      $('searchCountText').textContent =
+        `${hits.length} ${hits.length === 1 ? 'resultado' : 'resultados'} no total · ${inView.length} em ${MESES[viewMonth]} ${viewYear}`;
+
+      const list = Object.values(others).sort((a, b) => (a.y - b.y) || (a.m - b.m));
+      if (!list.length) { alert.classList.add('hidden'); return; }
+      $('otherMonthsSearchText').textContent = inView.length
+        ? 'Também há pautas com este termo em outros meses:'
+        : 'Nada neste mês. Encontramos pautas com este termo em:';
+      $('otherMonthsButtons').innerHTML = list.map((o) =>
+        `<button type="button" onclick="goTo(${o.y},${o.m})"
+          class="px-2.5 py-1 rounded-lg bg-white border border-cohab-terracotta/30 text-cohab-terracotta font-bold hover:bg-cohab-terracotta hover:text-white transition cursor-pointer">
+          ${MESES_CURTOS[o.m]}/${o.y} (${o.n})</button>`).join('');
+      alert.classList.remove('hidden');
+    }
+
+    // =========================================================================
+    // RENDER: HIERARQUIA
+    // =========================================================================
+    function sortedPautas() {
+      return [...pautas].sort((a, b) => (a.prioridade - b.prioridade) || a.data.localeCompare(b.data));
+    }
+    function renumberPriorities() {
+      sortedPautas().forEach((p, i) => { p.prioridade = i + 1; });
+    }
+
+    function renderHierarchy(terms) {
+      terms = terms || getTerms();
+      const onlyMonth = $('hierarchyOnlyCurrentMonth').checked;
+      const list = sortedPautas().filter((p) => {
+        if (onlyMonth) { const k = parseKey(p.data); if (!k || k.y !== viewYear || k.m !== viewMonth) return false; }
+        return passesFilters(p, terms);
+      });
+      const box = $('hierarchyList');
+      if (!list.length) {
+        box.innerHTML = `<div class="text-center text-sm text-cohab-medium py-10">
+          <i class="fa-regular fa-folder-open text-2xl mb-2 block"></i>Nenhuma pauta encontrada.</div>`;
+        return;
+      }
+      box.innerHTML = list.map((p, i) => {
+        const desc = terms.length ? snippet(p.descricao, terms) : '';
+        const opts = Object.keys(STATUS_ICON).map((s) =>
+          `<option value="${s}" ${s === p.status ? 'selected' : ''}>${STATUS_ICON[s]} ${s}</option>`).join('');
+        return `
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl border ${p.tipo === 'QUENTE' ? 'border-cohab-terracotta/30 bg-cohab-terracottaLight/50' : 'border-cohab-border bg-white'}">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-9 h-9 rounded-xl bg-cohab-graphite text-white font-extrabold text-sm flex items-center justify-center shrink-0">${p.prioridade}</div>
+              <div class="min-w-0">
+                <div class="font-bold text-sm text-cohab-graphite flex items-center gap-1.5">
+                  <i class="${p.tipo === 'QUENTE' ? 'fa-solid fa-fire text-cohab-terracotta' : 'fa-regular fa-snowflake text-cohab-medium'}"></i>
+                  <span>${highlight(p.titulo, terms)}</span>
+                </div>
+                <div class="text-[11px] text-cohab-medium flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                  <span><i class="fa-regular fa-calendar mr-1"></i>${fmtBR(p.data)} · ${DIAS[weekdayOf(p.data)]}</span>
+                  ${p.formato ? `<span><i class="${formatIconClass(p.formato)} mr-1"></i>${highlight(p.formato, terms)}</span>` : ''}
+                  ${p.editoria ? `<span><i class="fa-solid fa-tag mr-1"></i>${highlight(p.editoria, terms)}</span>` : ''}
+                  <span>${statusIcon(p.status)} ${esc(p.status)}</span>
+                </div>
+                ${desc ? `<div class="text-[11px] italic text-cohab-graphite mt-0.5"><i class="fa-regular fa-file-lines mr-1"></i>${desc}</div>` : ''}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <select onchange="changeStatus('${p.id}', this.value)" class="bg-white border border-cohab-border rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none">${opts}</select>
+              <button type="button" onclick="movePriority('${p.id}', -1)" ${i === 0 ? 'disabled' : ''} title="Subir" class="w-8 h-8 rounded-lg bg-white border border-cohab-border hover:bg-cohab-bg disabled:opacity-30 cursor-pointer"><i class="fa-solid fa-arrow-up text-xs"></i></button>
+              <button type="button" onclick="movePriority('${p.id}', 1)" ${i === list.length - 1 ? 'disabled' : ''} title="Descer" class="w-8 h-8 rounded-lg bg-white border border-cohab-border hover:bg-cohab-bg disabled:opacity-30 cursor-pointer"><i class="fa-solid fa-arrow-down text-xs"></i></button>
+              <button type="button" onclick="openPautaModal('${p.id}')" title="Editar" class="w-8 h-8 rounded-lg bg-white border border-cohab-border hover:bg-cohab-terracottaLight text-cohab-terracotta cursor-pointer"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
+              <button type="button" onclick="deletePautaById('${p.id}')" title="Excluir" class="w-8 h-8 rounded-lg bg-white border border-cohab-border hover:bg-cohab-terracotta hover:text-white text-cohab-terracotta cursor-pointer"><i class="fa-regular fa-trash-can text-xs"></i></button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function changeStatus(id, status) {
+      const p = pautas.find((x) => x.id === id);
+      if (!p || p.status === status) return;
+      const old = p.status;
+      p.status = status;
+      addLog('STATUS', `"${p.titulo}": ${old} → ${status}`);
+      saveData(); renderAll();
+      toast('Status atualizado');
+    }
+
+    function movePriority(id, dir) {
+      const terms = getTerms();
+      const onlyMonth = $('hierarchyOnlyCurrentMonth').checked;
+      renumberPriorities();
+      const list = sortedPautas().filter((p) => {
+        if (onlyMonth) { const k = parseKey(p.data); if (!k || k.y !== viewYear || k.m !== viewMonth) return false; }
+        return passesFilters(p, terms);
+      });
+      const i = list.findIndex((p) => p.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= list.length) return;
+      const a = list[i], b = list[j];
+      [a.prioridade, b.prioridade] = [b.prioridade, a.prioridade];
+      addLog('HIERARQUIA', `"${a.titulo}" movida para a posição ${a.prioridade} (trocou com "${b.titulo}")`);
+      saveData(); renderAll();
+    }
+
+    function sortByHotAndDate() {
+      const sorted = [...pautas].sort((a, b) =>
+        (a.tipo === b.tipo ? 0 : (a.tipo === 'QUENTE' ? -1 : 1)) || a.data.localeCompare(b.data));
+      sorted.forEach((p, i) => { p.prioridade = i + 1; });
+      addLog('HIERARQUIA', 'Hierarquia reorganizada: pautas quentes primeiro, depois por data.');
+      saveData(); renderAll();
+      toast('Hierarquia reorganizada');
+    }
+
+    // =========================================================================
+    // RENDER: LOGS
+    // =========================================================================
+    const LOG_ICON = {
+      'CRIAÇÃO': 'fa-solid fa-circle-plus text-cohab-terracotta',
+      'EDIÇÃO': 'fa-solid fa-pen text-cohab-graphite',
+      'STATUS': 'fa-solid fa-arrows-rotate text-cohab-terracotta',
+      'HIERARQUIA': 'fa-solid fa-layer-group text-cohab-graphite',
+      'NOTA': 'fa-solid fa-pen-clip text-cohab-medium'
+    };
+
+    function renderLogs(terms) {
+      terms = terms || getTerms();
+      const f = $('logFilterAction').value;
+      const list = logs.filter((l) => {
+        if (f !== 'ALL' && l.acao !== f) return false;
+        if (!terms.length) return true;
+        const h = normMap(`${l.texto} ${l.autor} ${l.acao}`);
+        return terms.every((t) => h.includes(t));
+      });
+      $('logsContainer').innerHTML = list.length ? list.map((l) => `
+        <div class="flex gap-3 p-3 rounded-xl border border-cohab-border bg-white">
+          <div class="w-8 h-8 rounded-lg bg-cohab-bg flex items-center justify-center shrink-0"><i class="${LOG_ICON[l.acao] || LOG_ICON['NOTA']} text-sm"></i></div>
+          <div class="min-w-0">
+            <div class="text-sm text-cohab-graphite">${highlight(l.texto, terms)}</div>
+            <div class="text-[11px] text-cohab-medium mt-0.5">
+              <span class="font-bold">${esc(l.acao)}</span> · ${highlight(l.autor, terms)} · ${new Date(l.ts).toLocaleString('pt-BR')}
+            </div>
+          </div>
+        </div>`).join('')
+        : '<div class="text-center text-sm text-cohab-medium py-10"><i class="fa-solid fa-clock-rotate-left text-2xl mb-2 block"></i>Nenhum registro encontrado.</div>';
+    }
+
+    function addManualLogNote(e) {
+      e.preventDefault();
+      const input = $('manualLogInput');
+      const txt = input.value.trim();
+      if (!txt) return;
+      addLog('NOTA', txt);
+      input.value = '';
+      saveData(); renderAll();
+      toast('Nota registrada');
+    }
+
+    // =========================================================================
+    // RENDER GERAL
+    // =========================================================================
+    function renderAll() {
+      const terms = getTerms();
+      $('badgeCountPautas').textContent = pautas.length;
+      $('badgeCountLogs').textContent = logs.length;
+      renderSearchFeedback(terms);
+      if (currentTab === 'calendar') { renderQuickMonths(terms); renderCalendar(terms); }
+      if (currentTab === 'hierarchy') renderHierarchy(terms);
+      if (currentTab === 'logs') renderLogs(terms);
+    }
+
+    // =========================================================================
+    // MODAL DE PAUTA (CRIAR / EDITAR / EXCLUIR)
+    // =========================================================================
+    function openPautaModal(id, dateKey) {
+      const p = id ? pautas.find((x) => x.id === id) : null;
+      $('modalTitle').textContent = p ? 'Editar Pauta' : 'Nova Pauta';
+      const mi = $('modalTitle').parentElement.querySelector('i');
+      if (mi) mi.className = p ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-circle-plus';
+      $('pautaId').value = p ? p.id : '';
+      $('pautaTitulo').value = p ? p.titulo : '';
+      let defDate = dateKey;
+      if (!defDate) {
+        defDate = (viewYear === TODAY.getFullYear() && viewMonth === TODAY.getMonth())
+          ? todayKey() : toKey(viewYear, viewMonth, 1);
+      }
+      $('pautaData').value = p ? p.data : defDate;
+      const tipo = p ? p.tipo : 'QUENTE';
+      document.querySelector(`input[name="pautaTipo"][value="${tipo}"]`).checked = true;
+      $('pautaPrioridade').value = p ? p.prioridade : (pautas.reduce((m, x) => Math.max(m, x.prioridade), 0) + 1);
+      $('pautaStatus').value = p ? p.status : 'A Fazer';
+      $('pautaFormato').value = p ? p.formato : '';
+      $('pautaEditoria').value = p ? p.editoria : '';
+      $('pautaDescricao').value = p ? p.descricao : '';
+      $('deletePautaBtn').classList.toggle('hidden', !p);
+      $('deletePautaBtn').classList.toggle('flex', !!p);
+      $('pautaModal').classList.remove('hidden');
+      $('pautaModal').classList.add('flex');
+      setTimeout(() => $('pautaTitulo').focus(), 30);
+    }
+    function closePautaModal() {
+      $('pautaModal').classList.add('hidden');
+      $('pautaModal').classList.remove('flex');
+    }
+
+    function savePauta(e) {
+      e.preventDefault();
+      const id = $('pautaId').value;
+      const data = $('pautaData').value;
+      if (!parseKey(data)) { toast('Informe uma data válida.', 'error'); return; }
+      const novo = {
+        titulo: $('pautaTitulo').value.trim(),
+        data,
+        tipo: document.querySelector('input[name="pautaTipo"]:checked').value,
+        prioridade: Math.max(1, parseInt($('pautaPrioridade').value, 10) || 1),
+        status: $('pautaStatus').value,
+        formato: $('pautaFormato').value.trim(),
+        editoria: $('pautaEditoria').value.trim(),
+        descricao: $('pautaDescricao').value.trim()
+      };
+      if (!novo.titulo) { toast('Informe o título da pauta.', 'error'); return; }
+
+      if (id) {
+        const p = pautas.find((x) => x.id === id);
+        if (!p) return;
+        const oldStatus = p.status;
+        const changed = ['titulo', 'data', 'tipo', 'prioridade', 'formato', 'editoria', 'descricao'].filter((k) => p[k] !== novo[k]);
+        Object.assign(p, novo);
+        if (changed.length) addLog('EDIÇÃO', `"${p.titulo}" editada (${changed.join(', ')})`);
+        if (oldStatus !== novo.status) addLog('STATUS', `"${p.titulo}": ${oldStatus} → ${novo.status}`);
+        toast('Pauta atualizada');
+      } else {
+        const p = { id: uid(), ...novo };
+        pautas.push(p);
+        addLog('CRIAÇÃO', `Nova pauta "${p.titulo}" para ${fmtBR(p.data)}`);
+        toast('Pauta criada');
+      }
+      saveData();
+      closePautaModal();
+      const k = parseKey(data);
+      if (currentTab === 'calendar' && (k.y !== viewYear || k.m !== viewMonth)) goTo(k.y, k.m);
+      else renderAll();
+    }
+
+    function deleteCurrentPauta() { deletePautaById($('pautaId').value); }
+    function deletePautaById(id) {
+      const p = pautas.find((x) => x.id === id);
+      if (!p) return;
+      showConfirm('Excluir pauta', `Tem certeza que deseja excluir "${p.titulo}"? Esta ação não pode ser desfeita.`, () => {
+        pautas = pautas.filter((x) => x.id !== id);
+        addLog('EDIÇÃO', `Pauta "${p.titulo}" excluída`);
+        saveData(); closePautaModal(); renderAll();
+        toast('Pauta excluída');
+      }, 'Excluir');
+    }
+
+    // =========================================================================
+    // EXPORTAÇÃO E RESTAURAÇÃO
+    // =========================================================================
+    function download(name, content, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+    }
+    function exportToCSV() {
+      const head = ['Data', 'Título', 'Classificação', 'Prioridade', 'Status', 'Formato', 'Editoria', 'Briefing'];
+      const q = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+      const rows = sortedPautas().map((p) =>
+        [fmtBR(p.data), p.titulo, p.tipo, p.prioridade, p.status, p.formato, p.editoria, p.descricao].map(q).join(';'));
+      download('planejamento_editorial_cohab_minas.csv', '\uFEFF' + [head.map(q).join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8');
+      toast('CSV exportado');
+    }
+    function exportToJSON() {
+      download('planejamento_editorial_cohab_minas.json', JSON.stringify({ pautas, logs }, null, 2), 'application/json');
+      toast('JSON exportado');
+    }
+    function resetInitialDataConfirm() {
+      showConfirm('Restaurar padrão', 'Todas as pautas e registros atuais serão substituídos pelos dados iniciais. Deseja continuar?', () => {
+        pautas = DEFAULT_PAUTAS.map(normalizePauta).filter(Boolean);
+        logs = [];
+        addLog('CRIAÇÃO', 'Dados restaurados para o padrão.');
+        saveData(); goToTodayMonth();
+        toast('Dados restaurados');
+      }, 'Restaurar');
+    }
+
+    // =========================================================================
+    // INICIALIZAÇÃO
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      initYearSelect();
+      $('todayLabel').textContent = `Ir para Hoje (${pad(TODAY.getDate())}/${pad(TODAY.getMonth() + 1)}/${TODAY.getFullYear()})`;
+      $('confirmCancelBtn').addEventListener('click', hideConfirm);
+      $('confirmAcceptBtn').addEventListener('click', () => { const cb = confirmCallback; hideConfirm(); if (cb) cb(); });
+      $('confirmModal').addEventListener('click', (ev) => { if (ev.target === $('confirmModal')) hideConfirm(); });
+      $('pautaModal').addEventListener('click', (ev) => { if (ev.target === $('pautaModal')) closePautaModal(); });
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') { hideConfirm(); closePautaModal(); }
+      });
+      syncSelectors();
+      renderAll();
+    });
+  </script>
+</body>
+</html>
