@@ -267,23 +267,41 @@
         <!-- Controles do Calendário: Mês, Ano e Filtro Unificado -->
         <div class="px-4 sm:px-5 py-3.5 border-b border-cohab-border flex flex-wrap items-center justify-between gap-2.5 bg-white">
           <div class="flex items-center gap-2">
-            <!-- Seletor de Mês -->
-            <div class="relative">
-              <select id="monthSelect" onchange="handleMonthYearChange()" class="appearance-none bg-cohab-bg hover:bg-cohab-border/50 text-cohab-graphite border border-cohab-border rounded-xl pl-3 pr-7 py-2 text-xs font-bold focus:outline-none focus:border-cohab-terracotta cursor-pointer transition">
-                <option value="0">Janeiro</option>
-                <option value="1">Fevereiro</option>
-                <option value="2">Março</option>
-                <option value="3">Abril</option>
-                <option value="4">Maio</option>
-                <option value="5">Junho</option>
-                <option value="6">Julho</option>
-                <option value="7">Agosto</option>
-                <option value="8">Setembro</option>
-                <option value="9">Outubro</option>
-                <option value="10" selected>Novembro</option>
-                <option value="11">Dezembro</option>
-              </select>
-              <i class="fa-solid fa-chevron-down text-[10px] text-cohab-medium pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
+            <!-- Seletor de Mês com setas de navegação (< e >) -->
+            <div class="inline-flex items-center bg-cohab-bg border border-cohab-border rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onclick="stepMonth(-1)"
+                title="Mês anterior"
+                class="px-2.5 py-2 text-cohab-graphite hover:bg-cohab-border/50 transition cursor-pointer flex items-center justify-center"
+              >
+                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+              </button>
+              <div class="relative border-x border-cohab-border">
+                <select id="monthSelect" onchange="handleMonthYearChange()" class="appearance-none bg-transparent hover:bg-cohab-border/50 text-cohab-graphite pl-3 pr-7 py-2 text-xs font-bold focus:outline-none cursor-pointer transition">
+                  <option value="0">Janeiro</option>
+                  <option value="1">Fevereiro</option>
+                  <option value="2">Março</option>
+                  <option value="3">Abril</option>
+                  <option value="4">Maio</option>
+                  <option value="5">Junho</option>
+                  <option value="6">Julho</option>
+                  <option value="7">Agosto</option>
+                  <option value="8">Setembro</option>
+                  <option value="9">Outubro</option>
+                  <option value="10" selected>Novembro</option>
+                  <option value="11">Dezembro</option>
+                </select>
+                <i class="fa-solid fa-chevron-down text-[10px] text-cohab-medium pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
+              </div>
+              <button
+                type="button"
+                onclick="stepMonth(1)"
+                title="Próximo mês"
+                class="px-2.5 py-2 text-cohab-graphite hover:bg-cohab-border/50 transition cursor-pointer flex items-center justify-center"
+              >
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </button>
             </div>
 
             <!-- Seletor de Ano -->
@@ -568,58 +586,70 @@
         <button type="button" onclick="openPngExportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white font-bold transition flex items-center gap-1.5 cursor-pointer">
           <i class="fa-regular fa-image"></i> Exportar PNG
         </button>
+        <button type="button" onclick="openReportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-chart-pie"></i> Gerar Relatório
+        </button>
       </div>
     </div>
   </footer>
 
-  <!-- MODAL DE EXPORTAÇÃO PNG POR INTERVALO DE DATAS -->
-  <div id="pngExportModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-cohab-border overflow-hidden">
-      <div class="h-1.5 w-full bg-cohab-terracotta"></div>
-      <div class="px-6 py-4 border-b border-cohab-border flex items-center justify-between">
+  <!-- MODAL DE GERAÇÃO DE RELATÓRIO EDITORIAL -->
+  <div id="reportModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full border border-cohab-border overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <div class="h-1.5 w-full bg-cohab-terracotta shrink-0"></div>
+      <div class="px-5 py-3.5 border-b border-cohab-border flex items-center justify-between shrink-0 bg-white">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center">
-            <i class="fa-regular fa-image"></i>
+            <i class="fa-solid fa-chart-pie"></i>
           </div>
-          <h3 class="font-extrabold text-base text-cohab-graphite">Exportar Imagem PNG</h3>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base text-cohab-graphite">Relatório Analítico Editorial</h3>
+            <p class="text-[11px] text-cohab-medium">Assessoria de Comunicação Social &bull; Cohab Minas</p>
+          </div>
         </div>
-        <button type="button" onclick="closePngExportModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
+        <button type="button" onclick="closeReportModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <form onsubmit="generateCalendarPNG(event)" class="p-6 space-y-4">
-        <p class="text-xs text-cohab-medium leading-relaxed">
-          Selecione o período exato que deseja capturar do calendário para gerar a imagem em alta resolução.
-        </p>
-
-        <div class="flex flex-wrap gap-2">
-          <button type="button" onclick="setPngPreset('MONTH')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite border border-cohab-border transition cursor-pointer">
-            Mês Selecionado Inteiro
-          </button>
-          <button type="button" id="pngWeekPresetBtn" onclick="setPngPreset('WEEK')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite border border-cohab-border transition cursor-pointer">
-            Semana das Pautas
-          </button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Inicial *</label>
-            <input type="date" id="pngStartDate" required class="w-full rounded-xl border border-cohab-border px-3 py-2 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
+      <!-- Filtro de Período do Relatório -->
+      <div class="px-5 py-3 bg-cohab-bg border-b border-cohab-border shrink-0">
+        <form onsubmit="generateEditorialReport(event)" class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="setReportPreset('MONTH')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar text-cohab-terracotta"></i>
+              <span>Mês Inteiro</span>
+            </button>
+            <button type="button" onclick="setReportPreset('WEEK')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-week text-cohab-terracotta"></i>
+              <span>Semana Atual</span>
+            </button>
           </div>
-          <div>
-            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Final *</label>
-            <input type="date" id="pngEndDate" required class="w-full rounded-xl border border-cohab-border px-3 py-2 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
-          </div>
-        </div>
 
-        <div class="pt-3 border-t border-cohab-border flex justify-end gap-2">
-          <button type="button" onclick="closePngExportModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-cohab-medium hover:bg-cohab-bg transition cursor-pointer">Cancelar</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-download"></i> Baixar PNG
-          </button>
-        </div>
-      </form>
+          <div class="flex flex-wrap items-end gap-2">
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Inicial</label>
+              <input type="date" id="reportStartDate" required class="rounded-xl border border-cohab-border bg-white px-2.5 py-1.5 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Final</label>
+              <input type="date" id="reportEndDate" required class="rounded-xl border border-cohab-border bg-white px-2.5 py-1.5 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
+            </div>
+            <button type="submit" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition inline-flex items-center gap-1.5 cursor-pointer h-[32px]">
+              <i class="fa-solid fa-rotate"></i> Atualizar
+            </button>
+            <button type="button" onclick="printEditorialReport()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-cohab-bg text-cohab-graphite border border-cohab-border shadow-2xs transition inline-flex items-center gap-1.5 cursor-pointer h-[32px]">
+              <i class="fa-solid fa-print text-cohab-terracotta"></i> Imprimir / PDF
+            </button>
+            <button type="button" onclick="downloadReportHTML()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cohab-graphite hover:bg-cohab-graphiteDark text-white shadow-xs transition inline-flex items-center gap-1.5 cursor-pointer h-[32px]">
+              <i class="fa-solid fa-file-arrow-down"></i> Baixar HTML
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Conteúdo Gerado do Relatório -->
+      <div id="reportOutputContainer" class="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-[#FAFAFA]"></div>
     </div>
   </div>
 
@@ -1541,6 +1571,29 @@
       updateCrossMonthBanner();
     }
 
+    function stepMonth(delta) {
+      let nextMonth = currentMonth + delta;
+      let nextYear = currentYear;
+      if (nextMonth < 0) {
+        nextMonth = 11;
+        nextYear -= 1;
+      } else if (nextMonth > 11) {
+        nextMonth = 0;
+        nextYear += 1;
+      }
+
+      const yearSelect = document.getElementById('yearSelect');
+      const hasYearOption = [...yearSelect.options].some(opt => parseInt(opt.value, 10) === nextYear);
+      if (!hasYearOption) return;
+
+      currentMonth = nextMonth;
+      currentYear = nextYear;
+      document.getElementById('monthSelect').value = String(currentMonth);
+      yearSelect.value = String(currentYear);
+      renderCalendar();
+      updateCrossMonthBanner();
+    }
+
     function renderCalendar() {
       const grid = document.getElementById('calendarGrid');
       grid.innerHTML = '';
@@ -1722,12 +1775,10 @@
       const remainder = totalRendered % 7;
       if (remainder !== 0) {
         const trailingDays = 7 - remainder;
-        const nextMonthNum = ((currentMonth + 1) % 12) + 1;
         for (let d = 1; d <= trailingDays; d++) {
           const nextCell = document.createElement('div');
           nextCell.className = 'calendar-cell bg-neutral-50/70 p-1.5 xl:p-2';
-          const label = d === 1 ? `${d}/${nextMonthNum}` : `${d}`;
-          nextCell.innerHTML = `<span class="text-xs font-semibold text-neutral-400">${label}</span>`;
+          nextCell.innerHTML = `<span class="text-xs font-semibold text-neutral-400">${d}</span>`;
           grid.appendChild(nextCell);
         }
       }
@@ -2336,15 +2387,33 @@
         document.getElementById('pngStartDate').value = `${y}-${m}-01`;
         document.getElementById('pngEndDate').value = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
       } else {
-        const monthPautas = pautas.filter(p => p.data && p.data.startsWith(`${y}-${m}-`)).sort((a, b) => a.data.localeCompare(b.data));
-        if (monthPautas.length > 0) {
-          document.getElementById('pngStartDate').value = monthPautas[0].data;
-          document.getElementById('pngEndDate').value = monthPautas[monthPautas.length - 1].data;
-        } else {
-          document.getElementById('pngStartDate').value = `${y}-${m}-01`;
-          document.getElementById('pngEndDate').value = `${y}-${m}-07`;
-        }
+        const today = new Date();
+        const sunday = addDaysToDate(today, -today.getDay());
+        const saturday = addDaysToDate(sunday, 6);
+        document.getElementById('pngStartDate').value = formatIsoDate(sunday);
+        document.getElementById('pngEndDate').value = formatIsoDate(saturday);
       }
+    }
+
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function fitCanvasText(ctx, text, maxWidth) {
+      if (!text) return '';
+      if (ctx.measureText(text).width <= maxWidth) return text;
+      let trimmed = text;
+      while (trimmed.length > 0 && ctx.measureText(trimmed + '…').width > maxWidth) {
+        trimmed = trimmed.slice(0, -1);
+      }
+      return trimmed + '…';
     }
 
     function generateCalendarPNG(event) {
@@ -2368,170 +2437,419 @@
       const totalDays = Math.round((gridEnd - gridStart) / (1000 * 60 * 60 * 24)) + 1;
       const numWeeks = Math.max(1, Math.ceil(totalDays / 7));
 
-      const width = 1400;
-      const headerHeight = 110;
-      const weekHeaderHeight = 40;
-      const rowHeight = 185;
+      const todayIso = formatIsoDate(new Date());
+      const holidaysCache = {};
+
+      // Calcula a altura ideal de cada semana para que todos os cards apareçam sem cortes
+      const cardHeight = 68;
+      const cardGap = 6;
+      const holidayHeight = 24;
+      const weekRowHeights = [];
+
+      for (let w = 0; w < numWeeks; w++) {
+        let maxWeekHeight = 148;
+        for (let c = 0; c < 7; c++) {
+          const idx = w * 7 + c;
+          const cellDate = addDaysToDate(gridStart, idx);
+          const iso = formatIsoDate(cellDate);
+          const yYear = cellDate.getFullYear();
+          if (!holidaysCache[yYear]) holidaysCache[yYear] = getPublicHolidaysForYear(yYear);
+
+          const hasHoliday = Boolean(holidaysCache[yYear][iso]);
+          const dayItems = pautas.filter(p => p.data === iso && matchesSearchAndFilter(p));
+          const contentH =
+            34 +
+            (hasHoliday ? holidayHeight + 6 : 0) +
+            dayItems.length * (cardHeight + cardGap) +
+            10;
+          if (contentH > maxWeekHeight) maxWeekHeight = contentH;
+        }
+        weekRowHeights.push(maxWeekHeight);
+      }
+
+      const scale = 2;
+      const width = 1480;
+      const padX = 28;
+      const headerHeight = 96;
+      const weekHeaderHeight = 38;
       const footerHeight = 46;
-      const height = headerHeight + weekHeaderHeight + numWeeks * rowHeight + footerHeight;
+      const totalGridHeight = weekRowHeights.reduce((acc, h) => acc + h, 0);
+      const height = headerHeight + 16 + weekHeaderHeight + totalGridHeight + footerHeight;
 
       const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = width * scale;
+      canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
 
-      // Fundo geral
+      // Fundo geral (#F5F5F5)
       ctx.fillStyle = '#F5F5F5';
       ctx.fillRect(0, 0, width, height);
 
-      // Cabeçalho institucional
+      // Cabeçalho institucional branco com faixa terracota no topo
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, width, headerHeight);
       ctx.fillStyle = '#B84231';
       ctx.fillRect(0, 0, width, 6);
+      ctx.fillStyle = '#E2E2E2';
+      ctx.fillRect(0, headerHeight - 1, width, 1);
 
+      // Logo Geométrico Cohab Minas desenhado vetorialmente
+      const lx = padX;
+      const ly = 22;
+      const s = 0.52;
+      const drawPoly = (pts, color) => {
+        ctx.beginPath();
+        pts.forEach(([px, py], i) => {
+          if (i === 0) ctx.moveTo(lx + px * s, ly + py * s);
+          else ctx.lineTo(lx + px * s, ly + py * s);
+        });
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+      };
+      drawPoly([[48, 4], [8, 27], [48, 50]], '#1F1F1F');
+      drawPoly([[52, 4], [92, 27], [52, 50]], '#1F1F1F');
+      drawPoly([[6, 31], [6, 79], [46, 55]], '#1F1F1F');
+      drawPoly([[94, 31], [94, 79], [54, 55]], '#B84231');
+      drawPoly([[8, 83], [48, 106], [48, 60]], '#1F1F1F');
+      drawPoly([[92, 83], [52, 106], [52, 60]], '#1F1F1F');
+
+      // Marca Cohab Minas
+      const brandX = lx + 62;
+      ctx.font = '800 16px Inter, sans-serif';
       ctx.fillStyle = '#B84231';
-      ctx.font = '800 22px Inter, sans-serif';
-      ctx.fillText('COHAB', 36, 48);
-      ctx.fillStyle = '#333333';
-      ctx.fillText('MINAS', 120, 48);
+      ctx.fillText('COHAB', brandX, 44);
+      const cohabW = ctx.measureText('COHAB ').width;
+      ctx.fillStyle = '#4A4A4A';
+      ctx.fillText('MINAS', brandX + cohabW, 44);
 
       ctx.fillStyle = '#7A7A7A';
-      ctx.font = '600 11px Inter, sans-serif';
-      ctx.fillText('COMPANHIA DE HABITAÇÃO DO ESTADO DE MINAS GERAIS', 36, 68);
+      ctx.font = '600 9px Inter, sans-serif';
+      ctx.fillText('COMPANHIA DE HABITAÇÃO', brandX, 58);
+      ctx.fillText('DO ESTADO DE MINAS GERAIS', brandX, 69);
 
-      ctx.fillStyle = '#333333';
-      ctx.font = '800 22px Inter, sans-serif';
-      ctx.fillText('Planejamento Editorial — Assessoria de Comunicação Social', 36, 94);
+      // Divisória vertical
+      ctx.fillStyle = '#E2E2E2';
+      ctx.fillRect(brandX + 158, 26, 1, 50);
 
-      ctx.fillStyle = '#B84231';
-      ctx.font = '700 13px Inter, sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(`Período: ${formatDateBR(startStr)} a ${formatDateBR(endStr)}`, width - 36, 62);
-      ctx.textAlign = 'left';
+      // Título Institucional
+      const titleX = brandX + 176;
+      ctx.fillStyle = '#4A4A4A';
+      ctx.font = '800 20px Inter, sans-serif';
+      ctx.fillText('Planejamento Editorial', titleX, 49);
+      ctx.fillStyle = '#7A7A7A';
+      ctx.font = '500 13px Inter, sans-serif';
+      ctx.fillText('Assessoria de Comunicação Social', titleX, 69);
 
-      // Cabeçalho dos dias da semana
+      // Badge do período à direita
+      const periodLabel = `${MONTH_NAMES[currentMonth]} de ${currentYear}  •  ${formatDateBR(startStr)} a ${formatDateBR(endStr)}`;
+      ctx.font = '700 12px Inter, sans-serif';
+      const pillW = ctx.measureText(periodLabel).width + 28;
+      const pillX = width - padX - pillW;
+      drawRoundedRect(ctx, pillX, 34, pillW, 32, 10);
+      ctx.fillStyle = '#F5F5F5';
+      ctx.fill();
+      ctx.strokeStyle = '#E2E2E2';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#4A4A4A';
+      ctx.fillText(periodLabel, pillX + 14, 54);
+
+      // Container externo arredondado da grade do calendário
+      const gridX = padX;
+      const gridY = headerHeight + 16;
+      const gridW = width - padX * 2;
+      const gridTotalH = weekHeaderHeight + totalGridHeight;
+
+      ctx.save();
+      drawRoundedRect(ctx, gridX, gridY, gridW, gridTotalH, 16);
+      ctx.clip();
+
+      // Cabeçalho dos dias da semana (todos com a mesma cor, Sábado mais suave)
       const weekDays = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
-      const colW = (width - 48) / 7;
-      const startX = 24;
-      const tableTop = headerHeight + 12;
+      const colW = gridW / 7;
 
-      ctx.fillStyle = '#EFEFEF';
-      ctx.fillRect(startX, tableTop, width - 48, weekHeaderHeight);
+      ctx.fillStyle = '#F5F5F5';
+      ctx.fillRect(gridX, gridY, gridW, weekHeaderHeight);
 
       weekDays.forEach((wd, i) => {
-        ctx.fillStyle = '#4A4A4A';
+        ctx.fillStyle = i === 6 ? '#7A7A7A' : '#4A4A4A';
         ctx.font = '800 11px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(wd, startX + i * colW + colW / 2, tableTop + 25);
+        ctx.fillText(wd, gridX + i * colW + colW / 2, gridY + 23);
       });
       ctx.textAlign = 'left';
 
-      const todayIso = formatIsoDate(new Date());
-      const holidaysCache = {};
+      // Renderiza semanas e células
+      let currentRowY = gridY + weekHeaderHeight;
 
-      for (let idx = 0; idx < numWeeks * 7; idx++) {
-        const cellDate = addDaysToDate(gridStart, idx);
-        const iso = formatIsoDate(cellDate);
-        const yYear = cellDate.getFullYear();
-        if (!holidaysCache[yYear]) holidaysCache[yYear] = getPublicHolidaysForYear(yYear);
+      for (let w = 0; w < numWeeks; w++) {
+        const rowH = weekRowHeights[w];
 
-        const col = idx % 7;
-        const row = Math.floor(idx / 7);
-        const x = startX + col * colW;
-        const y = tableTop + weekHeaderHeight + row * rowHeight;
+        for (let c = 0; c < 7; c++) {
+          const idx = w * 7 + c;
+          const cellDate = addDaysToDate(gridStart, idx);
+          const iso = formatIsoDate(cellDate);
+          const yYear = cellDate.getFullYear();
+          const isOutsideTargetMonth =
+            cellDate.getMonth() !== currentMonth &&
+            startStr === `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
 
-        const isPast = iso < todayIso;
-        const isToday = iso === todayIso;
+          const x = gridX + c * colW;
+          const y = currentRowY;
 
-        ctx.fillStyle = isToday ? '#FDF3F1' : isPast ? '#EAEAEA' : '#FFFFFF';
-        ctx.fillRect(x, y, colW, rowHeight);
-        ctx.strokeStyle = isToday ? '#B84231' : '#E2E2E2';
-        ctx.lineWidth = isToday ? 1.5 : 1;
-        ctx.strokeRect(x, y, colW, rowHeight);
+          const isPast = iso < todayIso;
+          const isToday = iso === todayIso;
 
-        // Número do dia
-        ctx.fillStyle = isToday ? '#B84231' : isPast ? '#999999' : '#333333';
-        ctx.font = '800 12px Inter, sans-serif';
-        ctx.fillText(String(cellDate.getDate()), x + 10, y + 20);
+          // Fundo da célula igual ao site
+          if (isOutsideTargetMonth) {
+            ctx.fillStyle = '#FAFAFA';
+          } else if (isToday) {
+            ctx.fillStyle = '#FDF3F1';
+          } else if (isPast) {
+            ctx.fillStyle = '#EAEAEA';
+          } else {
+            ctx.fillStyle = '#FFFFFF';
+          }
+          ctx.fillRect(x, y, colW, rowH);
 
-        let cursorY = y + 32;
-
-        // Feriado
-        const hol = holidaysCache[yYear][iso];
-        if (hol) {
-          ctx.fillStyle = '#FFFDF2';
-          ctx.fillRect(x + 8, cursorY, colW - 16, 22);
-          ctx.strokeStyle = '#F3D97E';
-          ctx.strokeRect(x + 8, cursorY, colW - 16, 22);
-          ctx.fillStyle = '#78350F';
-          ctx.font = '700 9.5px Inter, sans-serif';
-          ctx.fillText(hol.slice(0, 26), x + 13, cursorY + 14);
-          cursorY += 28;
-        }
-
-        // Cards do dia
-        const dayItems = pautas.filter(p => p.data === iso).sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
-        dayItems.forEach(item => {
-          if (cursorY + 62 > y + rowHeight - 4) return;
-          const stInfo = STATUS_META[item.status] || STATUS_META['A Fazer'];
-          const tpInfo = TYPE_META[item.tipo] || TYPE_META.FRIA;
-          const isPub = item.status === 'Publicado';
-
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(x + 8, cursorY, colW - 16, 62);
+          // Borda da célula
           ctx.strokeStyle = '#E2E2E2';
-          ctx.strokeRect(x + 8, cursorY, colW - 16, 62);
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, colW, rowH);
 
-          // Faixa lateral pela cor do status
-          ctx.fillStyle = stInfo.dotHex;
-          ctx.fillRect(x + 8, cursorY, 4, 62);
+          if (isToday) {
+            ctx.strokeStyle = '#B84231';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x + 0.75, y + 0.75, colW - 1.5, rowH - 1.5);
+          }
 
-          // Título
-          ctx.fillStyle = '#333333';
-          ctx.font = '700 10.5px Inter, sans-serif';
-          ctx.fillText(item.titulo.slice(0, 24), x + 17, cursorY + 16);
+          // Número do dia (sem círculo atrás do dia atual, riscado nos passados, cor igual no domingo)
+          const dayStr = String(cellDate.getDate());
+          if (isToday) {
+            ctx.fillStyle = '#B84231';
+            ctx.font = '800 12.5px Inter, sans-serif';
+            ctx.fillText(dayStr, x + 10, y + 21);
+            const numW = ctx.measureText(dayStr).width;
 
-          // Editoria
-          ctx.fillStyle = '#7A7A7A';
-          ctx.font = '600 9px Inter, sans-serif';
-          ctx.fillText((item.editoria || '').slice(0, 26), x + 17, cursorY + 30);
+            drawRoundedRect(ctx, x + 10 + numW + 6, y + 10, 34, 14, 4);
+            ctx.fillStyle = '#B84231';
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '800 8.5px Inter, sans-serif';
+            ctx.fillText('HOJE', x + 10 + numW + 11, y + 20);
+          } else if (isOutsideTargetMonth) {
+            ctx.fillStyle = '#A3A3A3';
+            ctx.font = '600 12px Inter, sans-serif';
+            ctx.fillText(dayStr, x + 10, y + 21);
+          } else if (isPast) {
+            ctx.fillStyle = '#A3A3A3';
+            ctx.font = '700 12px Inter, sans-serif';
+            ctx.fillText(dayStr, x + 10, y + 21);
+            const numW = ctx.measureText(dayStr).width;
+            ctx.fillRect(x + 9, y + 16.5, numW + 2, 1.2);
+          } else {
+            ctx.fillStyle = '#4A4A4A';
+            ctx.font = '800 12px Inter, sans-serif';
+            ctx.fillText(dayStr, x + 10, y + 21);
+          }
 
-          // Formato
-          ctx.fillText((item.formato || '').slice(0, 26), x + 17, cursorY + 42);
+          let cursorY = y + 32;
 
-          // Bolinha chapada do status + texto
-          ctx.beginPath();
-          ctx.arc(x + 21, cursorY + 53, 3.5, 0, Math.PI * 2);
-          ctx.fillStyle = stInfo.dotHex;
-          ctx.fill();
+          // Etiqueta de feriado com ícone de calendário
+          const hol = holidaysCache[yYear][iso];
+          if (hol) {
+            drawRoundedRect(ctx, x + 8, cursorY, colW - 16, holidayHeight, 6);
+            ctx.fillStyle = '#FFFDF2';
+            ctx.fill();
+            ctx.strokeStyle = '#F3D97E';
+            ctx.lineWidth = 1;
+            ctx.stroke();
 
-          ctx.fillStyle = '#4A4A4A';
-          ctx.font = '700 9px Inter, sans-serif';
-          ctx.fillText(item.status, x + 28, cursorY + 56);
+            // Mini ícone de calendário
+            const ix = x + 14;
+            const iy = cursorY + 7;
+            ctx.strokeStyle = '#D97706';
+            ctx.lineWidth = 1.2;
+            ctx.strokeRect(ix, iy + 1.5, 9, 8);
+            ctx.fillStyle = '#D97706';
+            ctx.fillRect(ix, iy + 1.5, 9, 2.5);
 
-          // Se não publicado, desenha bolinha da pauta e #prioridade
-          if (!isPub) {
+            ctx.fillStyle = '#78350F';
+            ctx.font = '700 9.5px Inter, sans-serif';
+            const fittedHol = fitCanvasText(ctx, hol, colW - 36);
+            ctx.fillText(fittedHol, x + 27, cursorY + 15);
+            cursorY += holidayHeight + 6;
+          }
+
+          // Cards das pautas do dia
+          const dayItems = pautas
+            .filter(p => p.data === iso && matchesSearchAndFilter(p))
+            .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
+
+          dayItems.forEach(item => {
+            const stInfo = STATUS_META[item.status] || STATUS_META['A Fazer'];
+            const tpInfo = TYPE_META[item.tipo] || TYPE_META.FRIA;
+            const isPub = item.status === 'Publicado';
+
+            const cx = x + 8;
+            const cw = colW - 16;
+
+            // Fundo e borda arredondada do card
+            drawRoundedRect(ctx, cx, cursorY, cw, cardHeight, 8);
+            ctx.fillStyle = isPast ? '#E5E5E5' : '#FFFFFF';
+            ctx.fill();
+            ctx.strokeStyle = isPast ? '#D4D4D4' : '#E2E2E2';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Faixa lateral esquerda da cor do status
+            ctx.save();
+            drawRoundedRect(ctx, cx, cursorY, cw, cardHeight, 8);
+            ctx.clip();
+            ctx.fillStyle = stInfo.dotHex;
+            ctx.fillRect(cx, cursorY, 4, cardHeight);
+            ctx.restore();
+
+            // 1ª linha: Título da pauta
+            ctx.fillStyle = isPub ? '#7A7A7A' : (isPast ? '#404040' : '#333333');
+            ctx.font = '700 10.5px Inter, sans-serif';
+            const fittedTitle = fitCanvasText(ctx, item.titulo, cw - 16);
+            ctx.fillText(fittedTitle, cx + 10, cursorY + 15);
+
+            if (isPub) {
+              const titleW = ctx.measureText(fittedTitle).width;
+              ctx.fillStyle = '#7A7A7A';
+              ctx.fillRect(cx + 10, cursorY + 11.5, titleW, 1);
+            }
+
+            // 2ª linha: Editoria com ícone vetorial de etiqueta (tag)
+            if (item.editoria) {
+              const tagX = cx + 10;
+              const tagY = cursorY + 21;
+              ctx.save();
+              ctx.fillStyle = '#6B7280';
+              ctx.beginPath();
+              ctx.moveTo(tagX, tagY);
+              ctx.lineTo(tagX + 4.2, tagY);
+              ctx.lineTo(tagX + 7.5, tagY + 3.3);
+              ctx.lineTo(tagX + 3.3, tagY + 7.5);
+              ctx.lineTo(tagX, tagY + 4.2);
+              ctx.closePath();
+              ctx.fill();
+              ctx.fillStyle = isPast ? '#E5E5E5' : '#FFFFFF';
+              ctx.beginPath();
+              ctx.arc(tagX + 2.1, tagY + 2.1, 0.85, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+
+              ctx.fillStyle = '#7A7A7A';
+              ctx.font = '600 9px Inter, sans-serif';
+              const fittedEd = fitCanvasText(ctx, item.editoria, cw - 24);
+              ctx.fillText(fittedEd, cx + 20, cursorY + 27.5);
+            }
+
+            // 3ª linha: Formato com ícone vetorial de claquete (clapperboard)
+            if (item.formato) {
+              const clapX = cx + 10;
+              const clapY = cursorY + 32;
+              ctx.save();
+              ctx.fillStyle = '#6B7280';
+              drawRoundedRect(ctx, clapX, clapY + 2.4, 7.6, 5.1, 1);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.moveTo(clapX, clapY + 2);
+              ctx.lineTo(clapX + 7.4, clapY + 0.5);
+              ctx.lineTo(clapX + 7.6, clapY + 2);
+              ctx.lineTo(clapX, clapY + 2.4);
+              ctx.closePath();
+              ctx.fill();
+              ctx.strokeStyle = isPast ? '#E5E5E5' : '#FFFFFF';
+              ctx.lineWidth = 0.8;
+              ctx.beginPath();
+              ctx.moveTo(clapX + 2.3, clapY + 0.8);
+              ctx.lineTo(clapX + 1.6, clapY + 2.3);
+              ctx.moveTo(clapX + 5.1, clapY + 0.4);
+              ctx.lineTo(clapX + 4.4, clapY + 2.1);
+              ctx.stroke();
+              ctx.restore();
+
+              ctx.fillStyle = '#7A7A7A';
+              ctx.font = '500 9px Inter, sans-serif';
+              const fittedFmt = fitCanvasText(ctx, item.formato, cw - 24);
+              ctx.fillText(fittedFmt, cx + 20, cursorY + 38.5);
+            }
+
+            // Linha divisória do rodapé do card
+            ctx.fillStyle = isPast ? '#D4D4D4' : '#EEEEEE';
+            ctx.fillRect(cx + 8, cursorY + 44, cw - 14, 1);
+
+            // Selo de Status (caixinha arredondada com bolinha chapada)
+            ctx.font = '700 8.5px Inter, sans-serif';
+            const statusTextW = ctx.measureText(item.status).width;
+            const statusPillW = statusTextW + 20;
+            const pillY = cursorY + 48;
+            const pillH = 15;
+
+            drawRoundedRect(ctx, cx + 9, pillY, statusPillW, pillH, 4);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.strokeStyle = '#E2E2E2';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
             ctx.beginPath();
-            ctx.arc(x + colW - 36, cursorY + 53, 3.5, 0, Math.PI * 2);
-            ctx.fillStyle = tpInfo.dotHex;
+            ctx.arc(cx + 15, pillY + pillH / 2, 2.8, 0, Math.PI * 2);
+            ctx.fillStyle = stInfo.dotHex;
             ctx.fill();
 
             ctx.fillStyle = '#4A4A4A';
-            ctx.font = '800 9px Inter, sans-serif';
-            ctx.fillText(`#${item.prioridade || 1}`, x + colW - 28, cursorY + 56);
-          }
+            ctx.fillText(item.status, cx + 21, pillY + 10.5);
 
-          cursorY += 68;
-        });
+            // Se não publicado, desenha caixinha da bolinha de classificação ao lado do status + #prioridade à direita
+            if (!isPub) {
+              const dotBoxX = cx + 9 + statusPillW + 4;
+              drawRoundedRect(ctx, dotBoxX, pillY, 15, pillH, 4);
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fill();
+              ctx.strokeStyle = '#E2E2E2';
+              ctx.stroke();
+
+              ctx.beginPath();
+              ctx.arc(dotBoxX + 7.5, pillY + pillH / 2, 2.8, 0, Math.PI * 2);
+              ctx.fillStyle = tpInfo.dotHex;
+              ctx.fill();
+
+              ctx.fillStyle = isPast ? '#525252' : '#4A4A4A';
+              ctx.font = '800 9.5px Inter, sans-serif';
+              ctx.textAlign = 'right';
+              ctx.fillText(`#${item.prioridade || 1}`, cx + cw - 7, pillY + 11);
+              ctx.textAlign = 'left';
+            }
+
+            cursorY += cardHeight + cardGap;
+          });
+        }
+
+        currentRowY += rowH;
       }
 
-      // Rodapé da imagem
+      ctx.restore();
+
+      // Borda arredondada externa da grade
+      drawRoundedRect(ctx, gridX, gridY, gridW, gridTotalH, 16);
+      ctx.strokeStyle = '#E2E2E2';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Rodapé institucional
       ctx.fillStyle = '#7A7A7A';
       ctx.font = '600 11px Inter, sans-serif';
       ctx.fillText(
-        `Gerado em ${new Date().toLocaleString('pt-BR')} • Assessoria de Comunicação Social — Cohab Minas`,
-        24,
+        `Assessoria de Comunicação Social • Cohab Minas — Gerado em ${new Date().toLocaleString('pt-BR')}`,
+        padX,
         height - 16
       );
 
@@ -2542,6 +2860,686 @@
 
       closePngExportModal();
       showToast('Imagem PNG exportada com sucesso!');
+    }
+
+    // =========================================================================
+    // RELATÓRIO ANALÍTICO EDITORIAL (QUANTIDADE, CATEGORIAS, MAPA DE PALAVRAS E TÓPICOS)
+    // =========================================================================
+    let lastGeneratedReportHTML = '';
+    let lastReportPeriodLabel = '';
+
+    const PT_STOPWORDS = new Set([
+      'a', 'o', 'as', 'os', 'um', 'uma', 'uns', 'umas', 'de', 'do', 'da', 'dos', 'das',
+      'em', 'no', 'na', 'nos', 'nas', 'por', 'pelo', 'pela', 'pelos', 'pelas', 'para',
+      'com', 'sem', 'sob', 'sobre', 'entre', 'ate', 'até', 'apos', 'após', 'e', 'ou',
+      'mas', 'que', 'se', 'ao', 'aos', 'à', 'às', 'como', 'mais', 'menos', 'muito',
+      'ja', 'já', 'nao', 'não', 'sim', 'sao', 'são', 'foi', 'ser', 'esta', 'está',
+      'este', 'esta', 'esse', 'essa', 'isso', 'isto', 'aquilo', 'seu', 'sua', 'seus',
+      'suas', 'meu', 'minha', 'nosso', 'nossa', 'ele', 'ela', 'eles', 'elas', 'voce',
+      'você', 'que', 'qual', 'quais', 'onde', 'quando', 'porque', 'porquê', 'tambem',
+      'também', 'ainda', 'bem', 'mal', 'cada', 'todo', 'toda', 'todos', 'todas', 'outro',
+      'outra', 'outros', 'outras', 'mesmo', 'mesma', 'sobre', 'via', 'num', 'numa',
+      'pauta', 'pautas', 'conteudo', 'conteúdo', 'conteudos', 'conteúdos', 'cohab', 'minas'
+    ]);
+
+    function openReportModal() {
+      const modal = document.getElementById('reportModal');
+      setReportPreset('MONTH');
+      generateEditorialReport();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeReportModal() {
+      const modal = document.getElementById('reportModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function setReportPreset(mode) {
+      const y = currentYear;
+      const m = String(currentMonth + 1).padStart(2, '0');
+      const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      if (mode === 'MONTH') {
+        document.getElementById('reportStartDate').value = `${y}-${m}-01`;
+        document.getElementById('reportEndDate').value = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+      } else {
+        const today = new Date();
+        const sunday = addDaysToDate(today, -today.getDay());
+        const saturday = addDaysToDate(sunday, 6);
+        document.getElementById('reportStartDate').value = formatIsoDate(sunday);
+        document.getElementById('reportEndDate').value = formatIsoDate(saturday);
+      }
+      generateEditorialReport();
+    }
+
+    function extractWordFrequency(items) {
+      const freqMap = new Map();
+      items.forEach(item => {
+        const rawText = `${item.titulo || ''} ${item.descricao || ''} ${item.editoria || ''}`;
+        const tokens = rawText
+          .toLowerCase()
+          .replace(/[^a-zà-ú0-9\s-]/gi, ' ')
+          .split(/\s+/)
+          .map(t => t.replace(/^-+|-+$/g, ''))
+          .filter(t => t.length >= 3 && !/^\d+$/.test(t) && !PT_STOPWORDS.has(t));
+
+        tokens.forEach(token => {
+          const formatted = token.charAt(0).toUpperCase() + token.slice(1);
+          freqMap.set(formatted, (freqMap.get(formatted) || 0) + 1);
+        });
+      });
+
+      return [...freqMap.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .slice(0, 24);
+    }
+
+    function extractEditorialTopics(items) {
+      const topicRules = [
+        {
+          name: 'Regularização Fundiária e Escrituras',
+          icon: 'fa-file-signature',
+          keywords: ['audiência', 'audiencia', 'escritura', 'regularização', 'regularizacao', 'fundiária', 'fundiaria', 'arcos', 'título', 'titulo']
+        },
+        {
+          name: 'Cadastro Habitacional e Atendimento',
+          icon: 'fa-address-card',
+          keywords: ['cadastral', 'cadastro', 'etapa', 'timóteo', 'timoteo', 'famílias', 'familias', 'mutuário', 'mutuario', 'inscrição', 'inscricao']
+        },
+        {
+          name: 'Serviços ao Cidadão e Comunicados',
+          icon: 'fa-headset',
+          keywords: ['serviços', 'servicos', 'boleto', 'atendimento', 'comunicado', 'feriado', 'suspensão', 'suspensao', 'canais', 'informa']
+        },
+        {
+          name: 'Eventos, Palestras e Institucional',
+          icon: 'fa-microphone-lines',
+          keywords: ['palestra', 'evento', 'zezinho', 'institucional', 'cobertura', 'convite', 'sede', 'governo']
+        }
+      ];
+
+      const topicsResult = topicRules.map(rule => ({
+        name: rule.name,
+        icon: rule.icon,
+        items: []
+      }));
+      const otherItems = [];
+
+      items.forEach(item => {
+        const hay = `${item.titulo || ''} ${item.descricao || ''} ${item.editoria || ''}`.toLowerCase();
+        let matched = false;
+        topicRules.forEach((rule, idx) => {
+          if (rule.keywords.some(kw => hay.includes(kw))) {
+            topicsResult[idx].items.push(item);
+            matched = true;
+          }
+        });
+        if (!matched) {
+          otherItems.push(item);
+        }
+      });
+
+      const activeTopics = topicsResult.filter(t => t.items.length > 0);
+      if (otherItems.length > 0) {
+        activeTopics.push({
+          name: 'Outros Temas Editoriais',
+          icon: 'fa-folder-open',
+          items: otherItems
+        });
+      }
+      return activeTopics.sort((a, b) => b.items.length - a.items.length);
+    }
+
+    function buildDonutSVG(segments, centerValue, centerSub) {
+      const size = 132;
+      const strokeWidth = 18;
+      const radius = (size - strokeWidth) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const total = segments.reduce((acc, s) => acc + s.value, 0);
+
+      let accumulatedPercent = 0;
+      const circles = total === 0
+        ? `<circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="transparent" stroke="#E5E5E5" stroke-width="${strokeWidth}" />`
+        : segments.map(seg => {
+            if (seg.value <= 0) return '';
+            const pct = seg.value / total;
+            const dashArray = `${pct * circumference} ${circumference}`;
+            const dashOffset = -accumulatedPercent * circumference;
+            accumulatedPercent += pct;
+            return `<circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="transparent" stroke="${seg.hex}" stroke-width="${strokeWidth}" stroke-dasharray="${dashArray}" stroke-dashoffset="${dashOffset}" stroke-linecap="butt" />`;
+          }).join('');
+
+      return `
+        <div class="relative inline-flex items-center justify-center shrink-0" style="width:${size}px; height:${size}px;">
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="-rotate-90">
+            <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="transparent" stroke="#F0F0F0" stroke-width="${strokeWidth}" />
+            ${circles}
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+            <span class="text-lg font-extrabold text-cohab-graphiteDark leading-none">${escapeHTML(String(centerValue))}</span>
+            <span class="text-[9.5px] font-bold uppercase tracking-wider text-cohab-medium mt-1">${escapeHTML(centerSub)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function generateEditorialReport(event) {
+      if (event) event.preventDefault();
+      const startStr = document.getElementById('reportStartDate').value;
+      const endStr = document.getElementById('reportEndDate').value;
+      const container = document.getElementById('reportOutputContainer');
+
+      if (!startStr || !endStr || startStr > endStr) {
+        showToast('Selecione um intervalo de datas válido para o relatório.', 'error');
+        return;
+      }
+
+      lastReportPeriodLabel = `${formatDateBR(startStr)} a ${formatDateBR(endStr)}`;
+
+      const periodItems = pautas
+        .filter(p => p.data >= startStr && p.data <= endStr)
+        .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+
+      if (periodItems.length === 0) {
+        const emptyHTML = `
+          <div class="text-center py-14 bg-white rounded-2xl border border-dashed border-cohab-border">
+            <div class="w-12 h-12 rounded-2xl bg-cohab-bg text-cohab-medium flex items-center justify-center mx-auto mb-3">
+              <i class="fa-regular fa-folder-open text-xl"></i>
+            </div>
+            <p class="text-sm font-extrabold text-cohab-graphite">Nenhum conteúdo registrado no período selecionado</p>
+            <p class="text-xs text-cohab-medium mt-1">Período analisado: ${escapeHTML(lastReportPeriodLabel)}</p>
+          </div>
+        `;
+        container.innerHTML = emptyHTML;
+        lastGeneratedReportHTML = emptyHTML;
+        return;
+      }
+
+      const total = periodItems.length;
+      const publishedCount = periodItems.filter(p => p.status === 'Publicado').length;
+      const inProdCount = periodItems.filter(p => p.status === 'Em Produção').length;
+      const approvedCount = periodItems.filter(p => p.status === 'Aprovado').length;
+      const todoCount = periodItems.filter(p => p.status === 'A Fazer').length;
+      const hotCount = periodItems.filter(p => p.tipo === 'QUENTE').length;
+      const coldCount = periodItems.filter(p => p.tipo === 'FRIA').length;
+      const completionRate = Math.round((publishedCount / total) * 100);
+
+      // Agrupamentos por Categoria (Formato, Editoria, Status)
+      const countBy = (arr, keyFn) => {
+        const map = new Map();
+        arr.forEach(item => {
+          const k = keyFn(item) || 'Não informado';
+          map.set(k, (map.get(k) || 0) + 1);
+        });
+        return [...map.entries()].sort((a, b) => b[1] - a[1]);
+      };
+
+      const byFormat = countBy(periodItems, p => p.formato || 'Sem formato');
+      const byEditoria = countBy(periodItems, p => p.editoria || 'Sem editoria');
+
+      const topFormat = byFormat[0] ? `${byFormat[0][0]} (${byFormat[0][1]})` : 'N/A';
+      const topEditoria = byEditoria[0] ? `${byEditoria[0][0]} (${byEditoria[0][1]})` : 'N/A';
+
+      const statusSegments = [
+        { label: 'Publicado', value: publishedCount, hex: '#10B981', dotClass: 'bg-emerald-500' },
+        { label: 'Em Produção', value: inProdCount, hex: '#F97316', dotClass: 'bg-orange-500' },
+        { label: 'Aprovado', value: approvedCount, hex: '#A855F7', dotClass: 'bg-purple-500' },
+        { label: 'A Fazer', value: todoCount, hex: '#FBBF24', dotClass: 'bg-amber-400' }
+      ];
+
+      const typeSegments = [
+        { label: 'Pautas Quentes', value: hotCount, hex: '#EF4444', dotClass: 'bg-red-500' },
+        { label: 'Pautas Frias', value: coldCount, hex: '#38BDF8', dotClass: 'bg-sky-400' }
+      ];
+
+      const words = extractWordFrequency(periodItems);
+      const maxWordFreq = words.length > 0 ? words[0][1] : 1;
+      const topics = extractEditorialTopics(periodItems);
+
+      const renderBars = (entries, barColorClass = 'bg-cohab-terracotta') => {
+        return entries.map(([label, count], idx) => {
+          const pct = Math.round((count / total) * 100);
+          return `
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-cohab-graphite truncate pr-2 flex items-center gap-1.5">
+                  <span class="w-4 h-4 rounded-md bg-cohab-bg text-[10px] font-extrabold text-cohab-medium inline-flex items-center justify-center shrink-0">${idx + 1}</span>
+                  <span class="truncate">${escapeHTML(label)}</span>
+                </span>
+                <span class="font-extrabold text-cohab-graphiteDark shrink-0">${count} <span class="text-cohab-medium font-semibold">(${pct}%)</span></span>
+              </div>
+              <div class="w-full h-2 bg-cohab-bg rounded-full overflow-hidden">
+                <div class="h-full ${barColorClass} rounded-full transition-all" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      };
+
+      const wordCloudHTML = words.map(([word, freq], idx) => {
+        const ratio = freq / maxWordFreq;
+        let pillStyle = 'text-xs font-semibold px-2.5 py-1 bg-white text-cohab-graphite border-cohab-border';
+        if (idx === 0 || ratio >= 0.85) {
+          pillStyle = 'text-sm font-extrabold px-3.5 py-1.5 bg-cohab-terracotta text-white border-cohab-terracotta shadow-2xs';
+        } else if (ratio >= 0.55) {
+          pillStyle = 'text-xs font-extrabold px-3 py-1 bg-cohab-terracottaLight text-cohab-terracotta border-cohab-terracotta/35';
+        } else if (ratio >= 0.35) {
+          pillStyle = 'text-xs font-bold px-2.5 py-1 bg-cohab-bg text-cohab-graphiteDark border-cohab-border';
+        }
+        return `
+          <span class="inline-flex items-center gap-1.5 rounded-xl border ${pillStyle}">
+            <span>${escapeHTML(word)}</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-extrabold">${freq}</span>
+          </span>
+        `;
+      }).join('');
+
+      const topicsHTML = topics.map(topic => {
+        const topicPct = Math.round((topic.items.length / total) * 100);
+        return `
+          <div class="rounded-2xl border border-cohab-border bg-white p-4 space-y-3 shadow-2xs">
+            <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-cohab-border/70">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center shrink-0">
+                  <i class="fa-solid ${topic.icon} text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                  <h5 class="text-xs font-extrabold text-cohab-graphiteDark truncate">${escapeHTML(topic.name)}</h5>
+                  <span class="text-[10.5px] font-semibold text-cohab-medium">${topicPct}% da produção do período</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-cohab-bg border border-cohab-border text-[11px] font-extrabold text-cohab-graphite shrink-0">
+                ${topic.items.length} ${topic.items.length === 1 ? 'pauta' : 'pautas'}
+              </span>
+            </div>
+            <ul class="space-y-1.5 text-xs">
+              ${topic.items.map(it => {
+                const stMeta = STATUS_META[it.status] || STATUS_META['A Fazer'];
+                return `
+                  <li class="flex items-center justify-between gap-2 bg-cohab-bg/60 px-3 py-2 rounded-xl border border-cohab-border/60">
+                    <span class="font-bold text-cohab-graphiteDark truncate">${escapeHTML(it.titulo)}</span>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="text-[10.5px] font-semibold text-cohab-medium">${formatDateBR(it.data)}</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-cohab-border text-[10px] font-bold text-cohab-graphite">
+                        <span class="w-1.5 h-1.5 rounded-full ${stMeta.dotClass}"></span>
+                        ${escapeHTML(it.status)}
+                      </span>
+                    </div>
+                  </li>
+                `;
+              }).join('')}
+            </ul>
+          </div>
+        `;
+      }).join('');
+
+      const tableRowsHTML = periodItems.map(it => {
+        const stMeta = STATUS_META[it.status] || STATUS_META['A Fazer'];
+        const tpMeta = TYPE_META[it.tipo] || TYPE_META.FRIA;
+        return `
+          <tr class="hover:bg-cohab-bg/40 transition">
+            <td class="px-3.5 py-2.5 text-xs font-bold text-cohab-graphite whitespace-nowrap">${formatDateBR(it.data)}</td>
+            <td class="px-3.5 py-2.5 text-xs font-extrabold text-cohab-graphiteDark">${escapeHTML(it.titulo)}</td>
+            <td class="px-3.5 py-2.5 text-xs font-semibold text-cohab-medium whitespace-nowrap">${escapeHTML(it.editoria || '-')}</td>
+            <td class="px-3.5 py-2.5 text-xs font-semibold text-cohab-medium whitespace-nowrap">${escapeHTML(it.formato || '-')}</td>
+            <td class="px-3.5 py-2.5 text-xs whitespace-nowrap">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-cohab-border font-bold text-cohab-graphite">
+                <span class="w-2 h-2 rounded-full ${tpMeta.dotClass}"></span>
+                ${it.tipo === 'QUENTE' ? 'Quente' : 'Fria'}
+              </span>
+            </td>
+            <td class="px-3.5 py-2.5 text-xs whitespace-nowrap">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-cohab-border font-bold text-cohab-graphite">
+                <span class="w-2 h-2 rounded-full ${stMeta.dotClass}"></span>
+                ${escapeHTML(it.status)}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const reportHTML = `
+        <!-- Banner Executivo Institucional -->
+        <div class="rounded-2xl border border-cohab-border bg-white p-5 shadow-2xs relative overflow-hidden">
+          <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-cohab-terracotta"></div>
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-2">
+            <div>
+              <div class="flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-wider text-cohab-terracotta">
+                <span>Relatório de Desempenho Editorial</span>
+                <span>&bull;</span>
+                <span>Ascom Cohab Minas</span>
+              </div>
+              <h4 class="text-lg sm:text-xl font-extrabold text-cohab-graphiteDark mt-0.5">
+                Período: ${escapeHTML(lastReportPeriodLabel)}
+              </h4>
+              <p class="text-xs text-cohab-medium mt-1">
+                Emitido por <strong class="text-cohab-graphite">${escapeHTML(getCurrentMemberName())}</strong> em ${new Date().toLocaleDateString('pt-BR')}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-3 bg-cohab-bg px-4 py-3 rounded-2xl border border-cohab-border shrink-0">
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-cohab-medium block">Taxa de Entrega</span>
+                <span class="text-2xl font-extrabold text-cohab-graphiteDark">${completionRate}%</span>
+              </div>
+              <div class="h-8 w-px bg-cohab-border"></div>
+              <div class="text-xs text-cohab-medium leading-snug">
+                <strong class="text-cohab-graphite block">${publishedCount} de ${total}</strong>
+                <span>conteúdos publicados</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Síntese Automática (Executive Highlights) -->
+          <div class="mt-4 pt-3.5 border-t border-cohab-border/80 pl-2 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div class="flex items-center gap-2.5 bg-cohab-bg/70 px-3 py-2 rounded-xl">
+              <i class="fa-solid fa-clapperboard text-cohab-terracotta"></i>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-cohab-medium block">Formato Predominante</span>
+                <strong class="text-cohab-graphiteDark">${escapeHTML(topFormat)}</strong>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5 bg-cohab-bg/70 px-3 py-2 rounded-xl">
+              <i class="fa-solid fa-tag text-cohab-terracotta"></i>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-cohab-medium block">Editoria Principal</span>
+                <strong class="text-cohab-graphiteDark">${escapeHTML(topEditoria)}</strong>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5 bg-cohab-bg/70 px-3 py-2 rounded-xl">
+              <i class="fa-solid fa-fire text-cohab-terracotta"></i>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-cohab-medium block">Perfil das Demandas</span>
+                <strong class="text-cohab-graphiteDark">${hotCount} Quentes &bull; ${coldCount} Frias</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPIs de Quantidade de Conteúdos Produzidos -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-cohab-medium">Total Geral</span>
+              <i class="fa-solid fa-layer-group text-cohab-graphite/60 text-xs"></i>
+            </div>
+            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${total}</span>
+            <span class="text-[11px] text-cohab-medium mt-0.5 block">pautas no período</span>
+          </div>
+
+          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-emerald-700">Publicados</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            </div>
+            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${publishedCount}</span>
+            <span class="text-[11px] text-cohab-medium mt-0.5 block">${completionRate}% concluído</span>
+          </div>
+
+          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-orange-700">Em Produção</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+            </div>
+            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${inProdCount}</span>
+            <span class="text-[11px] text-cohab-medium mt-0.5 block">${Math.round((inProdCount / total) * 100)}% do total</span>
+          </div>
+
+          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-purple-700">Aprovados</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+            </div>
+            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${approvedCount}</span>
+            <span class="text-[11px] text-cohab-medium mt-0.5 block">${Math.round((approvedCount / total) * 100)}% do total</span>
+          </div>
+
+          <div class="col-span-2 sm:col-span-1 rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-amber-700">A Fazer</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+            </div>
+            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${todoCount}</span>
+            <span class="text-[11px] text-cohab-medium mt-0.5 block">${Math.round((todoCount / total) * 100)}% do total</span>
+          </div>
+        </div>
+
+        <!-- Gráficos de Rosca (Status e Classificação) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-cohab-border bg-white p-5 shadow-2xs">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2 mb-4">
+              <i class="fa-solid fa-chart-pie text-cohab-terracotta"></i> Distribuição por Status de Produção
+            </h5>
+            <div class="flex flex-col sm:flex-row items-center gap-5">
+              ${buildDonutSVG(statusSegments, total, 'Pautas')}
+              <div class="flex-1 w-full space-y-2.5">
+                ${statusSegments.map(seg => {
+                  const pct = Math.round((seg.value / total) * 100);
+                  return `
+                    <div class="flex items-center justify-between text-xs border-b border-cohab-border/50 pb-1.5 last:border-b-0 last:pb-0">
+                      <span class="font-bold text-cohab-graphite flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full ${seg.dotClass}"></span>
+                        ${escapeHTML(seg.label)}
+                      </span>
+                      <span class="font-extrabold text-cohab-graphiteDark">${seg.value} <span class="text-cohab-medium font-semibold">(${pct}%)</span></span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-cohab-border bg-white p-5 shadow-2xs">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2 mb-4">
+              <i class="fa-solid fa-bullseye text-cohab-terracotta"></i> Classificação Editorial (Quentes vs. Frias)
+            </h5>
+            <div class="flex flex-col sm:flex-row items-center gap-5">
+              ${buildDonutSVG(typeSegments, `${Math.round((hotCount / total) * 100)}%`, 'Quentes')}
+              <div class="flex-1 w-full space-y-3">
+                ${typeSegments.map(seg => {
+                  const pct = Math.round((seg.value / total) * 100);
+                  return `
+                    <div class="space-y-1">
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-cohab-graphite flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full ${seg.dotClass}"></span>
+                          ${escapeHTML(seg.label)}
+                        </span>
+                        <span class="font-extrabold text-cohab-graphiteDark">${seg.value} <span class="text-cohab-medium font-semibold">(${pct}%)</span></span>
+                      </div>
+                      <div class="w-full h-2 bg-cohab-bg rounded-full overflow-hidden">
+                        <div class="h-full ${seg.dotClass} rounded-full" style="width:${pct}%"></div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categorização por Formato e Editoria -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-cohab-border bg-white p-5 space-y-3.5 shadow-2xs">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
+              <i class="fa-solid fa-clapperboard text-cohab-terracotta"></i> Categorização por Formato
+            </h5>
+            <div class="space-y-3">${renderBars(byFormat, 'bg-cohab-graphite')}</div>
+          </div>
+
+          <div class="rounded-2xl border border-cohab-border bg-white p-5 space-y-3.5 shadow-2xs">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
+              <i class="fa-solid fa-tag text-cohab-terracotta"></i> Categorização por Editoria
+            </h5>
+            <div class="space-y-3">${renderBars(byEditoria, 'bg-cohab-terracotta')}</div>
+          </div>
+        </div>
+
+        <!-- Mapa de Palavras Utilizadas -->
+        <div class="rounded-2xl border border-cohab-border bg-white p-5 space-y-3.5 shadow-2xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
+              <i class="fa-solid fa-cloud text-cohab-terracotta"></i> Mapa de Palavras Utilizadas
+            </h5>
+            <span class="text-[11px] text-cohab-medium font-medium">Frequência dos termos principais nos títulos, editorias e briefings</span>
+          </div>
+          <div class="p-4 rounded-xl bg-cohab-bg/60 border border-cohab-border/70 flex flex-wrap items-center gap-2">
+            ${wordCloudHTML || '<span class="text-xs text-cohab-medium">Sem palavras suficientes para análise.</span>'}
+          </div>
+        </div>
+
+        <!-- Tópicos Abordados no Período -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between px-1">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
+              <i class="fa-solid fa-sitemap text-cohab-terracotta"></i> Tópicos e Eixos Temáticos Abordados
+            </h5>
+            <span class="text-[11px] text-cohab-medium font-semibold">${topics.length} ${topics.length === 1 ? 'eixo identificado' : 'eixos identificados'}</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            ${topicsHTML}
+          </div>
+        </div>
+
+        <!-- Matriz Cronológica Detalhada das Entregas -->
+        <div class="rounded-2xl border border-cohab-border bg-white overflow-hidden shadow-2xs">
+          <div class="px-5 py-3.5 border-b border-cohab-border flex items-center justify-between bg-white">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
+              <i class="fa-solid fa-table-list text-cohab-terracotta"></i> Detalhamento Cronológico das Pautas (${total})
+            </h5>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-cohab-bg border-b border-cohab-border text-[10.5px] font-extrabold uppercase tracking-wider text-cohab-graphite">
+                  <th class="px-3.5 py-2.5">Data</th>
+                  <th class="px-3.5 py-2.5">Título da Pauta</th>
+                  <th class="px-3.5 py-2.5">Editoria</th>
+                  <th class="px-3.5 py-2.5">Formato</th>
+                  <th class="px-3.5 py-2.5">Tipo</th>
+                  <th class="px-3.5 py-2.5">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-cohab-border/70">
+                ${tableRowsHTML}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = reportHTML;
+      lastGeneratedReportHTML = reportHTML;
+    }
+
+    function printEditorialReport() {
+      if (!lastGeneratedReportHTML) generateEditorialReport();
+      const printWin = window.open('', '_blank', 'width=1024,height=800');
+      if (!printWin) {
+        showToast('Permita pop-ups no navegador para imprimir ou salvar em PDF.', 'error');
+        return;
+      }
+      printWin.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Relatório Editorial Cohab Minas (${lastReportPeriodLabel})</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            cohab: {
+              terracotta: '#B84231',
+              terracottaDark: '#963324',
+              terracottaLight: '#FDF3F1',
+              graphite: '#4A4A4A',
+              graphiteDark: '#333333',
+              medium: '#7A7A7A',
+              bg: '#F5F5F5',
+              border: '#E2E2E2'
+            }
+          }
+        }
+      }
+    };
+  <\/script>
+  <style>
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #FFFFFF !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-cohab-graphite font-sans p-6">
+  <div class="max-w-5xl mx-auto space-y-5">
+    ${lastGeneratedReportHTML}
+  </div>
+  <script>
+    window.onload = function() {
+      setTimeout(function() { window.print(); }, 450);
+    };
+  <\/script>
+</body>
+</html>`);
+      printWin.document.close();
+    }
+
+    function downloadReportHTML() {
+      const startStr = document.getElementById('reportStartDate').value;
+      const endStr = document.getElementById('reportEndDate').value;
+      if (!lastGeneratedReportHTML) generateEditorialReport();
+
+      const fullDoc = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Relatório Editorial Cohab Minas (${lastReportPeriodLabel})</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            cohab: {
+              terracotta: '#B84231',
+              terracottaDark: '#963324',
+              terracottaLight: '#FDF3F1',
+              graphite: '#4A4A4A',
+              graphiteDark: '#333333',
+              medium: '#7A7A7A',
+              bg: '#F5F5F5',
+              border: '#E2E2E2'
+            }
+          }
+        }
+      }
+    };
+  <\/script>
+</head>
+<body class="bg-cohab-bg text-cohab-graphite font-sans p-6">
+  <div class="max-w-5xl mx-auto space-y-5">
+    ${lastGeneratedReportHTML}
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([fullDoc], { type: 'text/html;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio_editorial_cohab_${startStr}_a_${endStr}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Relatório exportado com sucesso!');
     }
 
     // =========================================================================
