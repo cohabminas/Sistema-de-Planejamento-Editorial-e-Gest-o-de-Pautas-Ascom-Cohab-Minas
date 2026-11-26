@@ -19,7 +19,6 @@ Sistema de planejamento editorial e gestão de pautas da **Assessoria de Comunic
 - Logout automático por inatividade (30 min, com aviso)
 - Sessão encerra ao fechar a aba (a menos que marque "Manter conectado")
 - Usuário desativado perde o acesso na hora
-- Toda conta nova nasce **desativada** até um administrador liberar (proteção extra caso o cadastro público fique ligado por engano)
 - Content Security Policy, proteção contra clickjacking e **nenhuma biblioteca carregada de CDN** (tudo hospedado no próprio projeto)
 - Exportação Excel protegida contra injeção de fórmulas
 - A chave secreta (`service_role`) fica só numa Edge Function no servidor
@@ -40,6 +39,61 @@ Sistema de planejamento editorial e gestão de pautas da **Assessoria de Comunic
 
 ---
 
+## 🆕 Versão 2.1
+
+- **Usuários novos já entram ativos** e com o papel escolhido no cadastro (Leitor, Editor ou Administrador).
+- **Senha temporária gerada pelo sistema** (padrão): funciona sem e-mail. A senha aparece uma única vez para o administrador repassar, e no primeiro acesso a pessoa é obrigada a criar a própria senha. Até trocar, ela não acessa nenhum dado (regra aplicada no banco).
+- **Dispositivos confiáveis**: ao digitar o código de 2 etapas, marque "Confiar neste dispositivo". Por 30 dias o código não é pedido de novo nele, **exceto em situações de risco** (veja abaixo).
+- **Tema escuro** em tons de cinza, com botão discreto no topo (e na tela de login). A preferência fica salva no navegador e na conta.
+- **Interface mais limpa**: sem aviso de importação da versão antiga, sem botão "Hoje", sem indicador "Ao vivo" (a sincronização continua automática) e sem contadores espalhados. Números e indicadores ficam **só no Relatório**, que ganhou "Em andamento", "Média por semana", "Próximos 7 dias", "Sugestões no banco" e "Por responsável".
+- **Calendário**: seletores de mês e ano com o mesmo tamanho, num único controle alinhado.
+
+### Quando o código de 2 etapas volta a ser pedido (situações de risco)
+| Situação | O que acontece |
+|---|---|
+| Dispositivo novo ou não marcado como confiável | Pede o código |
+| Passaram-se 30 dias | Pede o código e renova a confiança |
+| Navegador ou sistema diferente no mesmo aparelho | Pede o código |
+| Senha alterada ou redefinida | Todos os dispositivos deixam de ser confiáveis |
+| 2FA removido ou redefinido | Todos os dispositivos deixam de ser confiáveis |
+| Usuário desativado ou com papel alterado | Todos os dispositivos deixam de ser confiáveis |
+| "Sair de todos os dispositivos" ou remoção em "Minha conta" | Deixa de ser confiável |
+
+A confiança é verificada **no servidor** (token secreto guardado só como hash, vinculado à sessão). Copiar o navegador de outra pessoa não basta: também é preciso a senha.
+
+---
+
+## ✉️ E-mails: por que não chegavam e como resolver
+
+O Supabase vem com um servidor de e-mail **só para testes**, que:
+1. **só entrega para quem é membro da equipe do projeto no Supabase** (outros endereços são recusados), e
+2. tem **limite muito baixo por hora** (o erro "email rate limit exceeded").
+
+Por isso convites e "Esqueci minha senha" não chegavam. **A solução definitiva é configurar um SMTP próprio**:
+
+1. Escolha um serviço de envio. Opções compatíveis: o e-mail institucional da Cohab (peça à TI os dados de SMTP), **Brevo** ou **Resend** (ambos com plano gratuito), Amazon SES, SendGrid, Postmark ou ZeptoMail.
+2. Para não cair no spam, a TI deve configurar **SPF, DKIM e DMARC** do domínio de envio (ex.: `nao-responda@cohab.mg.gov.br`).
+3. No Supabase: **Authentication → Emails → SMTP Settings → Enable custom SMTP** e preencha host, porta (587), usuário, senha, remetente e nome ("Ascom Cohab Minas").
+4. Depois, em **Authentication → Rate Limits**, ajuste "emails por hora" (o padrão com SMTP próprio é 30).
+5. Opcional: em **Authentication → Emails → Templates**, traduza os e-mails para português.
+
+**Enquanto o SMTP não estiver configurado**, use **Senha temporária** (aba Usuários → ícone da chave → "Gerar senha temporária"). Não depende de e-mail.
+
+---
+
+## 📱 Recuperação por SMS ou WhatsApp (avaliação)
+
+**É possível**, com limitações:
+
+- O Supabase envia códigos por **SMS** via Twilio, MessageBird, Vonage ou TextLocal, e por **WhatsApp somente via Twilio** (ou Twilio Verify).
+- **Custo por mensagem** (cobrado pelo provedor) e exige conta paga no Twilio. Para WhatsApp, o número remetente precisa ser aprovado pela Meta.
+- Cada usuário precisaria cadastrar e confirmar o celular.
+- SMS é considerado um fator **mais fraco** que o app autenticador (risco de troca de chip/SIM swap), então serviria para *recuperar acesso*, não para substituir o 2FA.
+
+**Recomendação:** para uma equipe pequena, a **senha temporária gerada pelo administrador** (já implementada) resolve a recuperação sem custo e sem depender de e-mail. Se a equipe crescer, vale ativar SMTP próprio primeiro; SMS/WhatsApp só se houver demanda real, via Twilio Verify.
+
+---
+
 ## 📁 Estrutura
 
 ```
@@ -54,7 +108,8 @@ Sistema de planejamento editorial e gestão de pautas da **Assessoria de Comunic
 │   ├── fonts/                  → Inter
 │   └── vendor/                 → supabase-js e Font Awesome (locais)
 ├── supabase/
-│   ├── schema.sql              → banco, regras de segurança e auditoria
+│   ├── schema.sql              → banco completo (instalação do zero)
+│   ├── migrations/002_*.sql    → atualização da v2.0 para a v2.1 (bancos já existentes)
 │   └── functions/admin-users/  → Edge Function de gestão de usuários
 ├── src/input.css + tailwind.config.js + package.json → só para recompilar o CSS
 ```
@@ -89,7 +144,7 @@ Em **Authentication**:
 1. **Authentication → Users → Add user → Create new user**: informe seu e-mail e uma senha forte, marque **Auto Confirm User**.
 2. No **SQL Editor**, rode (trocando o e-mail e o nome):
    ```sql
-   update public.profiles set role = 'admin', ativo = true, nome = 'Davi Caetano'
+   update public.profiles set role = 'admin', nome = 'Davi Caetano'
    where email = 'seu.email@cohab.mg.gov.br';
    ```
 3. Depois de entrar no sistema, vá em **Minha conta → Ativar 2FA** e escaneie o QR Code com Google Authenticator, Microsoft Authenticator ou Authy. Sem 2FA o administrador funciona como Editor.
@@ -173,7 +228,7 @@ O GitHub Pages não permite cabeçalhos HTTP personalizados. Se publicar no **Ne
 | Criar/agendar/remover sugestões, notas no log | — | ✅ | ✅ |
 | Excluir pautas | — | — | ✅ |
 | Criar, desativar, excluir usuários, mudar papéis | — | — | ✅ |
-| Redefinir senha/2FA de outra pessoa | — | — | ✅ |
+| Gerar senha temporária, redefinir 2FA ou remover dispositivos confiáveis de outra pessoa | — | — | ✅ |
 | Alterar o próprio papel | — | — | — (bloqueado) |
 
 ---
