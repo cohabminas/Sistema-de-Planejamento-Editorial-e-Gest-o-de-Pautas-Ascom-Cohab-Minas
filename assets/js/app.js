@@ -55,28 +55,23 @@ const sb = IS_CONFIGURED && window.supabase
 // =============================================================================
 // CONSTANTES
 // =============================================================================
-const LEGACY_KEYS = {
-  pautas: 'cohab_minas_ascom_pautas_clean_v1',
-  logs: 'cohab_minas_ascom_logs_clean_v1',
-  suggestions: 'cohab_minas_ascom_suggestions_clean_v1',
-  member: 'cohab_minas_ascom_member_clean_v1',
-  editorias: 'cohab_minas_ascom_editorias_clean_v1'
-};
 const LOGIN_LOCK_KEY = 'cohab-ascom-login-lock';
+const TRUST_PREFIX = 'cohab-ascom-trust:';
+const THEME_KEY = 'cohab-theme';
 const FORMAT_OPTIONS = ['Reels', 'Carrossel', 'Card Único', 'Story'];
 const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 const ROLE_LABELS = { admin: 'Administrador', editor: 'Editor', leitor: 'Leitor' };
 const TABS = ['calendar', 'suggestions', 'hierarchy', 'completed', 'logs', 'users'];
 
 const TYPE_META = {
-  QUENTE: { label: 'Pauta Quente', dotClass: 'bg-red-500', dotHex: '#EF4444', badgeClass: 'bg-white border-cohab-border' },
-  FRIA: { label: 'Pauta Fria', dotClass: 'bg-sky-400', dotHex: '#38BDF8', badgeClass: 'bg-white border-cohab-border' }
+  QUENTE: { label: 'Pauta Quente', dotClass: 'bg-red-500', dotHex: '#EF4444', badgeClass: 'bg-surface border-cohab-border' },
+  FRIA: { label: 'Pauta Fria', dotClass: 'bg-sky-400', dotHex: '#38BDF8', badgeClass: 'bg-surface border-cohab-border' }
 };
 const STATUS_META = {
-  'A Fazer': { dotClass: 'bg-amber-400', dotHex: '#FBBF24', borderClass: 'border-l-amber-400', badgeClass: 'bg-white border-cohab-border text-cohab-graphite' },
-  'Produzindo': { dotClass: 'bg-orange-500', dotHex: '#F97316', borderClass: 'border-l-orange-500', badgeClass: 'bg-white border-cohab-border text-cohab-graphite' },
-  'Aprovado': { dotClass: 'bg-purple-500', dotHex: '#A855F7', borderClass: 'border-l-purple-500', badgeClass: 'bg-white border-cohab-border text-cohab-graphite' },
-  'Publicado': { dotClass: 'bg-emerald-500', dotHex: '#10B981', borderClass: 'border-l-emerald-500', badgeClass: 'bg-white border-cohab-border text-cohab-graphite' }
+  'A Fazer': { dotClass: 'bg-amber-400', dotHex: '#FBBF24', borderClass: 'border-l-amber-400', badgeClass: 'bg-surface border-cohab-border text-cohab-graphite' },
+  'Produzindo': { dotClass: 'bg-orange-500', dotHex: '#F97316', borderClass: 'border-l-orange-500', badgeClass: 'bg-surface border-cohab-border text-cohab-graphite' },
+  'Aprovado': { dotClass: 'bg-purple-500', dotHex: '#A855F7', borderClass: 'border-l-purple-500', badgeClass: 'bg-surface border-cohab-border text-cohab-graphite' },
+  'Publicado': { dotClass: 'bg-emerald-500', dotHex: '#10B981', borderClass: 'border-l-emerald-500', badgeClass: 'bg-surface border-cohab-border text-cohab-graphite' }
 };
 
 // =============================================================================
@@ -86,6 +81,8 @@ const state = {
   user: null,
   profile: null,
   aal: 'aal1',
+  trusted: false,
+  forcePw: false,
   factors: [],
   pautas: [],
   suggestions: [],
@@ -109,10 +106,11 @@ let mfaEnrollFactorId = null;
 // =============================================================================
 // PERMISSÕES (a decisão final é sempre do banco via RLS)
 // =============================================================================
+const strongAuth = () => state.aal === 'aal2' || state.trusted;
 const can = {
   edit: () => ['admin', 'editor'].includes(state.profile?.role),
   adminRole: () => state.profile?.role === 'admin',
-  admin: () => state.profile?.role === 'admin' && (!CFG.ADMIN_REQUIRES_MFA || state.aal === 'aal2')
+  admin: () => state.profile?.role === 'admin' && (!CFG.ADMIN_REQUIRES_MFA || strongAuth())
 };
 
 // =============================================================================
@@ -181,8 +179,8 @@ function showToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl shadow-lg border text-xs font-bold flex items-center gap-2 transition-opacity duration-300 max-w-sm ${
     type === 'error' ? 'bg-red-50 text-red-800 border-red-200'
-      : type === 'info' ? 'bg-white text-cohab-graphite border-cohab-border'
-        : 'bg-cohab-graphite text-white border-cohab-graphiteDark'}`;
+      : type === 'info' ? 'bg-surface text-cohab-graphite border-cohab-border'
+        : 'bg-cohab-ink text-white border-cohab-graphiteDark'}`;
   const icon = type === 'error' ? 'fa-circle-exclamation text-red-500' : type === 'info' ? 'fa-circle-info text-sky-500' : 'fa-circle-check text-emerald-400';
   toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${escapeHTML(message)}</span>`;
   container.appendChild(toast);
@@ -199,6 +197,8 @@ function translateError(error) {
   if (code === '23514') return 'Dados inválidos: verifique o tamanho dos campos.';
   if (code === '23505') return 'Este registro já existe.';
   if (/Failed to fetch|NetworkError/i.test(msg)) return 'Sem conexão com o servidor. Verifique sua internet.';
+  if (/rate limit/i.test(msg)) return 'Limite de envio de e-mails atingido. Tente mais tarde ou peça uma senha temporária ao administrador.';
+  if (/AAL2|aal2|insufficient_aal/i.test(msg)) return 'Esta ação exige o código de 2 etapas. Saia e entre novamente informando o código.';
   return msg || 'Ocorreu um erro inesperado.';
 }
 
@@ -267,7 +267,14 @@ function showAuthStep(step) {
   showScreen('auth');
   document.querySelectorAll('[data-auth-step]').forEach(f => f.classList.toggle('hidden', f.dataset.authStep !== step));
   hideAuthMessages();
-  if (step === 'setpw') renderPasswordRules('newPassword', 'pwRules');
+  if (step === 'setpw') {
+    $('setpwTitle').textContent = state.forcePw ? 'Defina sua senha definitiva' : 'Crie sua senha';
+    $('setpwSubtitle').textContent = state.forcePw
+      ? 'Você entrou com uma senha temporária. Por segurança, crie agora a sua própria senha.'
+      : 'Defina uma senha forte para acessar o sistema.';
+    renderPasswordRules('newPassword', 'pwRules');
+  }
+  if (step !== 'mfa') $('mfaRiskNote').classList.add('hidden');
   const first = document.querySelector(`[data-auth-step="${step}"] input`);
   if (first) setTimeout(() => first.focus(), 60);
 }
@@ -413,6 +420,7 @@ async function handleMfaLogin(event) {
   setButtonLoading(btn, false);
   $('mfaCode').value = '';
   if (error) { showAuthError('Código inválido ou expirado. Tente novamente.'); return; }
+  if ($('mfaTrust').checked) await trustThisDevice();
   await afterSignIn();
 }
 
@@ -436,9 +444,16 @@ async function handleSetPassword(event) {
   if (p1 !== p2) { showAuthError('As senhas não conferem.'); return; }
   const btn = event.submitter || event.target.querySelector('button[type=submit]');
   setButtonLoading(btn, true, 'Salvando…');
-  const { error } = await sb.auth.updateUser({ password: p1 });
+  if (state.forcePw) {
+    const res = await callFn('set_own_password', { password: p1 }, { silent: true });
+    if (!res.ok) { setButtonLoading(btn, false); showAuthError(res.error); return; }
+    await sb.auth.refreshSession();
+    state.forcePw = false;
+  } else {
+    const { error } = await sb.auth.updateUser({ password: p1 });
+    if (error) { setButtonLoading(btn, false); showAuthError(/same|different/i.test(error.message) ? 'A nova senha deve ser diferente da anterior.' : translateError(error)); return; }
+  }
   setButtonLoading(btn, false);
-  if (error) { showAuthError(/same|different/i.test(error.message) ? 'A nova senha deve ser diferente da anterior.' : translateError(error)); return; }
   $('newPassword').value = ''; $('newPasswordConfirm').value = '';
   showToast('Senha definida com sucesso!');
   await afterSignIn();
@@ -446,15 +461,33 @@ async function handleSetPassword(event) {
 
 async function afterSignIn() {
   try {
-    const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalData && aalData.nextLevel === 'aal2' && aalData.currentLevel !== 'aal2') {
-      showAuthStep('mfa');
-      return;
-    }
-    state.aal = aalData?.currentLevel || 'aal1';
-
     const { data: { user }, error: uErr } = await sb.auth.getUser();
     if (uErr || !user) { showAuthStep('login'); return; }
+
+    // Senha temporária: troca obrigatória antes de qualquer acesso
+    if (user.app_metadata?.must_change_password === true) {
+      state.forcePw = true;
+      showAuthStep('setpw');
+      return;
+    }
+
+    const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    state.trusted = false;
+    if (aalData && aalData.nextLevel === 'aal2' && aalData.currentLevel !== 'aal2') {
+      const trust = await verifyTrustedDevice(user.id);
+      if (!trust.ok) {
+        showAuthStep('mfa');
+        const notes = {
+          expired: 'A confiança deste dispositivo expirou (30 dias). Confirme o código para renová-la.',
+          browser_changed: 'Detectamos um navegador diferente neste dispositivo. Por segurança, confirme o código.',
+          unknown_device: 'Este dispositivo deixou de ser confiável (senha ou 2FA alterados, ou removido). Confirme o código.'
+        };
+        if (notes[trust.reason]) { $('mfaRiskNote').textContent = notes[trust.reason]; $('mfaRiskNote').classList.remove('hidden'); }
+        return;
+      }
+      state.trusted = true;
+    }
+    state.aal = aalData?.currentLevel || 'aal1';
     state.user = user;
 
     const { data: profile, error: pErr } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
@@ -473,6 +506,7 @@ async function afterSignIn() {
       return;
     }
     state.profile = profile;
+    syncThemeFromProfile();
     await refreshFactors();
 
     if (!sessionStorage.getItem('cohab-ascom-access-logged')) {
@@ -501,8 +535,12 @@ async function signOut() {
 }
 
 function signOutEverywhere() {
-  openConfirmModal('Sair de todos os dispositivos', 'Todas as suas sessões ativas serão encerradas, inclusive esta.', async () => {
+  openConfirmModal('Sair de todos os dispositivos', 'Todas as suas sessões serão encerradas, inclusive esta, e nenhum dispositivo continuará confiável.', async () => {
     sessionStorage.removeItem('cohab-ascom-access-logged');
+    if (state.user) {
+      await sb.from('trusted_devices').delete().eq('user_id', state.user.id);
+      localStorage.removeItem(TRUST_PREFIX + state.user.id);
+    }
     teardownApp();
     await sb.auth.signOut({ scope: 'global' }).catch(() => {});
     showAuthStep('login');
@@ -513,7 +551,7 @@ function signOutEverywhere() {
 function teardownApp() {
   if (state.channel) { sb?.removeChannel(state.channel); state.channel = null; }
   stopIdleTimer();
-  Object.assign(state, { user: null, profile: null, aal: 'aal1', factors: [], pautas: [], suggestions: [], logs: [], profiles: [], editorias: ['Serviços'], loaded: false });
+  Object.assign(state, { user: null, profile: null, aal: 'aal1', trusted: false, forcePw: false, factors: [], pautas: [], suggestions: [], logs: [], profiles: [], editorias: ['Serviços'], loaded: false });
   pautas = [];
   document.body.dataset.role = 'none';
   document.querySelectorAll('[data-modal]').forEach(m => { m.classList.add('hidden'); m.classList.remove('flex'); });
@@ -543,7 +581,6 @@ function enterApp() {
     }
     $('loadingState').classList.add('hidden');
     switchTab(currentTab === 'users' && !can.adminRole() ? 'calendar' : currentTab);
-    checkLocalImport();
   });
   subscribeRealtime();
   startIdleTimer();
@@ -562,7 +599,7 @@ function applyRoleUI() {
   document.querySelectorAll('[data-requires="edit"]').forEach(el => el.classList.toggle('hidden', !can.edit()));
   document.querySelectorAll('[data-requires="admin-role"]').forEach(el => el.classList.toggle('hidden', !can.adminRole()));
   $('readOnlyBanner').classList.toggle('hidden', can.edit());
-  $('mfaAdminBanner').classList.toggle('hidden', !(can.adminRole() && CFG.ADMIN_REQUIRES_MFA && state.aal !== 'aal2'));
+  $('mfaAdminBanner').classList.toggle('hidden', !(can.adminRole() && CFG.ADMIN_REQUIRES_MFA && !strongAuth()));
 }
 
 // =============================================================================
@@ -648,18 +685,8 @@ function subscribeRealtime() {
 }
 
 function setSync(status) {
-  const dot = $('syncDot'), label = $('syncLabel'), wrap = $('syncIndicator');
-  if (!dot) return;
-  const map = {
-    loading: ['bg-amber-400 animate-pulse', 'Sincronizando…'],
-    live: ['bg-emerald-500', 'Ao vivo'],
-    ok: ['bg-sky-500', 'Conectado'],
-    error: ['bg-red-500', 'Erro de conexão']
-  };
-  const [cls, txt] = map[status] || map.ok;
-  dot.className = `w-2 h-2 rounded-full ${cls}`;
-  label.textContent = txt;
-  wrap.title = status === 'live' ? 'Alterações da equipe aparecem em tempo real' : txt;
+  // Sincronização ao vivo continua ativa; só avisamos quando há erro de conexão.
+  if (status === 'error') document.body.dataset.sync = 'error'; else delete document.body.dataset.sync;
 }
 
 // =============================================================================
@@ -803,7 +830,7 @@ function renderCrossMonthBanner() {
   $('searchCrossMonthText').textContent = `${inMonth} resultado(s) neste mês • ${matches.length - inMonth} em outros meses:`;
   $('searchCrossMonthActions').innerHTML = keys.slice(0, 6).map(k => {
     const [y, m] = k.split('-');
-    return `<button type="button" onclick="jumpToMonth(${parseInt(y, 10)}, ${parseInt(m, 10) - 1})" class="px-2.5 py-1 rounded-lg bg-white border border-amber-300 font-bold text-amber-900 hover:bg-amber-100">${MONTH_NAMES[parseInt(m, 10) - 1].slice(0, 3)}/${y} (${others[k]})</button>`;
+    return `<button type="button" onclick="jumpToMonth(${parseInt(y, 10)}, ${parseInt(m, 10) - 1})" class="px-2.5 py-1 rounded-lg bg-surface border border-amber-300 font-bold text-amber-900 hover:bg-amber-100">${MONTH_NAMES[parseInt(m, 10) - 1].slice(0, 3)}/${y} (${others[k]})</button>`;
   }).join('');
   banner.classList.remove('hidden'); banner.classList.add('flex');
 }
@@ -898,11 +925,6 @@ function renderCalendar() {
   const holidays = { ...getHolidaysForYear(currentYear - 1), ...getHolidaysForYear(currentYear), ...getHolidaysForYear(currentYear + 1) };
   const editable = can.edit();
 
-  const prefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
-  const monthItems = state.pautas.filter(p => p.data.startsWith(prefix));
-  const pub = monthItems.filter(p => p.status === 'Publicado').length;
-  $('monthSummary').textContent = monthItems.length ? `${monthItems.length} pauta(s) no mês • ${pub} publicada(s)` : 'Nenhuma pauta neste mês';
-
   const isAgenda = window.matchMedia('(max-width: 767px)').matches;
   $('calendarWeekHeader').classList.toggle('hidden', isAgenda);
   grid.classList.toggle('calendar-grid-7', !isAgenda);
@@ -930,10 +952,10 @@ function renderCalendar() {
 
     const cell = document.createElement('div');
     cell.className = `calendar-cell p-1.5 xl:p-2 flex flex-col ${
-      !isCurrentMonth ? 'bg-neutral-100/80 text-cohab-medium/60'
-        : isPastDay ? 'bg-[#EDEDED]'
+      !isCurrentMonth ? 'bg-cohab-muted text-cohab-medium/60'
+        : isPastDay ? 'bg-cohab-past'
           : isToday ? 'bg-cohab-terracottaLight/40 ring-1 ring-inset ring-cohab-terracotta/40'
-            : weekend ? 'bg-[#FCFCFC] hover:bg-cohab-bg/40' : 'bg-white hover:bg-cohab-bg/30'}`;
+            : weekend ? 'bg-cohab-weekend hover:bg-cohab-bg/40' : 'bg-surface hover:bg-cohab-bg/30'}`;
     if (editable) {
       cell.ondblclick = (e) => { if (!e.target.closest('[data-pauta-card]')) openPautaModal(null, isoDate); };
     }
@@ -947,9 +969,8 @@ function renderCalendar() {
     header.innerHTML = `
       <div class="flex items-center gap-1">
         <span class="text-xs font-extrabold ${isToday ? 'px-1.5 py-0.5 rounded-md bg-cohab-terracotta text-white'
-          : isPastDay ? 'line-through text-neutral-500' : isCurrentMonth ? 'text-cohab-graphite' : 'text-cohab-medium/60'}">${cellDay}</span>
+          : isPastDay ? 'line-through text-cohab-medium' : isCurrentMonth ? 'text-cohab-graphite' : 'text-cohab-medium/60'}">${cellDay}</span>
         ${isToday ? '<span class="text-[9px] font-extrabold uppercase text-cohab-terracotta hidden sm:inline">Hoje</span>' : ''}
-        ${dayPautas.length > 1 ? `<span class="text-[9px] font-bold text-cohab-medium hidden sm:inline">${dayPautas.length}</span>` : ''}
       </div>
       ${isCurrentMonth && editable ? `
         <button type="button" onclick="openPautaModal(null, '${isoDate}')" title="Adicionar pauta em ${formatDateBR(isoDate)}" class="add-day-btn w-5 h-5 rounded-md text-cohab-medium hover:text-cohab-terracotta hover:bg-cohab-terracottaLight flex items-center justify-center transition">
@@ -976,7 +997,6 @@ function renderCalendar() {
 
 function renderAgenda(grid, daysInMonth, tISO, holidays, editable) {
   const wd = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  let html = 0;
   const frag = document.createDocumentFragment();
   for (let d = 1; d <= daysInMonth; d++) {
     const iso = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -984,27 +1004,21 @@ function renderAgenda(grid, daysInMonth, tISO, holidays, editable) {
       .sort((a, b) => (a.status === 'Publicado') - (b.status === 'Publicado') || (a.prioridade || 99) - (b.prioridade || 99));
     const isToday = iso === tISO;
     if (!items.length && !isToday && !holidays[iso]) continue;
-    html++;
     const isPast = iso < tISO;
     const row = document.createElement('div');
-    row.className = `flex gap-3 px-3 py-3 border-b border-cohab-border ${isToday ? 'bg-cohab-terracottaLight/50' : isPast ? 'bg-[#F3F3F3]' : 'bg-white'}`;
+    row.className = `flex gap-3 px-3 py-3 border-b border-cohab-border ${isToday ? 'bg-cohab-terracottaLight/50' : isPast ? 'bg-cohab-past' : 'bg-surface'}`;
     const dow = new Date(currentYear, currentMonth, d).getDay();
     row.innerHTML = `
       <div class="w-12 shrink-0 text-center">
         <div class="text-[10px] font-extrabold uppercase ${isToday ? 'text-cohab-terracotta' : 'text-cohab-medium'}">${wd[dow]}</div>
         <div class="text-lg font-extrabold leading-tight ${isToday ? 'text-cohab-terracotta' : 'text-cohab-graphiteDark'}">${d}</div>
-        ${editable ? `<button type="button" onclick="openPautaModal(null, '${iso}')" title="Adicionar pauta" class="mt-1 w-7 h-7 rounded-lg border border-cohab-border bg-white text-cohab-medium"><i class="fa-solid fa-plus text-[10px]"></i></button>` : ''}
+        ${editable ? `<button type="button" onclick="openPautaModal(null, '${iso}')" title="Adicionar pauta" class="mt-1 w-7 h-7 rounded-lg border border-cohab-border bg-surface text-cohab-medium"><i class="fa-solid fa-plus text-[10px]"></i></button>` : ''}
       </div>
       <div class="flex-1 min-w-0 space-y-2" data-agenda-stack></div>`;
     const stack = row.querySelector('[data-agenda-stack]');
     if (holidays[iso]) stack.insertAdjacentHTML('beforeend', `<div class="px-2 py-1 rounded bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-800"><i class="fa-regular fa-calendar-check mr-1"></i>${escapeHTML(holidays[iso])}</div>`);
-    if (!items.length) stack.insertAdjacentHTML('beforeend', `<p class="text-xs text-cohab-medium pt-2">Nada agendado${isToday ? ' para hoje' : ''}.</p>`);
     items.forEach(p => stack.appendChild(buildCalendarCard(p, false, editable)));
     frag.appendChild(row);
-  }
-  if (!html) {
-    grid.innerHTML = emptyState('fa-calendar', 'Nenhuma pauta neste mês.', editable ? 'Toque em + Nova Pauta para criar.' : '');
-    return;
   }
   grid.appendChild(frag);
 }
@@ -1021,7 +1035,7 @@ function buildCalendarCard(pauta, isPastDay, editable) {
   card.onclick = (e) => { if (!e.target.closest('[data-dropdown-root]')) openPautaModal(pauta.id); };
   card.onkeydown = (e) => { if (e.key === 'Enter') openPautaModal(pauta.id); };
   card.className = `w-full rounded-lg border border-l-4 ${statusInfo.borderClass} p-1.5 xl:p-2 shadow-2xs transition cursor-pointer min-w-0 focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/40 ${
-    isPastDay ? 'bg-[#E5E5E5] border-neutral-300 hover:bg-white' : 'bg-white border-cohab-border hover:shadow-sm'}`;
+    isPastDay ? 'bg-cohab-pastCard border-cohab-border hover:bg-surface' : 'bg-surface border-cohab-border hover:shadow-sm'}`;
 
   const statusOptionsHTML = Object.keys(STATUS_META).map(st => `
     <button type="button" onclick="event.stopPropagation(); quickChangeStatus('${pauta.id}', '${st}')"
@@ -1040,20 +1054,20 @@ function buildCalendarCard(pauta, isPastDay, editable) {
         <span class="truncate leading-none">${escapeHTML(pauta.status)}</span>
         <i class="fa-solid fa-chevron-down text-[6.5px] xl:text-[7px] text-cohab-medium shrink-0"></i>
       </button>
-      <div id="statusMenu-${pauta.id}" data-dropdown-menu class="hidden absolute left-0 bottom-full mb-1 w-32 bg-white border border-cohab-border rounded-lg shadow-lg py-1 z-30">${statusOptionsHTML}</div>
+      <div id="statusMenu-${pauta.id}" data-dropdown-menu class="hidden absolute left-0 bottom-full mb-1 w-32 bg-surface border border-cohab-border rounded-lg shadow-lg py-1 z-30">${statusOptionsHTML}</div>
     </div>` : `
     <span class="flex-1 min-w-0 h-5 xl:h-6 inline-flex items-center text-[9px] xl:text-[9.5px] font-bold rounded-md px-1.5 border ${statusInfo.badgeClass} truncate">${escapeHTML(pauta.status)}</span>`;
 
   card.innerHTML = `
-    <p class="text-[10.5px] xl:text-[11.5px] font-bold leading-snug truncate ${isPastDay ? 'text-neutral-700' : 'text-cohab-graphiteDark'} ${isPublished ? 'line-through text-cohab-medium' : ''}" title="${escapeHTML(pauta.titulo)}">${escapeHTML(pauta.titulo)}</p>
+    <p class="text-[10.5px] xl:text-[11.5px] font-bold leading-snug truncate ${isPastDay ? 'text-cohab-graphite' : 'text-cohab-graphiteDark'} ${isPublished ? 'line-through text-cohab-medium' : ''}" title="${escapeHTML(pauta.titulo)}">${escapeHTML(pauta.titulo)}</p>
     ${pauta.editoria ? `<p class="mt-0.5 xl:mt-1 text-[9.5px] xl:text-[10px] font-semibold text-cohab-medium truncate flex items-center gap-1 leading-tight"><i class="fa-solid fa-tag text-[8px] text-cohab-graphite/70 shrink-0"></i><span class="truncate">${escapeHTML(pauta.editoria)}</span></p>` : ''}
     ${pauta.formato ? `<p class="mt-0.5 text-[9.5px] xl:text-[10px] text-cohab-medium truncate flex items-center gap-1 leading-tight"><i class="fa-solid fa-clapperboard text-[8px] text-cohab-graphite/70 shrink-0"></i><span class="truncate">${escapeHTML(pauta.formato)}</span></p>` : ''}
-    <div class="mt-1 xl:mt-1.5 pt-1 xl:pt-1.5 border-t ${isPastDay ? 'border-neutral-300' : 'border-cohab-border/70'} flex items-center justify-between gap-1 w-full min-w-0">
+    <div class="mt-1 xl:mt-1.5 pt-1 xl:pt-1.5 border-t ${isPastDay ? 'border-cohab-border' : 'border-cohab-border/70'} flex items-center justify-between gap-1 w-full min-w-0">
       ${statusControl}
       <div class="flex items-center gap-1 shrink-0">
         <span title="${typeInfo.label}" class="w-5 h-5 xl:w-6 xl:h-6 inline-flex items-center justify-center rounded-md border ${typeInfo.badgeClass}"><span class="w-1.5 h-1.5 xl:w-2 xl:h-2 rounded-full ${typeInfo.dotClass}"></span></span>
-        <span title="${isPublished ? 'Conteúdo Publicado' : 'Prioridade #' + (pauta.prioridade || 1)}" class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-white text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap ${isPublished ? 'text-emerald-600' : 'text-cohab-graphite'}">${isPublished ? '<i class="fa-solid fa-check text-[8px]"></i>' : `#${pauta.prioridade || 1}`}</span>
-        <span title="${escapeHTML(assigneeTitle)}" class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-white text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap text-cohab-graphite">${escapeHTML(primaryInitials)}${extra}</span>
+        <span title="${isPublished ? 'Conteúdo Publicado' : 'Prioridade #' + (pauta.prioridade || 1)}" class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-surface text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap ${isPublished ? 'text-emerald-600' : 'text-cohab-graphite'}">${isPublished ? '<i class="fa-solid fa-check text-[8px]"></i>' : `#${pauta.prioridade || 1}`}</span>
+        <span title="${escapeHTML(assigneeTitle)}" class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-surface text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap text-cohab-graphite">${escapeHTML(primaryInitials)}${extra}</span>
       </div>
     </div>`;
   return card;
@@ -1096,11 +1110,9 @@ function renderHierarchy() {
   const list = $('hierarchyList');
   if (!list) return;
   const allActive = orderedActive().filter(matchesSearchAndFilter);
-  const counts = { ALL: allActive.length };
-  ['A Fazer', 'Produzindo', 'Aprovado'].forEach(s => { counts[s] = allActive.filter(p => p.status === s).length; });
   $('hierarchyStatusFilter').innerHTML = ['ALL', 'A Fazer', 'Produzindo', 'Aprovado'].map(f => `
-    <button type="button" onclick="setHierarchyFilter('${f}')" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ${state.hierarchyFilter === f ? 'bg-cohab-graphite text-white border-cohab-graphite' : 'bg-white text-cohab-graphite border-cohab-border hover:bg-cohab-bg'}">
-      ${f !== 'ALL' ? `<span class="inline-block w-2 h-2 rounded-full ${STATUS_META[f].dotClass} mr-1"></span>` : ''}${f === 'ALL' ? 'Todas' : f} <span class="opacity-70">(${counts[f]})</span>
+    <button type="button" onclick="setHierarchyFilter('${f}')" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ${state.hierarchyFilter === f ? 'bg-cohab-ink text-white border-cohab-graphite' : 'bg-surface text-cohab-graphite border-cohab-border hover:bg-cohab-bg'}">
+      ${f !== 'ALL' ? `<span class="inline-block w-2 h-2 rounded-full ${STATUS_META[f].dotClass} mr-1"></span>` : ''}${f === 'ALL' ? 'Todas' : f}
     </button>`).join('');
 
   const activePautas = state.hierarchyFilter === 'ALL' ? allActive : allActive.filter(p => p.status === state.hierarchyFilter);
@@ -1123,7 +1135,7 @@ function renderHierarchy() {
     const assigneesLabel = formatAssigneesFull(pauta.responsavel);
     const overdue = pauta.data < tISO;
     const row = document.createElement('div');
-    row.className = `rounded-2xl border border-cohab-border border-l-4 ${statusInfo.borderClass} bg-white p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-2xs`;
+    row.className = `rounded-2xl border border-cohab-border border-l-4 ${statusInfo.borderClass} bg-surface p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-2xs`;
     row.innerHTML = `
       <div class="flex items-start gap-3 min-w-0">
         <div class="flex flex-col items-center gap-0.5 shrink-0">
@@ -1150,7 +1162,7 @@ function renderHierarchy() {
           <button type="button" onclick="toggleCustomDropdown('prioStatusMenu-${pauta.id}', event)" class="h-8 inline-flex items-center gap-2 rounded-xl px-3 border ${statusInfo.badgeClass} text-xs font-bold whitespace-nowrap hover:border-cohab-graphite/40 transition">
             <span class="w-2.5 h-2.5 rounded-full ${statusInfo.dotClass}"></span><span>${escapeHTML(pauta.status)}</span><i class="fa-solid fa-chevron-down text-[9px] text-cohab-medium"></i>
           </button>
-          <div id="prioStatusMenu-${pauta.id}" data-dropdown-menu class="hidden absolute right-0 top-full mt-1 w-36 bg-white border border-cohab-border rounded-xl shadow-lg py-1 z-30">
+          <div id="prioStatusMenu-${pauta.id}" data-dropdown-menu class="hidden absolute right-0 top-full mt-1 w-36 bg-surface border border-cohab-border rounded-xl shadow-lg py-1 z-30">
             ${Object.keys(STATUS_META).map(st => `<button type="button" onclick="quickChangeStatus('${pauta.id}', '${st}')" class="w-full px-3 py-1.5 text-left text-xs whitespace-nowrap ${pauta.status === st ? 'font-extrabold bg-cohab-bg' : 'font-semibold'} text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full ${STATUS_META[st].dotClass}"></span>${st}</button>`).join('')}
           </div>
         </div>` : `<span class="h-8 inline-flex items-center gap-2 rounded-xl px-3 border ${statusInfo.badgeClass} text-xs font-bold"><span class="w-2.5 h-2.5 rounded-full ${statusInfo.dotClass}"></span>${escapeHTML(pauta.status)}</span>`}
@@ -1229,8 +1241,7 @@ function renderCompleted() {
     if (mk !== lastMonth) {
       lastMonth = mk;
       const [y, m] = mk.split('-');
-      const count = published.filter(p => p.data.startsWith(mk)).length;
-      list.insertAdjacentHTML('beforeend', `<div class="px-4 py-2 bg-cohab-bg text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite flex justify-between"><span>${MONTH_NAMES[parseInt(m, 10) - 1]} ${y}</span><span class="text-cohab-medium">${count}</span></div>`);
+      list.insertAdjacentHTML('beforeend', `<div class="px-4 py-2 bg-cohab-bg text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">${MONTH_NAMES[parseInt(m, 10) - 1]} ${y}</div>`);
     }
     const item = document.createElement('div');
     item.className = 'p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-cohab-bg/40 transition';
@@ -1247,7 +1258,7 @@ function renderCompleted() {
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-cohab-border bg-white text-xs font-bold"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Publicado</span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-cohab-border bg-surface text-xs font-bold"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Publicado</span>
         <button type="button" onclick="openPautaModal('${pauta.id}')" class="px-3 py-1 rounded-lg bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite text-xs font-bold border border-cohab-border transition">${can.edit() ? 'Editar' : 'Ver'}</button>
       </div>`;
     list.appendChild(item);
@@ -1270,7 +1281,7 @@ function renderSuggestions() {
   items.forEach(sug => {
     const typeInfo = TYPE_META[sug.tipo] || TYPE_META.FRIA;
     const card = document.createElement('div');
-    card.className = 'rounded-2xl border border-cohab-border bg-white p-4 flex flex-col justify-between gap-3 shadow-2xs hover:shadow-sm transition';
+    card.className = 'rounded-2xl border border-cohab-border bg-surface p-4 flex flex-col justify-between gap-3 shadow-2xs hover:shadow-sm transition';
     card.innerHTML = `
       <div>
         <div class="flex items-start justify-between gap-2">
@@ -1426,7 +1437,7 @@ function renderLogs() {
     row.className = 'p-3 rounded-xl border border-cohab-border bg-cohab-bg/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs';
     row.innerHTML = `
       <div class="flex items-start sm:items-center gap-2.5 min-w-0">
-        <span class="px-2 py-0.5 rounded-md bg-white border border-cohab-border font-extrabold text-[10px] text-cohab-terracotta shrink-0 inline-flex items-center gap-1"><i class="fa-solid ${LOG_ICONS[item.acao] || 'fa-circle'} text-[9px]"></i>${escapeHTML(item.acao)}</span>
+        <span class="px-2 py-0.5 rounded-md bg-surface border border-cohab-border font-extrabold text-[10px] text-cohab-terracotta shrink-0 inline-flex items-center gap-1"><i class="fa-solid ${LOG_ICONS[item.acao] || 'fa-circle'} text-[9px]"></i>${escapeHTML(item.acao)}</span>
         <span class="text-cohab-graphite font-medium break-words">${escapeHTML(item.detalhe)}</span>
       </div>
       <div class="text-[11px] text-cohab-medium shrink-0"><strong class="text-cohab-graphite">${escapeHTML(item.user_nome || 'Sistema')}</strong> &bull; ${new Date(item.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>`;
@@ -1467,7 +1478,7 @@ function renderModalAssigneesList() {
   if (!modalAssignees.length) { container.innerHTML = `<span class="text-[11px] text-cohab-medium italic">Nenhuma pessoa designada ainda.</span>`; return; }
   container.innerHTML = modalAssignees.map((person, i) => `
     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-cohab-border bg-cohab-bg text-xs font-bold text-cohab-graphite">
-      <span class="px-1.5 py-0.5 rounded bg-white border border-cohab-border text-[10px] font-extrabold text-cohab-terracotta">${escapeHTML(getPersonInitials(person))}</span>
+      <span class="px-1.5 py-0.5 rounded bg-surface border border-cohab-border text-[10px] font-extrabold text-cohab-terracotta">${escapeHTML(getPersonInitials(person))}</span>
       <span>${escapeHTML(person)}</span>
       ${ro ? '' : `<button type="button" onclick="removeModalAssignee(${i})" title="Remover" class="text-cohab-medium hover:text-red-600 ml-0.5"><i class="fa-solid fa-xmark text-[10px]"></i></button>`}
     </span>`).join('');
@@ -1651,6 +1662,7 @@ async function openAccountModal() {
   $('mfaEnrollBox').classList.add('hidden');
   await refreshFactors();
   renderMfaStatus();
+  renderTrustedDevices();
   openModal('accountModal');
 }
 
@@ -1666,7 +1678,7 @@ function renderMfaStatus() {
   }
   $('mfaEnrollBtn').classList.toggle('hidden', verified.length > 0);
   $('mfaFactorsList').innerHTML = verified.map(f => `
-    <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white border border-cohab-border text-xs">
+    <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-surface border border-cohab-border text-xs">
       <span class="font-semibold"><i class="fa-solid fa-mobile-screen-button text-cohab-terracotta mr-1.5"></i>${escapeHTML(f.friendly_name || 'App autenticador')} <span class="text-cohab-medium font-normal">• desde ${formatDateBR(String(f.created_at).slice(0, 10))}</span></span>
       <button type="button" onclick="unenrollFactor('${escapeHTML(f.id)}')" class="text-[11px] font-bold text-cohab-terracotta hover:underline">Remover</button>
     </div>`).join('');
@@ -1695,7 +1707,9 @@ async function verifyMfaEnroll() {
   await refreshFactors();
   const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
   state.aal = aal?.currentLevel || state.aal;
+  if ($('mfaEnrollTrust').checked) await trustThisDevice();
   renderMfaStatus();
+  renderTrustedDevices();
   applyRoleUI();
   renderAll();
   showToast('Verificação em duas etapas ativada!');
@@ -1746,8 +1760,7 @@ async function changeMyPassword(event) {
 // =============================================================================
 // GESTÃO DE USUÁRIOS (ADMIN)
 // =============================================================================
-async function adminFn(action, payload = {}) {
-  if (!can.admin()) { showToast('Ative a verificação em duas etapas para administrar usuários.', 'error'); return null; }
+async function callFn(action, payload = {}, opts = {}) {
   try {
     const { data, error } = await sb.functions.invoke(CFG.ADMIN_FUNCTION || 'admin-users', {
       body: { action, ...payload, redirectTo: appUrl() }
@@ -1755,14 +1768,124 @@ async function adminFn(action, payload = {}) {
     if (error) {
       let msg = error.message;
       try { const ctx = await error.context?.json(); if (ctx?.error) msg = ctx.error; } catch (_) { /* noop */ }
-      if (/Failed to send|fetch/i.test(msg)) msg = 'Função "admin-users" indisponível. Verifique se ela foi publicada (veja o README).';
-      showToast(msg, 'error');
-      return null;
+      if (/Failed to send|fetch/i.test(msg)) msg = 'Serviço de usuários indisponível no momento. Tente novamente.';
+      if (!opts.silent) showToast(msg, 'error');
+      return { ok: false, error: msg };
     }
-    return data;
+    return { ok: true, data };
   } catch (e) {
-    showToast(translateError(e), 'error');
-    return null;
+    const msg = translateError(e);
+    if (!opts.silent) showToast(msg, 'error');
+    return { ok: false, error: msg };
+  }
+}
+
+async function adminFn(action, payload = {}) {
+  if (!can.admin()) { showToast('Ative a verificação em duas etapas para administrar usuários.', 'error'); return null; }
+  const res = await callFn(action, payload);
+  return res.ok ? res.data : null;
+}
+
+// =============================================================================
+// DISPOSITIVOS CONFIÁVEIS (2FA)
+// =============================================================================
+async function verifyTrustedDevice(userId) {
+  const token = localStorage.getItem(TRUST_PREFIX + userId);
+  if (!token) return { ok: false, reason: 'none' };
+  const res = await callFn('verify_device', { token }, { silent: true });
+  if (res.ok && res.data?.ok) return { ok: true };
+  if (res.ok) localStorage.removeItem(TRUST_PREFIX + userId); // recusado pelo servidor
+  return { ok: false, reason: res.data?.reason || 'error' };
+}
+
+async function trustThisDevice() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const res = await callFn('trust_device', {}, { silent: true });
+  if (res.ok && res.data?.token) {
+    localStorage.setItem(TRUST_PREFIX + user.id, res.data.token);
+    localStorage.setItem(TRUST_PREFIX + 'id:' + user.id, res.data.device_id);
+    showToast(`Dispositivo confiável por 30 dias (${res.data.label}).`);
+  }
+}
+
+async function renderTrustedDevices() {
+  const box = $('trustedDevicesList');
+  const { data, error } = await sb.from('trusted_devices')
+    .select('id, label, last_ip, created_at, last_used_at, expires_at')
+    .order('last_used_at', { ascending: false });
+  if (error) { box.innerHTML = `<p class="text-[11px] text-cohab-medium">Não foi possível carregar.</p>`; return; }
+  const currentId = localStorage.getItem(TRUST_PREFIX + 'id:' + state.user.id);
+  $('revokeAllDevicesBtn').classList.toggle('hidden', !data.length);
+  if (!data.length) {
+    box.innerHTML = `<p class="text-[11px] text-cohab-medium italic">Nenhum dispositivo confiável. Marque "Confiar neste dispositivo" ao informar o código.</p>`;
+    return;
+  }
+  box.innerHTML = data.map(d => `
+    <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-surface border border-cohab-border text-xs">
+      <div class="min-w-0">
+        <p class="font-semibold text-cohab-graphite truncate"><i class="fa-solid ${/iPhone|Android/.test(d.label) ? 'fa-mobile-screen-button' : 'fa-laptop'} text-cohab-terracotta mr-1.5"></i>${escapeHTML(d.label)}
+          ${d.id === currentId ? '<span class="ml-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-700">este dispositivo</span>' : ''}</p>
+        <p class="text-[10.5px] text-cohab-medium">Último uso ${formatDateTimeBR(d.last_used_at)} • expira ${formatDateBR(String(d.expires_at).slice(0, 10))}</p>
+      </div>
+      <button type="button" onclick="removeTrustedDevice('${escapeHTML(d.id)}')" class="text-[11px] font-bold text-cohab-terracotta hover:underline shrink-0">Remover</button>
+    </div>`).join('');
+}
+
+async function removeTrustedDevice(id) {
+  const { error } = await sb.from('trusted_devices').delete().eq('id', id);
+  if (error) { showToast(translateError(error), 'error'); return; }
+  if (localStorage.getItem(TRUST_PREFIX + 'id:' + state.user.id) === id) {
+    localStorage.removeItem(TRUST_PREFIX + state.user.id);
+    localStorage.removeItem(TRUST_PREFIX + 'id:' + state.user.id);
+  }
+  showToast('Dispositivo removido. O código será pedido no próximo acesso por ele.');
+  renderTrustedDevices();
+}
+
+function revokeAllMyDevices() {
+  openConfirmModal('Remover todos os dispositivos', 'O código de 2 etapas voltará a ser pedido em todos os seus dispositivos.', async () => {
+    const { error } = await sb.from('trusted_devices').delete().eq('user_id', state.user.id);
+    if (error) { showToast(translateError(error), 'error'); return; }
+    localStorage.removeItem(TRUST_PREFIX + state.user.id);
+    localStorage.removeItem(TRUST_PREFIX + 'id:' + state.user.id);
+    showToast('Todos os dispositivos confiáveis foram removidos.');
+    renderTrustedDevices();
+  }, 'Remover todos');
+}
+
+// =============================================================================
+// TEMA CLARO / ESCURO
+// =============================================================================
+function currentTheme() { return document.documentElement.classList.contains('dark') ? 'escuro' : 'claro'; }
+
+function applyTheme(tema) {
+  document.documentElement.classList.toggle('dark', tema === 'escuro');
+  document.querySelectorAll('[data-theme-toggle]').forEach(btn => {
+    const dark = tema === 'escuro';
+    btn.innerHTML = `<i class="fa-solid ${dark ? 'fa-sun' : 'fa-moon'}"></i>`;
+    btn.title = dark ? 'Usar tema claro' : 'Usar tema escuro';
+    btn.setAttribute('aria-label', btn.title);
+  });
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = tema === 'escuro' ? '#1E2023' : '#B84231';
+}
+
+function toggleTheme() {
+  const next = currentTheme() === 'escuro' ? 'claro' : 'escuro';
+  applyTheme(next);
+  try { localStorage.setItem(THEME_KEY, next); } catch (_) { /* noop */ }
+  if (state.user && sb) {
+    sb.from('profiles').update({ tema: next }).eq('id', state.user.id).then(() => {}, () => {});
+    if (state.profile) state.profile.tema = next;
+  }
+}
+
+function syncThemeFromProfile() {
+  const tema = state.profile?.tema;
+  if (tema === 'claro' || tema === 'escuro') {
+    applyTheme(tema);
+    try { localStorage.setItem(THEME_KEY, tema); } catch (_) { /* noop */ }
   }
 }
 
@@ -1781,28 +1904,27 @@ function renderUsers() {
     const isMe = p.id === state.user?.id;
     const dis = !admin || isMe ? 'disabled' : '';
     return `
-      <tr class="${p.ativo ? '' : 'bg-neutral-50 text-cohab-medium'}">
+      <tr class="${p.ativo ? '' : 'bg-cohab-subtle text-cohab-medium'}">
         <td class="px-4 py-3">
           <div class="flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-lg ${p.ativo ? 'bg-cohab-terracottaLight text-cohab-terracotta' : 'bg-neutral-200 text-neutral-500'} text-[11px] font-extrabold flex items-center justify-center shrink-0">${escapeHTML(getPersonInitials(p.nome || p.email))}</span>
+            <span class="w-8 h-8 rounded-lg ${p.ativo ? 'bg-cohab-terracottaLight text-cohab-terracotta' : 'bg-cohab-past text-cohab-medium'} text-[11px] font-extrabold flex items-center justify-center shrink-0">${escapeHTML(getPersonInitials(p.nome || p.email))}</span>
             <div class="min-w-0"><p class="font-bold text-cohab-graphiteDark truncate">${escapeHTML(p.nome || '—')} ${isMe ? '<span class="text-[10px] font-bold text-cohab-terracotta">(você)</span>' : ''}</p><p class="text-[11px] text-cohab-medium truncate">${escapeHTML(p.email)}</p></div>
           </div>
         </td>
         <td class="px-3 py-3">
-          <select ${dis} onchange="setUserRole('${p.id}', this.value, this)" class="rounded-lg border border-cohab-border bg-white px-2 py-1 text-xs font-bold disabled:opacity-60 disabled:cursor-not-allowed">
+          <select ${dis} onchange="setUserRole('${p.id}', this.value, this)" aria-label="Papel de ${escapeHTML(p.nome)}" class="rounded-lg border border-cohab-border bg-surface text-cohab-graphite px-2 py-1 text-xs font-bold disabled:opacity-60 disabled:cursor-not-allowed">
             ${['admin', 'editor', 'leitor'].map(r => `<option value="${r}" ${p.role === r ? 'selected' : ''}>${ROLE_LABELS[r]}</option>`).join('')}
           </select>
         </td>
         <td class="px-3 py-3">
-          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[11px] font-bold ${p.ativo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-600 border-neutral-300'}">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[11px] font-bold ${p.ativo ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-cohab-past text-cohab-medium border-cohab-border'}">
             <span class="w-1.5 h-1.5 rounded-full ${p.ativo ? 'bg-emerald-500' : 'bg-neutral-400'}"></span>${p.ativo ? 'Ativo' : 'Desativado'}
           </span>
         </td>
         <td class="px-4 py-3">
           <div class="flex items-center justify-end gap-1">
             ${isMe ? '<span class="text-[11px] text-cohab-medium">Use "Minha conta"</span>' : `
-            <button ${dis} type="button" onclick="resetUserPassword('${p.id}')" title="Enviar link de redefinição de senha" class="icon-btn"><i class="fa-solid fa-key"></i></button>
-            <button ${dis} type="button" onclick="resetUserMfa('${p.id}')" title="Redefinir 2FA (celular perdido)" class="icon-btn"><i class="fa-solid fa-mobile-screen"></i></button>
+            <button ${dis} type="button" onclick="openUserAccess('${p.id}')" title="Senha, 2FA e dispositivos" class="icon-btn"><i class="fa-solid fa-key"></i></button>
             <button ${dis} type="button" onclick="toggleUserActive('${p.id}', ${!p.ativo})" title="${p.ativo ? 'Desativar acesso' : 'Reativar acesso'}" class="icon-btn"><i class="fa-solid ${p.ativo ? 'fa-user-lock' : 'fa-user-check'}"></i></button>
             <button ${dis} type="button" onclick="deleteUser('${p.id}')" title="Excluir usuário" class="icon-btn hover:!text-red-600 hover:!bg-red-50"><i class="fa-regular fa-trash-can"></i></button>`}
           </div>
@@ -1817,17 +1939,68 @@ async function createUser(event) {
   const email = $('newUserEmail').value.trim().toLowerCase();
   const role = $('newUserRole').value;
   const mode = $('newUserMode').value;
-  const password = mode === 'password' ? $('newUserPassword').value : '';
-  if (mode === 'password' && !isStrongPassword(password)) { showToast('A senha temporária não atende aos requisitos.', 'error'); return; }
   const btn = event.submitter;
   setButtonLoading(btn, true, 'Criando…');
-  const res = await adminFn('create', { nome, email, role, password: password || undefined });
+  const res = await adminFn('create', { nome, email, role, mode });
   setButtonLoading(btn, false);
   if (!res) return;
-  showToast(mode === 'invite' ? `Convite enviado para ${email}.` : `Usuário ${nome} criado. Envie a senha temporária por um canal seguro.`);
   $('createUserForm').reset();
-  $('newUserPasswordWrap').classList.add('hidden');
   await loadAll();
+  if (res.temp_password) showTempPassword(res.temp_password, `${nome} • ${email} • ${ROLE_LABELS[role]}`);
+  else showToast(`Convite enviado para ${email}. ${nome} já está ativo como ${ROLE_LABELS[role]}.`);
+}
+
+let accessTargetId = null;
+function openUserAccess(userId) {
+  const p = state.profiles.find(x => x.id === userId);
+  if (!p) return;
+  accessTargetId = userId;
+  $('userAccessName').textContent = p.nome || p.email;
+  $('userAccessEmail').textContent = p.email;
+  openModal('userAccessModal');
+}
+
+async function userAccessAction(action) {
+  const p = state.profiles.find(x => x.id === accessTargetId);
+  if (!p) return;
+  const labels = {
+    set_temp_password: ['Gerar senha temporária', `A senha atual de ${p.nome} deixará de funcionar. Continuar?`, 'Gerar senha'],
+    reset_password: ['Enviar link por e-mail', `Enviar link de redefinição de senha para ${p.email}?`, 'Enviar link'],
+    reset_mfa: ['Redefinir 2 etapas', `Remover a verificação em duas etapas de ${p.nome}? Confirme a identidade da pessoa antes.`, 'Redefinir'],
+    revoke_devices: ['Remover dispositivos confiáveis', `${p.nome} precisará informar o código de 2 etapas novamente em todos os dispositivos.`, 'Remover']
+  };
+  const [title, msg, ok] = labels[action];
+  closeModal('userAccessModal');
+  openConfirmModal(title, msg, async () => {
+    const res = await adminFn(action, { user_id: p.id });
+    if (!res) return;
+    if (action === 'set_temp_password') showTempPassword(res.temp_password, `${p.nome} • ${p.email}`);
+    else showToast({ reset_password: 'Link enviado.', reset_mfa: '2 etapas redefinidas.', revoke_devices: 'Dispositivos confiáveis removidos.' }[action]);
+    await loadAll();
+  }, ok);
+}
+
+function showTempPassword(pwd, who) {
+  $('tempPasswordValue').textContent = pwd;
+  $('tempPasswordFor').textContent = who;
+  $('tempPasswordCopyLabel').textContent = 'Copiar';
+  openModal('tempPasswordModal');
+}
+
+async function copyTempPassword() {
+  try {
+    await navigator.clipboard.writeText($('tempPasswordValue').textContent);
+    $('tempPasswordCopyLabel').textContent = 'Copiada!';
+  } catch (_) {
+    const r = document.createRange(); r.selectNodeContents($('tempPasswordValue'));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    showToast('Selecionada. Use Ctrl+C para copiar.', 'info');
+  }
+}
+
+function closeTempPassword() {
+  $('tempPasswordValue').textContent = '';
+  closeModal('tempPasswordModal');
 }
 
 async function setUserRole(userId, role, selectEl) {
@@ -1847,22 +2020,6 @@ function toggleUserActive(userId, ativo) {
   else openConfirmModal('Desativar acesso', `${p.nome} será desconectado(a) e não poderá entrar até ser reativado(a). O histórico é mantido.`, run, 'Desativar');
 }
 
-function resetUserPassword(userId) {
-  const p = state.profiles.find(x => x.id === userId);
-  if (!p) return;
-  openConfirmModal('Redefinir senha', `Enviar um link de redefinição de senha para ${p.email}?`, async () => {
-    if (await adminFn('reset_password', { user_id: userId })) showToast('Link de redefinição enviado.');
-  }, 'Enviar link');
-}
-
-function resetUserMfa(userId) {
-  const p = state.profiles.find(x => x.id === userId);
-  if (!p) return;
-  openConfirmModal('Redefinir 2FA', `Remover a verificação em duas etapas de ${p.nome}? Use apenas se a pessoa perdeu o celular — confirme a identidade dela antes.`, async () => {
-    if (await adminFn('reset_mfa', { user_id: userId })) { showToast('2FA redefinida.'); await loadAll(); }
-  }, 'Redefinir');
-}
-
 function deleteUser(userId) {
   const p = state.profiles.find(x => x.id === userId);
   if (!p) return;
@@ -1872,70 +2029,9 @@ function deleteUser(userId) {
 }
 
 // =============================================================================
-// IMPORTAÇÃO DOS DADOS LOCAIS DA VERSÃO ANTIGA
-// =============================================================================
-function readLegacy(key) { try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v : []; } catch { return []; } }
-
-function checkLocalImport() {
-  const banner = $('importBanner');
-  if (!can.edit() || localStorage.getItem('cohab-ascom-import-dismissed') === '1') { banner.classList.add('hidden'); return; }
-  const lp = readLegacy(LEGACY_KEYS.pautas), ls = readLegacy(LEGACY_KEYS.suggestions);
-  if (!lp.length && !ls.length) { banner.classList.add('hidden'); return; }
-  $('importBannerText').innerHTML = `<i class="fa-solid fa-box-archive mr-1.5"></i>Encontramos <strong>${lp.length} pauta(s)</strong> e <strong>${ls.length} sugestão(ões)</strong> da versão anterior salvas neste navegador.`;
-  banner.classList.remove('hidden'); banner.classList.add('flex');
-}
-
-function dismissLocalImport() {
-  localStorage.setItem('cohab-ascom-import-dismissed', '1');
-  $('importBanner').classList.add('hidden'); $('importBanner').classList.remove('flex');
-}
-
-async function importLocalData() {
-  const lp = readLegacy(LEGACY_KEYS.pautas), ls = readLegacy(LEGACY_KEYS.suggestions);
-  const validDate = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
-  const rowsP = lp.filter(p => p && p.titulo && validDate(p.data)).map(p => ({
-    titulo: String(p.titulo).slice(0, 200),
-    data: p.data,
-    tipo: p.tipo === 'QUENTE' ? 'QUENTE' : 'FRIA',
-    prioridade: Math.max(1, Math.min(999, parseInt(p.prioridade, 10) || 1)),
-    status: normalizeLegacyStatus(p.status),
-    responsaveis: normalizeAssignees(p.responsavel).slice(0, 20).map(n => n.slice(0, 120)),
-    formato: p.formato ? String(p.formato).slice(0, 60) : null,
-    editoria: (formatSentenceCase(p.editoria) || 'Serviços').slice(0, 60),
-    descricao: p.descricao ? String(p.descricao).slice(0, 5000) : null
-  }));
-  const rowsS = ls.filter(s => s && s.titulo).map(s => ({
-    titulo: String(s.titulo).slice(0, 200),
-    tipo: s.tipo === 'QUENTE' ? 'QUENTE' : 'FRIA',
-    formato: s.formato ? String(s.formato).slice(0, 60) : null,
-    editoria: (formatSentenceCase(s.editoria) || 'Serviços').slice(0, 60),
-    descricao: s.descricao ? String(s.descricao).slice(0, 2000) : null
-  }));
-  const eds = [...new Set([...rowsP, ...rowsS].map(r => r.editoria))];
-  for (const e of eds) await ensureEditoria(e);
-
-  if (rowsP.length) { const r = await dbRun(sb.from('pautas').insert(rowsP)); if (!r.ok) return; }
-  if (rowsS.length) { const r = await dbRun(sb.from('sugestoes').insert(rowsS)); if (!r.ok) return; }
-  Object.values(LEGACY_KEYS).forEach(k => localStorage.removeItem(k));
-  dismissLocalImport();
-  showToast(`${rowsP.length} pauta(s) e ${rowsS.length} sugestão(ões) importadas!`);
-  await loadAll();
-  await normalizeAndPersist();
-}
-
-// =============================================================================
 // RENDER GERAL
 // =============================================================================
-function updateBadges() {
-  const activeCount = state.pautas.filter(p => p.status !== 'Publicado').length;
-  const completedCount = state.pautas.length - activeCount;
-  $('badgeCountSuggestions').textContent = state.suggestions.length;
-  $('badgeCountPautas').textContent = activeCount;
-  $('badgeCountCompleted').textContent = completedCount;
-  $('badgeCountLogs').textContent = state.logs.length >= 500 ? '500+' : state.logs.length;
-  $('badgeCountUsers').textContent = state.profiles.length;
-  $('completedSummaryPill').textContent = `${completedCount} ${completedCount === 1 ? 'conteúdo realizado' : 'conteúdos realizados'}`;
-}
+function updateBadges() { /* contadores ficam apenas nos relatórios */ }
 
 function renderAll() {
   if (!state.user) return;
@@ -2133,6 +2229,13 @@ function generateEditorialReport(event) {
   const publicados = byStatus['Publicado'] || 0;
   const taxa = total ? Math.round((publicados / total) * 100) : 0;
   const atrasadas = items.filter(i => i.status !== 'Publicado' && i.data < todayISO()).length;
+  const emAndamento = items.filter(i => i.status !== 'Publicado').length;
+  const dias = Math.max(1, Math.round((new Date(endStr) - new Date(startStr)) / 86400000) + 1);
+  const mediaSemana = (total / (dias / 7)).toFixed(1).replace('.', ',');
+  const hojeISO = todayISO();
+  const em7 = toISODate(new Date(Date.now() + 7 * 86400000));
+  const proximos = state.pautas.filter(p => p.status !== 'Publicado' && p.data >= hojeISO && p.data <= em7).length;
+  const sugestoes = state.suggestions.length;
 
   const stopWords = new Set(['para', 'com', 'sobre', 'pela', 'pelo', 'das', 'dos', 'nos', 'nas', 'uma', 'uns', 'umas', 'que', 'por', 'como', 'mais', 'esta', 'este', 'essa', 'esse', 'entre', 'também', 'seus', 'suas']);
   const wordFreq = {};
@@ -2153,7 +2256,7 @@ function generateEditorialReport(event) {
   };
 
   container.innerHTML = `
-    <div class="bg-white rounded-2xl border border-cohab-border p-5 space-y-5">
+    <div class="bg-surface rounded-2xl border border-cohab-border p-5 space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-cohab-border">
         <div>
           <span class="text-[10px] font-extrabold uppercase tracking-wider text-cohab-terracotta">Relatório Executivo • Ascom Cohab Minas</span>
@@ -2167,6 +2270,12 @@ function generateEditorialReport(event) {
         <div class="p-3.5 rounded-xl bg-red-50 border border-red-200"><div class="text-[11px] font-bold text-red-800">Pautas Quentes</div><div class="text-2xl font-extrabold text-red-600 mt-1">${quentes}</div></div>
         <div class="p-3.5 rounded-xl bg-sky-50 border border-sky-200"><div class="text-[11px] font-bold text-sky-800">Pautas Frias</div><div class="text-2xl font-extrabold text-sky-600 mt-1">${frias}</div></div>
         <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200"><div class="text-[11px] font-bold text-amber-800">Atrasadas</div><div class="text-2xl font-extrabold text-amber-700 mt-1">${atrasadas}</div></div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-3.5 rounded-xl bg-cohab-bg border border-cohab-border"><div class="text-[11px] font-bold text-cohab-medium">Em andamento</div><div class="text-2xl font-extrabold text-cohab-graphiteDark mt-1">${emAndamento}</div></div>
+        <div class="p-3.5 rounded-xl bg-cohab-bg border border-cohab-border"><div class="text-[11px] font-bold text-cohab-medium">Média por semana</div><div class="text-2xl font-extrabold text-cohab-graphiteDark mt-1">${mediaSemana}</div></div>
+        <div class="p-3.5 rounded-xl bg-cohab-bg border border-cohab-border"><div class="text-[11px] font-bold text-cohab-medium">Próximos 7 dias <span class="font-normal">(a partir de hoje)</span></div><div class="text-2xl font-extrabold text-cohab-graphiteDark mt-1">${proximos}</div></div>
+        <div class="p-3.5 rounded-xl bg-cohab-bg border border-cohab-border"><div class="text-[11px] font-bold text-cohab-medium">Sugestões no banco</div><div class="text-2xl font-extrabold text-cohab-graphiteDark mt-1">${sugestoes}</div></div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="p-4 rounded-xl border border-cohab-border space-y-2.5"><h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Por Status</h5>${renderBars(byStatus)}</div>
@@ -2186,7 +2295,7 @@ function generateEditorialReport(event) {
 
 function reportDocument(content) {
   const css = new URL('assets/css/app.css', window.location.href).href;
-  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Editorial - Cohab Minas</title><link rel="stylesheet" href="${css}"></head><body class="p-6 bg-white font-sans text-cohab-graphite">${content}</body></html>`;
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Editorial - Cohab Minas</title><link rel="stylesheet" href="${css}"></head><body class="p-6 bg-surface font-sans text-cohab-graphite">${content}</body></html>`;
 }
 
 function printEditorialReport() {
@@ -2278,15 +2387,13 @@ function initApp() {
   });
   $('loginRemember').checked = localStorage.getItem(REMEMBER_KEY) === '1';
 
-  // Remove dados antigos de "membro" (agora vem do login)
-  localStorage.removeItem(LEGACY_KEYS.member);
-
   let lastAgenda = window.matchMedia('(max-width: 767px)').matches;
   window.addEventListener('resize', () => {
     const now = window.matchMedia('(max-width: 767px)').matches;
     if (now !== lastAgenda && state.user && currentTab === 'calendar') { lastAgenda = now; renderCalendar(); }
   });
 
+  applyTheme(currentTheme());
   syncMonthSelectors();
   bootAuth();
 }
