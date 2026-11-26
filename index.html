@@ -58,7 +58,6 @@
     .calendar-cell {
       min-height: 122px;
       min-width: 0;
-      overflow: hidden;
       transition: background-color 0.15s ease-in-out;
     }
     @media (max-width: 1180px) {
@@ -70,6 +69,12 @@
       transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
       transform-origin: left center;
       will-change: opacity, transform;
+    }
+    input[type="number"].always-spin::-webkit-inner-spin-button,
+    input[type="number"].always-spin::-webkit-outer-spin-button {
+      opacity: 1 !important;
+      height: 22px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -167,14 +172,19 @@
     <!-- Barra Fixa de Navegação + Lupa Expansível -->
     <div class="bg-cohab-bg/85 border-t border-cohab-border">
       <div class="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-2">
-        <div id="navSearchContainer" class="relative bg-white p-1.5 rounded-xl border border-cohab-border shadow-2xs flex items-center gap-1.5">
+        <div
+          id="navSearchContainer"
+          onmouseleave="handleSearchMouseLeave()"
+          class="relative bg-white p-1.5 rounded-xl border border-cohab-border shadow-2xs flex items-center gap-1.5"
+        >
           
           <!-- 1º Ícone: Lupa -->
           <button
             type="button"
             id="searchTriggerBtn"
-            onclick="toggleSearchOverlay()"
-            title="Pesquisar pautas, editorias, formatos ou datas"
+            onmouseenter="openSearchOverlay(false)"
+            onclick="openSearchOverlay(true)"
+            title="Pesquisar por título, categorização, tipo de pauta, prioridade, designação, dia ou formato"
             class="w-9 h-9 rounded-lg flex items-center justify-center text-cohab-graphite hover:bg-cohab-terracottaLight hover:text-cohab-terracotta transition shrink-0 cursor-pointer relative z-10"
           >
             <i class="fa-solid fa-magnifying-glass text-sm"></i>
@@ -216,6 +226,7 @@
           <!-- Overlay Expansível da Barra de Pesquisa -->
           <div
             id="searchOverlayPanel"
+            onmouseenter="openSearchOverlay(false)"
             class="search-overlay-panel opacity-0 scale-x-95 pointer-events-none invisible absolute inset-1.5 bg-white rounded-lg z-20 flex items-center px-3 gap-2.5 border border-cohab-terracotta/40 shadow-md"
           >
             <i class="fa-solid fa-magnifying-glass text-cohab-terracotta text-sm shrink-0"></i>
@@ -223,8 +234,9 @@
               type="text"
               id="searchInput"
               oninput="applyFilters()"
+              onblur="handleSearchBlur()"
               onkeydown="if(event.key==='Escape'){ closeSearchOverlay(true); }"
-              placeholder="Buscar pauta por título, editoria, formato, briefing ou dia (ex: 16/11, Timóteo, Reels)..."
+              placeholder="Pesquisar por título, categorização, pauta quente/fria, status, #prioridade, designação, dia, palavras-chave ou formato..."
               class="w-full bg-transparent text-xs sm:text-sm font-medium text-cohab-graphite placeholder-cohab-medium/75 focus:outline-none"
             />
             <button
@@ -263,7 +275,7 @@
     <div id="view-calendar" class="space-y-4">
       <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border overflow-hidden">
         
-        <!-- Controles do Calendário: Mês, Ano e Filtro Unificado -->
+        <!-- Controles do Calendário: Mês e Ano -->
         <div class="px-4 sm:px-5 py-3.5 border-b border-cohab-border flex flex-wrap items-center justify-between gap-2.5 bg-white">
           <div class="flex items-center gap-2">
             <!-- Seletor de Mês com setas de navegação (< e >) -->
@@ -317,61 +329,6 @@
               <i class="fa-solid fa-chevron-down text-[10px] text-cohab-medium pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
             </div>
           </div>
-
-          <!-- Filtro Unificado Customizado (Bolinhas Chapadas e Centralizadas) -->
-          <div class="flex items-center gap-2">
-            <div class="relative" id="unifiedFilterDropdownContainer">
-              <button
-                type="button"
-                id="unifiedFilterBtn"
-                onclick="toggleCustomDropdown('unifiedFilterMenu', event)"
-                class="bg-cohab-bg hover:bg-cohab-border/50 text-cohab-graphite border border-cohab-border rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-cohab-terracotta cursor-pointer transition inline-flex items-center gap-2 whitespace-nowrap"
-              >
-                <span id="unifiedFilterDot" class="hidden w-2.5 h-2.5 rounded-full shrink-0"></span>
-                <span id="unifiedFilterLabel">Todos os Status</span>
-                <i class="fa-solid fa-chevron-down text-[10px] text-cohab-medium ml-0.5"></i>
-              </button>
-
-              <div
-                id="unifiedFilterMenu"
-                class="hidden absolute right-0 mt-1.5 w-52 bg-white border border-cohab-border rounded-xl shadow-lg py-1.5 z-30 text-xs"
-              >
-                <button type="button" onclick="selectUnifiedFilter('ALL', 'Todos os Status', null)" class="w-full px-3.5 py-2 text-left font-bold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2.5 cursor-pointer">
-                  <span>Todos os Status</span>
-                </button>
-                <div class="px-3.5 pt-2 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-cohab-medium border-t border-cohab-border/60 mt-1">
-                  Classificação da Pauta
-                </div>
-                <button type="button" onclick="selectUnifiedFilter('TYPE:QUENTE', 'Pautas Quentes', 'bg-red-500')" class="w-full px-3.5 py-1.5 text-left font-semibold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2.5 cursor-pointer">
-                  <span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
-                  <span>Pautas Quentes</span>
-                </button>
-                <button type="button" onclick="selectUnifiedFilter('TYPE:FRIA', 'Pautas Frias', 'bg-sky-400')" class="w-full px-3.5 py-1.5 text-left font-semibold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2.5 cursor-pointer">
-                  <span class="w-2.5 h-2.5 rounded-full bg-sky-400 shrink-0"></span>
-                  <span>Pautas Frias</span>
-                </button>
-                <div class="px-3.5 pt-2 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-cohab-medium border-t border-cohab-border/60 mt-1">
-                  Status de Produção
-                </div>
-                <button type="button" onclick="selectUnifiedFilter('STATUS:A Fazer', 'A Fazer', 'bg-amber-400')" class="w-full px-3.5 py-1.5 text-left font-semibold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2.5 cursor-pointer">
-                  <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0"></span>
-                  <span>A Fazer</span>
-                </button>
-                <button type="button" onclick="selectUnifiedFilter('STATUS:Em Produção', 'Em Produção', 'bg-orange-500')" class="w-full px-3.5 py-1.5 text-left font-semibold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2.5 cursor-pointer">
-                  <span class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span>
-                  <span>Em Produção</span>
-                </button>
-                <button type="button" onclick="selectUnifiedFilter('STATUS:Aprovado', 'Aprovado', 'bg-purple-500')" class="w-full px-3.5 py-1.5 text-left font-semibold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2.5 cursor-pointer">
-                  <span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span>
-                  <span>Aprovado</span>
-                </button>
-                <button type="button" onclick="selectUnifiedFilter('STATUS:Publicado', 'Publicado', 'bg-emerald-500')" class="w-full px-3.5 py-1.5 text-left font-semibold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2.5 cursor-pointer">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                  <span>Publicado</span>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Cabeçalho dos Dias da Semana -->
@@ -400,7 +357,7 @@
               Prioridades de Produção (Demandas Ativas)
             </h2>
             <p class="text-xs text-cohab-medium mt-0.5">
-              Apenas conteúdos em andamento (A Fazer, Em Produção e Aprovado). Quando marcados como Publicados, movem-se automaticamente para a aba Realizados.
+              Apenas conteúdos em andamento (A Fazer, Produzindo e Aprovado). Quando marcados como Publicados, movem-se automaticamente para a aba Realizados.
             </p>
           </div>
           <button type="button" onclick="sortByHotAndDate()" class="text-xs font-bold px-3.5 py-2 rounded-xl bg-cohab-bg hover:bg-cohab-border/60 text-cohab-graphite border border-cohab-border transition flex items-center gap-2 cursor-pointer self-start sm:self-auto">
@@ -757,67 +714,88 @@
 
   <!-- MODAL DE CRIAÇÃO / EDIÇÃO DE PAUTA -->
   <div id="pautaModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 hidden items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-cohab-border overflow-hidden my-auto">
-      <div class="h-1 w-full bg-cohab-terracotta"></div>
-      <div class="bg-white border-b border-cohab-border px-5 py-2.5 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-cohab-border overflow-hidden my-auto">
+      <div class="h-1.5 w-full bg-cohab-terracotta"></div>
+      <div class="bg-white border-b border-cohab-border px-5 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center">
             <i class="fa-solid fa-pen-to-square text-xs"></i>
           </div>
-          <h3 id="modalTitle" class="font-extrabold text-sm sm:text-base text-cohab-graphite">Nova Pauta</h3>
+          <div>
+            <h3 id="modalTitle" class="font-extrabold text-sm sm:text-base text-cohab-graphite leading-tight">Nova Pauta</h3>
+            <p class="text-[11px] text-cohab-medium">Preencha os blocos abaixo para organizar a demanda no calendário</p>
+          </div>
         </div>
-        <button type="button" onclick="closePautaModal()" class="text-cohab-medium hover:text-cohab-graphite w-7 h-7 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
+        <button type="button" onclick="closePautaModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-xl flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
           <i class="fa-solid fa-xmark text-base"></i>
         </button>
       </div>
 
-      <form id="pautaForm" onsubmit="savePauta(event)" class="px-5 pt-3 pb-3.5 space-y-2.5">
+      <form id="pautaForm" onsubmit="savePauta(event)" class="p-4 sm:p-5 bg-[#FAFAFA] space-y-3 max-h-[82vh] overflow-y-auto">
         <input type="hidden" id="pautaId" />
         <input type="hidden" id="fromSuggestionId" />
 
-        <div>
-          <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Título da Pauta</label>
-          <input 
-            type="text" 
-            id="pautaTitulo" 
-            required 
-            placeholder="Ex: Audiência pública em Arcos"
-            class="w-full rounded-xl border border-cohab-border px-3 py-1.5 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
-          />
-        </div>
+        <!-- BLOCO 1: IDENTIFICAÇÃO & AGENDAMENTO -->
+        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
+            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">1</span>
+            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Identificação e Data</h4>
+          </div>
 
-        <div>
-          <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data</label>
-          <input 
-            type="date" 
-            id="pautaData" 
-            required
-            class="w-full rounded-xl border border-cohab-border px-3 py-1.5 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
-          />
-        </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+            <div class="sm:col-span-8">
+              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Título da Pauta</label>
+              <input 
+                type="text" 
+                id="pautaTitulo" 
+                required 
+                placeholder="Ex: Audiência pública em Arcos"
+                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta transition"
+              />
+            </div>
 
-        <!-- Caixa Unificada: Classificação, Prioridade e Status (com círculos coloridos) -->
-        <div class="rounded-xl border border-cohab-border bg-white p-2.5 space-y-2">
-          <div id="modalActiveMetaRow" class="pb-2 border-b border-cohab-border">
+            <div class="sm:col-span-4">
+              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Data Prevista</label>
+              <input 
+                type="date" 
+                id="pautaData" 
+                required
+                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta transition"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- BLOCO 2: PRIORIZAÇÃO & FLUXO DE PRODUÇÃO -->
+        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
+            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">2</span>
+            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Classificação, Prioridade e Status</h4>
+          </div>
+
+          <div id="modalActiveMetaRow" class="pb-3 border-b border-dashed border-cohab-border">
             <div id="modalTipoWrapper">
-              <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Classificação da Pauta</label>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-[11px] font-bold text-cohab-medium">Classificação da Pauta</label>
+                <span class="text-[10px] font-semibold text-cohab-medium">Define o nível de urgência</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <label class="cursor-pointer">
                   <input type="radio" name="pautaTipo" value="QUENTE" class="peer sr-only" checked />
-                  <div class="h-8 rounded-xl border border-cohab-border bg-white peer-checked:border-cohab-graphite peer-checked:ring-1 peer-checked:ring-cohab-graphite/30 peer-checked:shadow-2xs text-cohab-graphite px-2 text-xs font-bold transition flex items-center justify-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+                  <div class="h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 peer-checked:bg-white peer-checked:border-cohab-graphite peer-checked:ring-1 peer-checked:ring-cohab-graphite/30 peer-checked:shadow-2xs text-cohab-graphite px-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
                     <span class="truncate">Pauta Quente</span>
                   </div>
                 </label>
                 <label class="cursor-pointer">
                   <input type="radio" name="pautaTipo" value="FRIA" class="peer sr-only" />
-                  <div class="h-8 rounded-xl border border-cohab-border bg-white peer-checked:border-cohab-graphite peer-checked:ring-1 peer-checked:ring-cohab-graphite/30 peer-checked:shadow-2xs text-cohab-graphite px-2 text-xs font-bold transition flex items-center justify-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-sky-400 shrink-0"></span>
+                  <div class="h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 peer-checked:bg-white peer-checked:border-cohab-graphite peer-checked:ring-1 peer-checked:ring-cohab-graphite/30 peer-checked:shadow-2xs text-cohab-graphite px-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400 shrink-0"></span>
                     <span class="truncate">Pauta Fria</span>
                   </div>
                 </label>
-                <div id="modalPrioridadeWrapper" class="col-span-2 flex items-center justify-end gap-2">
-                  <label for="pautaPrioridade" class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite whitespace-nowrap">Prioridade (#)</label>
+                <div id="modalPrioridadeWrapper" class="col-span-2 flex items-center justify-between gap-2 bg-cohab-bg/40 border border-cohab-border rounded-xl px-2.5 h-9">
+                  <label for="pautaPrioridade" class="text-xs font-bold text-cohab-graphite whitespace-nowrap">Prioridade (#)</label>
                   <input 
                     type="number" 
                     id="pautaPrioridade" 
@@ -825,7 +803,7 @@
                     max="99" 
                     value="1"
                     required
-                    class="h-8 w-16 rounded-xl border border-cohab-border bg-white px-2 text-xs sm:text-sm font-bold text-center text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+                    class="always-spin h-7 w-16 rounded-lg border border-cohab-border bg-white px-1 text-xs font-extrabold text-center text-cohab-terracotta focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta shrink-0"
                   />
                 </div>
               </div>
@@ -833,92 +811,146 @@
           </div>
 
           <div>
-            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Status de Produção</label>
+            <label class="block text-[11px] font-bold text-cohab-medium mb-1.5">Status de Produção</label>
             <input type="hidden" id="pautaStatus" value="A Fazer" />
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="modalStatusButtons">
-              <button type="button" data-status-val="A Fazer" onclick="selectModalStatus('A Fazer')" class="modal-status-btn h-8 rounded-xl border border-cohab-border bg-white px-2 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="modalStatusButtons">
+              <button type="button" data-status-val="A Fazer" onclick="selectModalStatus('A Fazer')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0"></span>
                 <span class="truncate">A Fazer</span>
               </button>
-              <button type="button" data-status-val="Em Produção" onclick="selectModalStatus('Em Produção')" class="modal-status-btn h-8 rounded-xl border border-cohab-border bg-white px-2 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
-                <span class="truncate">Em Produção</span>
+              <button type="button" data-status-val="Produzindo" onclick="selectModalStatus('Produzindo')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span>
+                <span class="truncate">Produzindo</span>
               </button>
-              <button type="button" data-status-val="Aprovado" onclick="selectModalStatus('Aprovado')" class="modal-status-btn h-8 rounded-xl border border-cohab-border bg-white px-2 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2 h-2 rounded-full bg-purple-500 shrink-0"></span>
+              <button type="button" data-status-val="Aprovado" onclick="selectModalStatus('Aprovado')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span>
                 <span class="truncate">Aprovado</span>
               </button>
-              <button type="button" data-status-val="Publicado" onclick="selectModalStatus('Publicado')" class="modal-status-btn h-8 rounded-xl border border-cohab-border bg-white px-2 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+              <button type="button" data-status-val="Publicado" onclick="selectModalStatus('Publicado')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
                 <span class="truncate">Publicado</span>
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="min-w-0">
-            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Formato</label>
-            <select 
-              id="pautaFormato" 
-              class="w-full rounded-xl border border-cohab-border bg-white px-3 py-1.5 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer"
-            >
-              <option value="">Selecione o formato...</option>
-              <option value="Reels">Reels</option>
-              <option value="Carrossel">Carrossel</option>
-              <option value="Card Único">Card Único</option>
-              <option value="Story">Story</option>
-            </select>
+        <!-- BLOCO 3: CATEGORIZAÇÃO -->
+        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
+            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">3</span>
+            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Categorização</h4>
           </div>
 
-          <div class="min-w-0">
-            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Editoria / Núcleo</label>
-            <select 
-              id="pautaEditoria" 
-              onchange="handleEditoriaSelectChange('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')"
-              class="w-full rounded-xl border border-cohab-border bg-white px-3 py-1.5 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer"
-            >
-              <option value="Serviços">Serviços</option>
-              <option value="__NEW__">+ Adicionar nova editoria...</option>
-            </select>
-            <div id="pautaNovaEditoriaWrapper" class="hidden mt-1.5 flex items-center gap-1.5 w-full min-w-0">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="min-w-0">
+              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Formato do Conteúdo</label>
+              <select 
+                id="pautaFormato" 
+                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer transition"
+              >
+                <option value="">Selecione o formato...</option>
+                <option value="Reels">Reels</option>
+                <option value="Carrossel">Carrossel</option>
+                <option value="Card Único">Card Único</option>
+                <option value="Story">Story</option>
+              </select>
+            </div>
+
+            <div class="min-w-0">
+              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Editoria / Núcleo</label>
+              <select 
+                id="pautaEditoria" 
+                onchange="handleEditoriaSelectChange('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')"
+                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer transition"
+              >
+                <option value="Serviços">Serviços</option>
+                <option value="__NEW__">+ Adicionar nova editoria...</option>
+              </select>
+              <div id="pautaNovaEditoriaWrapper" class="hidden mt-1.5 flex items-center gap-1.5 w-full min-w-0">
+                <input 
+                  type="text" 
+                  id="pautaNovaEditoriaInput" 
+                  placeholder="Nome da nova editoria..."
+                  onkeydown="if(event.key==='Enter'){ event.preventDefault(); confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput'); }"
+                  class="min-w-0 flex-1 rounded-xl border border-cohab-border bg-white px-2.5 py-1.5 text-xs font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
+                />
+                <button 
+                  type="button" 
+                  onclick="confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')"
+                  class="px-2.5 py-1.5 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white text-xs font-bold transition cursor-pointer shrink-0"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- BLOCO 4: DESIGNAÇÃO DE DEMANDA -->
+        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-2.5">
+          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
+            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">4</span>
+            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Designação da Demanda</h4>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-cohab-medium mb-1">Selecionar Responsáveis</label>
+            <div class="flex items-center gap-2">
+              <select 
+                id="pautaResponsavel" 
+                onchange="handlePautaResponsavelChange()"
+                class="flex-1 rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer transition"
+              >
+                <option value="Fábio Felicio">Fábio Felicio (FF)</option>
+                <option value="Leo Cardoso">Leo Cardoso (LC)</option>
+                <option value="Davi Caetano">Davi Caetano (DC)</option>
+                <option value="Giovanna Ribeiro">Giovanna Ribeiro (GR)</option>
+                <option value="CUSTOM">Outro responsável...</option>
+              </select>
               <input 
                 type="text" 
-                id="pautaNovaEditoriaInput" 
-                placeholder="Nome da nova editoria..."
-                onkeydown="if(event.key==='Enter'){ event.preventDefault(); confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput'); }"
-                class="min-w-0 flex-1 rounded-xl border border-cohab-border bg-white px-2.5 py-1.5 text-xs font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
+                id="pautaResponsavelCustom" 
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); addSelectedResponsavel(); }"
+                placeholder="Nome completo..."
+                class="hidden flex-1 rounded-xl border border-cohab-border bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
               />
               <button 
                 type="button" 
-                onclick="confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')"
-                class="px-2.5 py-1.5 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white text-xs font-bold transition cursor-pointer shrink-0"
+                onclick="addSelectedResponsavel()"
+                class="h-9 px-3.5 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer shrink-0"
               >
-                OK
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                <span>Adicionar</span>
               </button>
             </div>
+            <div id="pautaResponsaveisList" class="mt-2 p-2 rounded-xl bg-cohab-bg/50 border border-cohab-border/70 flex flex-wrap items-center gap-1.5 min-h-[36px]"></div>
           </div>
-        </div>
+        </section>
 
-        <div>
-          <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Briefing / Roteiro / Observações</label>
+        <!-- BLOCO 5: BRIEFING & OBSERVAÇÕES -->
+        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-2">
+          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
+            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">5</span>
+            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Briefing e Roteiro</h4>
+          </div>
           <textarea 
             id="pautaDescricao" 
             rows="2" 
             placeholder="Descreva os detalhes da pauta, porta-vozes, roteiro ou orientações..."
-            class="w-full rounded-xl border border-cohab-border px-3 py-1.5 text-xs sm:text-sm text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta"
+            class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta transition"
           ></textarea>
-        </div>
+        </section>
 
-        <div class="pt-2.5 border-t border-cohab-border flex items-center justify-between gap-3">
-          <button type="button" id="deletePautaBtn" onclick="deleteCurrentPauta()" class="hidden px-3 py-1.5 rounded-xl text-xs font-bold text-cohab-terracotta bg-cohab-terracottaLight hover:bg-cohab-terracotta hover:text-white transition items-center gap-1.5 cursor-pointer">
+        <!-- RODAPÉ DE AÇÕES DO MODAL -->
+        <div class="pt-1 flex items-center justify-between gap-3">
+          <button type="button" id="deletePautaBtn" onclick="deleteCurrentPauta()" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold text-cohab-terracotta bg-white border border-cohab-terracotta/30 hover:bg-cohab-terracotta hover:text-white transition items-center gap-1.5 cursor-pointer">
             <i class="fa-regular fa-trash-can"></i> Excluir Pauta
           </button>
           <div class="flex items-center gap-2 ml-auto">
-            <button type="button" onclick="closePautaModal()" class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-cohab-medium hover:bg-cohab-bg transition cursor-pointer">
+            <button type="button" onclick="closePautaModal()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-cohab-medium bg-white border border-cohab-border hover:bg-cohab-bg transition cursor-pointer">
               Cancelar
             </button>
-            <button type="submit" class="px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition cursor-pointer">
+            <button type="submit" class="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition cursor-pointer">
               Salvar Pauta
             </button>
           </div>
@@ -974,7 +1006,7 @@
         borderClass: 'border-l-amber-400',
         badgeClass: 'bg-white border-cohab-border text-cohab-graphite'
       },
-      'Em Produção': {
+      'Produzindo': {
         dotClass: 'bg-orange-500',
         dotHex: '#F97316',
         borderClass: 'border-l-orange-500',
@@ -994,137 +1026,221 @@
       }
     };
 
-    function getEasterDate(year) {
-      const a = year % 19;
-      const b = Math.floor(year / 100);
-      const c = year % 100;
-      const d = Math.floor(b / 4);
-      const e = b % 4;
-      const f = Math.floor((b + 8) / 25);
-      const g = Math.floor((b - f + 1) / 3);
-      const h = (19 * a + b - d - g + 15) % 30;
-      const i = Math.floor(c / 4);
-      const k = c % 4;
-      const l = (32 + 2 * e + 2 * i - h - k) % 7;
-      const m = Math.floor((a + 11 * h + 22 * l) / 451);
-      const month = Math.floor((h + l - 7 * m + 114) / 31) - 1;
-      const day = ((h + l - 7 * m + 114) % 31) + 1;
-      return new Date(year, month, day);
+    function getPersonInitials(fullName) {
+      if (!fullName) return '';
+      const parts = String(fullName)
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (parts.length === 0) return '';
+      return parts.map(part => part.charAt(0).toUpperCase()).join('');
     }
 
-    function formatIsoDate(dateObj) {
-      const y = dateObj.getFullYear();
-      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const d = String(dateObj.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
+    function normalizeAssignees(rawResponsavel) {
+      if (Array.isArray(rawResponsavel)) {
+        return [...new Set(rawResponsavel.map(n => String(n || '').trim()).filter(Boolean))];
+      }
+      if (typeof rawResponsavel === 'string' && rawResponsavel.trim()) {
+        return [...new Set(rawResponsavel.split(',').map(n => n.trim()).filter(Boolean))];
+      }
+      return [];
     }
 
-    function addDaysToDate(dateObj, days) {
-      const copy = new Date(dateObj.getTime());
-      copy.setDate(copy.getDate() + days);
-      return copy;
+    function formatAssigneesFull(rawResponsavel) {
+      const list = normalizeAssignees(rawResponsavel);
+      return list.map(name => `${name} (${getPersonInitials(name)})`).join(', ');
     }
 
-    function getPublicHolidaysForYear(year) {
-      const holidays = {};
-      holidays[`${year}-01-01`] = 'Confraternização Universal';
-      holidays[`${year}-04-21`] = 'Tiradentes';
-      holidays[`${year}-05-01`] = 'Dia Mundial do Trabalho';
-      holidays[`${year}-09-07`] = 'Independência do Brasil';
-      holidays[`${year}-10-12`] = 'Nossa Senhora Aparecida';
-      holidays[`${year}-10-28`] = 'Dia do Servidor Público (Ponto Facultativo)';
-      holidays[`${year}-11-02`] = 'Finados';
-      holidays[`${year}-11-15`] = 'Proclamação da República';
-      holidays[`${year}-11-20`] = 'Dia Nacional de Zumbi e da Consciência Negra';
-      holidays[`${year}-12-25`] = 'Natal';
-
-      const easter = getEasterDate(year);
-      holidays[formatIsoDate(addDaysToDate(easter, -48))] = 'Carnaval (Ponto Facultativo)';
-      holidays[formatIsoDate(addDaysToDate(easter, -47))] = 'Carnaval (Ponto Facultativo)';
-      holidays[formatIsoDate(addDaysToDate(easter, -46))] = 'Quarta-feira de Cinzas (Ponto Facultativo)';
-      holidays[formatIsoDate(addDaysToDate(easter, -2))] = 'Sexta-feira Santa (Paixão de Cristo)';
-      holidays[formatIsoDate(addDaysToDate(easter, 60))] = 'Corpus Christi (Ponto Facultativo)';
-
-      return holidays;
+    function normalizeLegacyStatus(status) {
+      if (status === 'Em Produção') return 'Produzindo';
+      return status || 'A Fazer';
     }
 
     const DEFAULT_PAUTAS = [];
-
-    const DEFAULT_SUGGESTIONS = [
-      {
-        id: 'sug-1',
-        titulo: 'Série tira-dúvidas sobre emissão de 2ª via de boleto',
-        tipo: 'FRIA',
-        formato: 'Reels',
-        editoria: 'Serviços',
-        descricao: 'Passo a passo visual mostrando como acessar o portal e emitir boletos sem precisar sair de casa.',
-        autor: 'Fábio Felicio',
-        criadoEm: '23/11/2026'
-      },
-      {
-        id: 'sug-2',
-        titulo: 'Histórias reais: famílias que conquistaram a escritura definitiva',
-        tipo: 'QUENTE',
-        formato: 'Reels',
-        editoria: 'Serviços',
-        descricao: 'Depoimentos curtos de mutuários contemplados com a entrega de escrituras no interior de Minas.',
-        autor: 'Fábio Felicio',
-        criadoEm: '23/11/2026'
-      }
-    ];
-
+    const DEFAULT_SUGGESTIONS = [];
     const DEFAULT_LOGS = [];
 
     let pautas = [];
     let suggestions = [];
     let logs = [];
     let customEditorias = [...DEFAULT_EDITORIAS];
+    let modalAssignees = [];
     let currentTab = 'calendar';
-    let currentMonth = 10; // Novembro (0-indexed)
     let currentYear = 2026;
-    let currentUnifiedFilter = 'ALL';
+    let currentMonth = 10;
+    let searchCloseTimer = null;
 
-    function renderEditoriaOptions(selectedValue = 'Serviços') {
-      const normalizedSelected = selectedValue && selectedValue !== '__NEW__'
-        ? formatSentenceCase(selectedValue)
-        : 'Serviços';
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
 
-      const normalizedList = [];
-      customEditorias.forEach(ed => {
-        const fmt = formatSentenceCase(ed);
-        if (fmt && !normalizedList.includes(fmt)) normalizedList.push(fmt);
-      });
-      if (normalizedSelected && !normalizedList.includes(normalizedSelected)) {
-        normalizedList.push(normalizedSelected);
+    function formatDateBR(isoDate) {
+      if (!isoDate) return '';
+      const parts = isoDate.split('-');
+      if (parts.length !== 3) return isoDate;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function getCurrentMemberName() {
+      const sel = document.getElementById('teamMemberSelect');
+      if (!sel) return 'Fábio Felicio';
+      if (sel.value === 'CUSTOM') {
+        const custom = document.getElementById('customMemberInput')?.value.trim();
+        return custom || 'Membro Ascom';
       }
-      customEditorias = normalizedList;
+      return sel.value;
+    }
 
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl shadow-lg border text-xs font-bold flex items-center gap-2 transition ${
+        type === 'error'
+          ? 'bg-red-50 text-red-800 border-red-200'
+          : 'bg-cohab-graphite text-white border-cohab-graphiteDark'
+      }`;
+      toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-400'}"></i><span>${escapeHTML(message)}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 250);
+      }, 3000);
+    }
+
+    let confirmCallback = null;
+    function openConfirmModal(title, message, onConfirm) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').textContent = message;
+      confirmCallback = onConfirm;
+      const modal = document.getElementById('confirmModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeConfirmModal() {
+      const modal = document.getElementById('confirmModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      confirmCallback = null;
+    }
+
+    function savePautasToStorage() {
+      localStorage.setItem(STORAGE_KEY_PAUTAS, JSON.stringify(pautas));
+    }
+
+    function saveSuggestionsToStorage() {
+      localStorage.setItem(STORAGE_KEY_SUGGESTIONS, JSON.stringify(suggestions));
+    }
+
+    function saveLogsToStorage() {
+      localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+    }
+
+    function addLogEntry(action, detail) {
+      const now = new Date();
+      const timestamp = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      logs.unshift({
+        id: 'log-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+        action,
+        detail,
+        member: getCurrentMemberName(),
+        timestamp
+      });
+      saveLogsToStorage();
+      updateBadges();
+      if (currentTab === 'logs') renderLogs();
+    }
+
+    function loadStateFromStorage() {
+      try {
+        const storedPautas = localStorage.getItem(STORAGE_KEY_PAUTAS);
+        if (storedPautas !== null) {
+          const parsed = JSON.parse(storedPautas);
+          pautas = Array.isArray(parsed)
+            ? parsed.map(p => ({
+                ...p,
+                status: normalizeLegacyStatus(p.status),
+                editoria: p.editoria ? formatSentenceCase(p.editoria) : 'Serviços',
+                responsavel: normalizeAssignees(p.responsavel)
+              }))
+            : [...DEFAULT_PAUTAS];
+        } else {
+          pautas = [...DEFAULT_PAUTAS];
+        }
+
+        const storedSuggestions = localStorage.getItem(STORAGE_KEY_SUGGESTIONS);
+        suggestions = storedSuggestions ? JSON.parse(storedSuggestions) : [...DEFAULT_SUGGESTIONS];
+
+        const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
+        logs = storedLogs ? JSON.parse(storedLogs) : [...DEFAULT_LOGS];
+
+        const storedEditorias = localStorage.getItem(STORAGE_KEY_EDITORIAS);
+        if (storedEditorias) {
+          const parsedEd = JSON.parse(storedEditorias);
+          if (Array.isArray(parsedEd) && parsedEd.length > 0) {
+            customEditorias = [...new Set(['Serviços', ...parsedEd.map(formatSentenceCase)])];
+          }
+        }
+
+        const storedMember = localStorage.getItem(STORAGE_KEY_MEMBER);
+        if (storedMember) {
+          const sel = document.getElementById('teamMemberSelect');
+          const opts = Array.from(sel.options).map(o => o.value);
+          if (opts.includes(storedMember)) {
+            sel.value = storedMember;
+          } else {
+            sel.value = 'CUSTOM';
+            const customInput = document.getElementById('customMemberInput');
+            customInput.classList.remove('hidden');
+            customInput.value = storedMember;
+          }
+        }
+      } catch (e) {
+        pautas = [...DEFAULT_PAUTAS];
+        suggestions = [...DEFAULT_SUGGESTIONS];
+        logs = [...DEFAULT_LOGS];
+      }
+    }
+
+    function handleTeamMemberChange() {
+      const sel = document.getElementById('teamMemberSelect');
+      const customInput = document.getElementById('customMemberInput');
+      if (sel.value === 'CUSTOM') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+        localStorage.setItem(STORAGE_KEY_MEMBER, sel.value);
+      }
+    }
+
+    function renderEditoriaOptions(selectedVal = 'Serviços') {
+      const normalized = formatSentenceCase(selectedVal) || 'Serviços';
+      if (!customEditorias.some(e => e.toLowerCase() === normalized.toLowerCase())) {
+        customEditorias.push(normalized);
+      }
       ['pautaEditoria', 'sugEditoria'].forEach(selectId => {
         const el = document.getElementById(selectId);
         if (!el) return;
-        const currentVal = selectId === 'pautaEditoria'
-          ? normalizedSelected
-          : (el.value && el.value !== '__NEW__' ? formatSentenceCase(el.value) : 'Serviços');
-        el.innerHTML = '';
-        normalizedList.forEach(ed => {
-          const opt = document.createElement('option');
-          opt.value = ed;
-          opt.textContent = ed;
-          el.appendChild(opt);
-        });
-        const newOpt = document.createElement('option');
-        newOpt.value = '__NEW__';
-        newOpt.textContent = '+ Adicionar nova editoria...';
-        el.appendChild(newOpt);
-        el.value = normalizedList.includes(currentVal) ? currentVal : 'Serviços';
+        const currentVal = selectId === 'pautaEditoria' ? normalized : (formatSentenceCase(el.value) || 'Serviços');
+        el.innerHTML = customEditorias.map(ed => `<option value="${escapeHTML(ed)}">${escapeHTML(ed)}</option>`).join('') +
+          `<option value="__NEW__">+ Adicionar nova editoria...</option>`;
+        el.value = customEditorias.includes(currentVal) ? currentVal : 'Serviços';
       });
     }
 
     function handleEditoriaSelectChange(selectId, wrapperId, inputId) {
-      const select = document.getElementById(selectId);
+      const sel = document.getElementById(selectId);
       const wrapper = document.getElementById(wrapperId);
       const input = document.getElementById(inputId);
-      if (select.value === '__NEW__') {
+      if (sel.value === '__NEW__') {
         wrapper.classList.remove('hidden');
         input.value = '';
         input.focus();
@@ -1135,52 +1251,44 @@
 
     function confirmNewEditoria(selectId, wrapperId, inputId) {
       const input = document.getElementById(inputId);
-      const wrapper = document.getElementById(wrapperId);
-      const formattedName = formatSentenceCase(input.value);
-      if (!formattedName) {
+      const formatted = formatSentenceCase(input.value);
+      if (!formatted) {
         showToast('Digite o nome da nova editoria.', 'error');
-        input.focus();
         return;
       }
-      if (!customEditorias.some(e => e.toLowerCase() === formattedName.toLowerCase())) {
-        customEditorias.push(formattedName);
+      if (!customEditorias.some(e => e.toLowerCase() === formatted.toLowerCase())) {
+        customEditorias.push(formatted);
         localStorage.setItem(STORAGE_KEY_EDITORIAS, JSON.stringify(customEditorias));
       }
-      renderEditoriaOptions(formattedName);
-      document.getElementById(selectId).value = formattedName;
-      wrapper.classList.add('hidden');
-      input.value = '';
-      showToast(`Editoria "${formattedName}" adicionada!`);
+      renderEditoriaOptions(formatted);
+      document.getElementById(selectId).value = formatted;
+      document.getElementById(wrapperId).classList.add('hidden');
+      showToast(`Editoria "${formatted}" adicionada!`);
     }
 
     function setFormatoSelectValue(selectId, value) {
-      const el = document.getElementById(selectId);
-      if (!el) return;
-      el.innerHTML = '<option value="">Selecione o formato...</option>';
-      const opts = [...FORMAT_OPTIONS];
-      if (value && !opts.includes(value)) {
-        opts.push(value);
-      }
-      opts.forEach(fmt => {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      if (value && !FORMAT_OPTIONS.includes(value)) {
         const opt = document.createElement('option');
-        opt.value = fmt;
-        opt.textContent = fmt;
-        el.appendChild(opt);
-      });
-      el.value = value || '';
+        opt.value = value;
+        opt.textContent = value;
+        sel.appendChild(opt);
+      }
+      sel.value = value || '';
     }
 
-    function normalizePriorities(pinnedId = null, targetPos = null) {
+    function normalizePriorities(targetId = null, desiredPriority = null) {
       const active = pautas
         .filter(p => p.status !== 'Publicado')
-        .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
+        .sort((a, b) => (a.prioridade || 999) - (b.prioridade || 999));
 
-      if (pinnedId) {
-        const pinnedIndex = active.findIndex(p => p.id === pinnedId);
-        if (pinnedIndex !== -1) {
-          const [pinnedItem] = active.splice(pinnedIndex, 1);
-          const safeIndex = Math.max(0, Math.min(active.length, (targetPos || 1) - 1));
-          active.splice(safeIndex, 0, pinnedItem);
+      if (targetId && desiredPriority !== null) {
+        const idx = active.findIndex(p => p.id === targetId);
+        if (idx !== -1) {
+          const [moved] = active.splice(idx, 1);
+          const insertAt = Math.max(0, Math.min(active.length, desiredPriority - 1));
+          active.splice(insertAt, 0, moved);
         }
       }
 
@@ -1189,275 +1297,81 @@
       });
     }
 
-    function loadFromStorage() {
-      try {
-        const storedPautas = localStorage.getItem(STORAGE_KEY_PAUTAS);
-        const storedSuggestions = localStorage.getItem(STORAGE_KEY_SUGGESTIONS);
-        const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
-        const storedMember = localStorage.getItem(STORAGE_KEY_MEMBER);
-        const storedEditorias = localStorage.getItem(STORAGE_KEY_EDITORIAS);
-
-        if (storedEditorias !== null) {
-          const parsedEd = JSON.parse(storedEditorias);
-          if (Array.isArray(parsedEd) && parsedEd.length > 0) {
-            customEditorias = [...new Set(parsedEd.map(formatSentenceCase).filter(Boolean))];
-            localStorage.setItem(STORAGE_KEY_EDITORIAS, JSON.stringify(customEditorias));
-          }
-        }
-        renderEditoriaOptions('Serviços');
-        setFormatoSelectValue('pautaFormato', '');
-        setFormatoSelectValue('sugFormato', '');
-
-        if (storedPautas !== null) {
-          const parsed = JSON.parse(storedPautas);
-          pautas = Array.isArray(parsed)
-            ? parsed.map(p => ({ ...p, editoria: p.editoria ? formatSentenceCase(p.editoria) : 'Serviços' }))
-            : [...DEFAULT_PAUTAS];
-        } else {
-          pautas = [...DEFAULT_PAUTAS];
-        }
-        normalizePriorities();
-        savePautasToStorage();
-
-        if (storedSuggestions !== null) {
-          const parsedSug = JSON.parse(storedSuggestions);
-          suggestions = Array.isArray(parsedSug)
-            ? parsedSug.map(s => ({ ...s, editoria: s.editoria ? formatSentenceCase(s.editoria) : 'Serviços' }))
-            : [...DEFAULT_SUGGESTIONS];
-          saveSuggestionsToStorage();
-        } else {
-          suggestions = [...DEFAULT_SUGGESTIONS];
-          saveSuggestionsToStorage();
-        }
-
-        if (storedLogs !== null) {
-          logs = JSON.parse(storedLogs);
-        } else {
-          logs = [...DEFAULT_LOGS];
-          saveLogsToStorage();
-        }
-
-        if (storedMember) {
-          const select = document.getElementById('teamMemberSelect');
-          const customInput = document.getElementById('customMemberInput');
-          const hasOption = [...select.options].some(opt => opt.value === storedMember && opt.value !== 'CUSTOM');
-          if (hasOption) {
-            select.value = storedMember;
-          } else {
-            select.value = 'CUSTOM';
-            customInput.classList.remove('hidden');
-            customInput.value = storedMember;
-          }
-        }
-      } catch (err) {
-        console.error('Erro ao carregar dados locais:', err);
-        pautas = [];
-        suggestions = [...DEFAULT_SUGGESTIONS];
-        logs = [];
-      }
-    }
-
-    function savePautasToStorage() {
-      try {
-        localStorage.setItem(STORAGE_KEY_PAUTAS, JSON.stringify(pautas));
-      } catch (err) {
-        console.error('Erro ao salvar pautas:', err);
-      }
-    }
-
-    function saveSuggestionsToStorage() {
-      try {
-        localStorage.setItem(STORAGE_KEY_SUGGESTIONS, JSON.stringify(suggestions));
-      } catch (err) {
-        console.error('Erro ao salvar sugestões:', err);
-      }
-    }
-
-    function saveLogsToStorage() {
-      try {
-        localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
-      } catch (err) {
-        console.error('Erro ao salvar logs:', err);
-      }
-    }
-
-    window.addEventListener('beforeunload', () => {
-      savePautasToStorage();
-      saveSuggestionsToStorage();
-      saveLogsToStorage();
-    });
-
-    function renderAll() {
-      updateBadges();
-      renderCalendar();
-      renderHierarchy();
-      renderCompleted();
-      renderSuggestions();
-      renderLogs();
-      updateCrossMonthBanner();
-    }
-
-    function escapeHTML(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function formatDateBR(isoDate) {
-      if (!isoDate || !isoDate.includes('-')) return isoDate || '';
-      const [y, m, d] = isoDate.split('-');
-      return `${d}/${m}/${y}`;
-    }
-
-    function getCurrentMemberName() {
-      const select = document.getElementById('teamMemberSelect');
-      if (select.value === 'CUSTOM') {
-        const val = document.getElementById('customMemberInput').value.trim();
-        return val || 'Membro da Equipe';
-      }
-      return select.value;
-    }
-
-    function handleTeamMemberChange() {
-      const select = document.getElementById('teamMemberSelect');
-      const customInput = document.getElementById('customMemberInput');
-      if (select.value === 'CUSTOM') {
-        customInput.classList.remove('hidden');
-        customInput.focus();
-      } else {
-        customInput.classList.add('hidden');
-        localStorage.setItem(STORAGE_KEY_MEMBER, select.value);
-      }
-    }
-
-    document.getElementById('customMemberInput').addEventListener('change', (e) => {
-      const val = e.target.value.trim();
-      if (val) localStorage.setItem(STORAGE_KEY_MEMBER, val);
-    });
-
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      const iconClass = type === 'error' ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-500';
-      toast.className = 'bg-white border border-cohab-border shadow-lg rounded-xl px-4 py-3 text-xs font-bold text-cohab-graphite flex items-center gap-2.5 pointer-events-auto transition-all duration-300';
-      toast.innerHTML = `<i class="fa-solid ${iconClass} text-sm"></i><span>${escapeHTML(message)}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(8px)';
-        setTimeout(() => toast.remove(), 300);
-      }, 2800);
-    }
-
-    function openConfirmModal(title, message, onConfirm) {
-      const modal = document.getElementById('confirmModal');
-      document.getElementById('confirmTitle').textContent = title;
-      document.getElementById('confirmMessage').textContent = message;
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-
-      const cancelBtn = document.getElementById('confirmCancelBtn');
-      const acceptBtn = document.getElementById('confirmAcceptBtn');
-
-      const cleanup = () => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      };
-
-      cancelBtn.onclick = cleanup;
-      acceptBtn.onclick = () => {
-        cleanup();
-        if (onConfirm) onConfirm();
-      };
-    }
-
-    function addLogEntry(action, detail) {
-      const now = new Date();
-      const timestamp = now.toLocaleDateString('pt-BR') + ', ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      logs.unshift({
-        id: 'log-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-        timestamp,
-        member: getCurrentMemberName(),
-        action,
-        detail
-      });
-      saveLogsToStorage();
-      updateBadges();
-      if (currentTab === 'logs') renderLogs();
-    }
-
-    function updateBadges() {
-      const activeCount = pautas.filter(p => p.status !== 'Publicado').length;
-      const completedCount = pautas.filter(p => p.status === 'Publicado').length;
-      document.getElementById('badgeCountPautas').textContent = activeCount;
-      document.getElementById('badgeCountCompleted').textContent = completedCount;
-      document.getElementById('badgeCountSuggestions').textContent = suggestions.length;
-      document.getElementById('badgeCountLogs').textContent = logs.length;
-      document.getElementById('completedSummaryPill').textContent =
-        completedCount === 1 ? '1 conteúdo realizado' : `${completedCount} conteúdos realizados`;
-    }
-
     function switchTab(tabName) {
       currentTab = tabName;
-      const tabs = ['calendar', 'hierarchy', 'completed', 'suggestions', 'logs'];
-      tabs.forEach(t => {
-        const view = document.getElementById(`view-${t}`);
-        const btn = document.getElementById(`tab-${t}`);
-        if (t === tabName) {
-          view.classList.remove('hidden');
-          btn.classList.add('bg-cohab-graphite', 'text-white', 'shadow-2xs', 'font-bold');
-          btn.classList.remove('text-cohab-graphite', 'hover:bg-cohab-bg', 'font-semibold');
-        } else {
-          view.classList.add('hidden');
-          btn.classList.remove('bg-cohab-graphite', 'text-white', 'shadow-2xs', 'font-bold');
-          btn.classList.add('text-cohab-graphite', 'hover:bg-cohab-bg', 'font-semibold');
+      ['calendar', 'suggestions', 'hierarchy', 'completed', 'logs'].forEach(name => {
+        const viewEl = document.getElementById(`view-${name}`);
+        const tabBtn = document.getElementById(`tab-${name}`);
+        if (viewEl) {
+          viewEl.classList.toggle('hidden', name !== tabName);
+        }
+        if (tabBtn) {
+          if (name === tabName) {
+            tabBtn.classList.add('active', 'bg-cohab-graphite', 'text-white', 'font-bold', 'shadow-2xs');
+            tabBtn.classList.remove('text-cohab-graphite', 'font-semibold', 'hover:bg-cohab-bg');
+          } else {
+            tabBtn.classList.remove('active', 'bg-cohab-graphite', 'text-white', 'font-bold', 'shadow-2xs');
+            tabBtn.classList.add('text-cohab-graphite', 'font-semibold', 'hover:bg-cohab-bg');
+          }
         }
       });
       renderAll();
     }
 
-    function toggleSearchOverlay() {
+    function openSearchOverlay(shouldFocus = false) {
+      if (searchCloseTimer) {
+        clearTimeout(searchCloseTimer);
+        searchCloseTimer = null;
+      }
       const panel = document.getElementById('searchOverlayPanel');
-      const isClosed = panel.classList.contains('invisible');
-      if (isClosed) {
-        panel.classList.remove('invisible', 'opacity-0', 'scale-x-95', 'pointer-events-none');
-        panel.classList.add('opacity-100', 'scale-x-100', 'pointer-events-auto');
-        setTimeout(() => document.getElementById('searchInput').focus(), 60);
-      } else {
-        closeSearchOverlay(false);
+      const input = document.getElementById('searchInput');
+      if (!panel) return;
+      panel.classList.remove('invisible', 'opacity-0', 'scale-x-95', 'pointer-events-none');
+      if (shouldFocus && input) {
+        input.focus();
       }
     }
 
-    function closeSearchOverlay(clearText = false) {
-      if (clearText) {
-        document.getElementById('searchInput').value = '';
-        applyFilters();
+    function handleSearchMouseLeave() {
+      const input = document.getElementById('searchInput');
+      const hasText = (input?.value || '').trim().length > 0;
+      const isFocused = document.activeElement === input;
+      if (hasText || isFocused) return;
+      searchCloseTimer = setTimeout(() => {
+        closeSearchOverlay(false);
+      }, 140);
+    }
+
+    function handleSearchBlur() {
+      const container = document.getElementById('navSearchContainer');
+      const input = document.getElementById('searchInput');
+      const hasText = (input?.value || '').trim().length > 0;
+      if (hasText) return;
+      setTimeout(() => {
+        if (!container?.matches(':hover') && document.activeElement !== input) {
+          closeSearchOverlay(false);
+        }
+      }, 120);
+    }
+
+    function closeSearchOverlay(clear = false) {
+      if (searchCloseTimer) {
+        clearTimeout(searchCloseTimer);
+        searchCloseTimer = null;
       }
       const panel = document.getElementById('searchOverlayPanel');
-      panel.classList.add('opacity-0', 'scale-x-95', 'pointer-events-none');
-      panel.classList.remove('opacity-100', 'scale-x-100', 'pointer-events-auto');
-      setTimeout(() => {
-        if (panel.classList.contains('opacity-0')) {
-          panel.classList.add('invisible');
-        }
-      }, 260);
+      const input = document.getElementById('searchInput');
+      if (input && document.activeElement === input) {
+        input.blur();
+      }
+      panel.classList.add('invisible', 'opacity-0', 'scale-x-95', 'pointer-events-none');
+      if (clear) clearSearchInput();
     }
 
     function clearSearchInput() {
       const input = document.getElementById('searchInput');
       input.value = '';
-      input.focus();
       applyFilters();
-    }
-
-    function closeAllDropdowns() {
-      document.querySelectorAll('[data-dropdown-menu], #unifiedFilterMenu').forEach(menu => {
-        menu.classList.add('hidden');
-      });
     }
 
     function toggleCustomDropdown(menuId, event) {
@@ -1465,245 +1379,191 @@
       const target = document.getElementById(menuId);
       if (!target) return;
       const wasHidden = target.classList.contains('hidden');
-      closeAllDropdowns();
-      if (wasHidden) {
-        target.classList.remove('hidden');
-      }
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('[data-dropdown-root]') && !e.target.closest('#unifiedFilterDropdownContainer')) {
-        closeAllDropdowns();
-      }
-    });
-
-    function selectUnifiedFilter(value, label, dotClass) {
-      currentUnifiedFilter = value;
-      document.getElementById('unifiedFilterLabel').textContent = label;
-      const dot = document.getElementById('unifiedFilterDot');
-      if (dotClass) {
-        dot.className = `w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`;
-      } else {
-        dot.className = 'hidden w-2.5 h-2.5 rounded-full shrink-0';
-      }
-      closeAllDropdowns();
-      renderAll();
+      document.querySelectorAll('[data-dropdown-menu]').forEach(m => m.classList.add('hidden'));
+      if (wasHidden) target.classList.remove('hidden');
     }
 
     function applyFilters() {
-      const query = document.getElementById('searchInput').value.trim();
-      const clearBtn = document.getElementById('clearSearchBtn');
-      const activeDot = document.getElementById('searchActiveDot');
-
-      if (query.length > 0) {
-        clearBtn.classList.remove('hidden');
-        activeDot.classList.remove('hidden');
-      } else {
-        clearBtn.classList.add('hidden');
-        activeDot.classList.add('hidden');
-      }
+      const q = (document.getElementById('searchInput')?.value || '').trim();
+      document.getElementById('clearSearchBtn')?.classList.toggle('hidden', !q);
+      document.getElementById('searchActiveDot')?.classList.toggle('hidden', !q);
       renderAll();
     }
 
     function matchesSearchAndFilter(pauta) {
-      if (currentUnifiedFilter !== 'ALL') {
-        if (currentUnifiedFilter.startsWith('TYPE:')) {
-          const reqType = currentUnifiedFilter.split(':')[1];
-          if (pauta.tipo !== reqType) return false;
-        } else if (currentUnifiedFilter.startsWith('STATUS:')) {
-          const reqStatus = currentUnifiedFilter.split(':')[1];
-          if (pauta.status !== reqStatus) return false;
-        }
-      }
-
-      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
       if (!q) return true;
 
-      const dateBR = formatDateBR(pauta.data).toLowerCase();
+      const normalizedStatus = normalizeLegacyStatus(pauta.status);
+      const tipoLabel = (pauta.tipo === 'QUENTE') ? 'pauta quente urgente' : 'pauta fria';
+      const prioText = normalizedStatus !== 'Publicado'
+        ? `#${pauta.prioridade || 1} prioridade ${pauta.prioridade || 1}`
+        : 'publicado concluido realizado';
+      const assignees = normalizeAssignees(pauta.responsavel);
+      const assigneesFull = assignees.join(' ');
+      const assigneesInitials = assignees.map(getPersonInitials).join(' ');
+      const dateBR = formatDateBR(pauta.data);
+      const dayNumber = pauta.data ? String(parseInt(pauta.data.split('-')[2], 10)) : '';
+      const monthName = pauta.data ? (MONTH_NAMES[parseInt(pauta.data.split('-')[1], 10) - 1] || '') : '';
+
       const haystack = [
         pauta.titulo,
         pauta.editoria,
         pauta.formato,
         pauta.descricao,
-        pauta.status,
+        normalizedStatus,
+        tipoLabel,
+        prioText,
+        assigneesFull,
+        assigneesInitials,
         dateBR,
-        pauta.data
+        pauta.data,
+        dayNumber ? `dia ${dayNumber}` : '',
+        monthName
       ].join(' ').toLowerCase();
 
-      return haystack.includes(q);
+      const terms = q.split(/\s+/).filter(Boolean);
+      return terms.every(term => haystack.includes(term));
     }
 
-    function updateCrossMonthBanner() {
-      const banner = document.getElementById('searchCrossMonthBanner');
-      const q = document.getElementById('searchInput').value.trim();
-      if (!q || currentTab !== 'calendar') {
-        banner.classList.add('hidden');
-        banner.classList.remove('flex');
-        return;
+    function stepMonth(delta) {
+      currentMonth += delta;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
       }
-
-      const matching = pautas.filter(matchesSearchAndFilter);
-      const otherMonthsMap = new Map();
-
-      matching.forEach(p => {
-        if (!p.data) return;
-        const [yStr, mStr] = p.data.split('-');
-        const y = parseInt(yStr, 10);
-        const m = parseInt(mStr, 10) - 1;
-        if (y !== currentYear || m !== currentMonth) {
-          const key = `${y}-${m}`;
-          otherMonthsMap.set(key, { year: y, month: m, count: (otherMonthsMap.get(key)?.count || 0) + 1 });
-        }
-      });
-
-      if (otherMonthsMap.size === 0) {
-        banner.classList.add('hidden');
-        banner.classList.remove('flex');
-        return;
-      }
-
-      document.getElementById('searchCrossMonthText').textContent =
-        `Resultados encontrados para "${q}" em outros períodos:`;
-
-      const actionsEl = document.getElementById('searchCrossMonthActions');
-      actionsEl.innerHTML = '';
-      otherMonthsMap.forEach(({ year, month, count }) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold transition cursor-pointer';
-        btn.textContent = `${MONTH_NAMES[month]}/${year} (${count})`;
-        btn.onclick = () => {
-          currentMonth = month;
-          currentYear = year;
-          document.getElementById('monthSelect').value = String(month);
-          document.getElementById('yearSelect').value = String(year);
-          renderAll();
-        };
-        actionsEl.appendChild(btn);
-      });
-
-      banner.classList.remove('hidden');
-      banner.classList.add('flex');
+      document.getElementById('monthSelect').value = String(currentMonth);
+      document.getElementById('yearSelect').value = String(currentYear);
+      renderCalendar();
     }
 
     function handleMonthYearChange() {
       currentMonth = parseInt(document.getElementById('monthSelect').value, 10);
       currentYear = parseInt(document.getElementById('yearSelect').value, 10);
       renderCalendar();
-      updateCrossMonthBanner();
     }
 
-    function stepMonth(delta) {
-      let nextMonth = currentMonth + delta;
-      let nextYear = currentYear;
-      if (nextMonth < 0) {
-        nextMonth = 11;
-        nextYear -= 1;
-      } else if (nextMonth > 11) {
-        nextMonth = 0;
-        nextYear += 1;
-      }
+    function getHolidaysForYear(year) {
+      return {
+        [`${year}-01-01`]: 'Confraternização Universal',
+        [`${year}-04-21`]: 'Tiradentes',
+        [`${year}-05-01`]: 'Dia do Trabalho',
+        [`${year}-09-07`]: 'Independência do Brasil',
+        [`${year}-10-12`]: 'Nossa Sra. Aparecida',
+        [`${year}-10-28`]: 'Dia do Servidor Público',
+        [`${year}-11-02`]: 'Finados',
+        [`${year}-11-15`]: 'Proclamação da República',
+        [`${year}-11-20`]: 'Consciência Negra',
+        [`${year}-12-25`]: 'Natal'
+      };
+    }
 
-      const yearSelect = document.getElementById('yearSelect');
-      const hasYearOption = [...yearSelect.options].some(opt => parseInt(opt.value, 10) === nextYear);
-      if (!hasYearOption) return;
-
-      currentMonth = nextMonth;
-      currentYear = nextYear;
-      document.getElementById('monthSelect').value = String(currentMonth);
-      yearSelect.value = String(currentYear);
-      renderCalendar();
-      updateCrossMonthBanner();
+    function quickChangeStatus(pautaId, newStatus) {
+      const pauta = pautas.find(p => p.id === pautaId);
+      if (!pauta) return;
+      const oldStatus = pauta.status;
+      pauta.status = newStatus;
+      normalizePriorities();
+      savePautasToStorage();
+      addLogEntry('STATUS', `Status de "${pauta.titulo}" alterado de "${oldStatus}" para "${newStatus}".`);
+      renderAll();
     }
 
     function renderCalendar() {
       const grid = document.getElementById('calendarGrid');
+      if (!grid) return;
       grid.innerHTML = '';
 
-      const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+      const firstDayWeekday = new Date(currentYear, currentMonth, 1).getDay();
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const holidays = getPublicHolidaysForYear(currentYear);
+      const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+      const totalCells = Math.ceil((firstDayWeekday + daysInMonth) / 7) * 7;
 
       const today = new Date();
-      const todayIso = formatIsoDate(today);
+      const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const holidays = getHolidaysForYear(currentYear);
 
-      for (let i = 0; i < firstDayOfMonth; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'calendar-cell bg-neutral-50/70';
-        grid.appendChild(emptyCell);
-      }
+      for (let cellIdx = 0; cellIdx < totalCells; cellIdx++) {
+        const dayOffset = cellIdx - firstDayWeekday + 1;
+        let cellYear = currentYear;
+        let cellMonth = currentMonth;
+        let cellDay = dayOffset;
+        let isCurrentMonth = true;
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const isoDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const isToday = isoDate === todayIso;
-        const isPastDay = isoDate < todayIso;
-        const holidayName = holidays[isoDate] || null;
+        if (dayOffset <= 0) {
+          isCurrentMonth = false;
+          cellDay = daysInPrevMonth + dayOffset;
+          cellMonth = currentMonth - 1;
+          if (cellMonth < 0) { cellMonth = 11; cellYear--; }
+        } else if (dayOffset > daysInMonth) {
+          isCurrentMonth = false;
+          cellDay = dayOffset - daysInMonth;
+          cellMonth = currentMonth + 1;
+          if (cellMonth > 11) { cellMonth = 0; cellYear++; }
+        }
+
+        const isoDate = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(cellDay).padStart(2, '0')}`;
+        const isToday = isoDate === todayISO;
+        const isPastDay = isoDate < todayISO && isCurrentMonth;
+        const holidayName = isCurrentMonth ? holidays[isoDate] : null;
+
+        const cell = document.createElement('div');
+        cell.className = `calendar-cell p-1.5 xl:p-2 flex flex-col justify-between ${
+          !isCurrentMonth
+            ? 'bg-neutral-100/80 text-cohab-medium/60'
+            : isPastDay
+              ? 'bg-[#EDEDED]'
+              : 'bg-white hover:bg-cohab-bg/30'
+        }`;
+
+        cell.ondblclick = () => openPautaModal(null, isoDate);
+
+        const header = document.createElement('div');
+        header.className = 'flex items-center justify-between gap-1 mb-1';
+        header.innerHTML = `
+          <div class="flex items-center gap-1">
+            <span class="text-xs font-extrabold ${
+              isToday
+                ? 'px-1.5 py-0.5 rounded-md bg-cohab-terracotta text-white'
+                : isPastDay
+                  ? 'line-through text-neutral-500'
+                  : isCurrentMonth
+                    ? 'text-cohab-graphite'
+                    : 'text-cohab-medium/60'
+            }">${cellDay}</span>
+            ${isToday ? '<span class="text-[9px] font-extrabold uppercase text-cohab-terracotta hidden sm:inline">Hoje</span>' : ''}
+          </div>
+          ${isCurrentMonth ? `
+            <button type="button" onclick="openPautaModal(null, '${isoDate}')" title="Adicionar pauta em ${formatDateBR(isoDate)}" class="w-5 h-5 rounded-md text-cohab-medium hover:text-cohab-terracotta hover:bg-cohab-terracottaLight flex items-center justify-center transition cursor-pointer opacity-70 hover:opacity-100">
+              <i class="fa-solid fa-plus text-[9px]"></i>
+            </button>
+          ` : ''}
+        `;
+        cell.appendChild(header);
+
+        if (holidayName) {
+          const hol = document.createElement('div');
+          hol.className = 'mb-1 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-[9px] font-bold text-amber-800 truncate';
+          hol.title = holidayName;
+          hol.innerHTML = `<i class="fa-regular fa-calendar-check mr-1"></i>${escapeHTML(holidayName)}`;
+          cell.appendChild(hol);
+        }
+
+        const cardsStack = document.createElement('div');
+        cardsStack.className = 'space-y-1.5 flex-1 min-w-0';
 
         const dayPautas = pautas
           .filter(p => p.data === isoDate && matchesSearchAndFilter(p))
           .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
 
-        const cell = document.createElement('div');
-        cell.className = `calendar-cell p-1.5 xl:p-2 flex flex-col justify-start relative group ${
-          isToday
-            ? 'bg-cohab-terracottaLight/60 ring-1 ring-inset ring-cohab-terracotta'
-            : isPastDay
-              ? 'bg-neutral-200/65'
-              : 'bg-white hover:bg-neutral-50/80'
-        }`;
-
-        cell.ondblclick = (e) => {
-          if (e.target.closest('[data-pauta-card]')) return;
-          openPautaModal(null, isoDate);
-        };
-
-        const headerRow = document.createElement('div');
-        headerRow.className = 'flex items-center justify-between mb-1 xl:mb-1.5 min-w-0';
-
-        let dayNumberHTML = '';
-        if (isToday) {
-          dayNumberHTML = `
-            <div class="flex items-center gap-1 min-w-0">
-              <span class="text-xs font-extrabold text-cohab-terracotta leading-none">${day}</span>
-              <span class="px-1 py-0.5 rounded bg-cohab-terracotta text-white text-[8px] xl:text-[9px] font-extrabold uppercase tracking-wider leading-none">HOJE</span>
-            </div>
-          `;
-        } else if (isPastDay) {
-          dayNumberHTML = `<span class="text-xs font-bold line-through text-neutral-400">${day}</span>`;
-        } else {
-          dayNumberHTML = `<span class="text-xs font-extrabold text-cohab-graphite">${day}</span>`;
-        }
-
-        headerRow.innerHTML = `
-          ${dayNumberHTML}
-          <button
-            type="button"
-            onclick="openPautaModal(null, '${isoDate}')"
-            title="Adicionar pauta em ${formatDateBR(isoDate)}"
-            class="opacity-0 group-hover:opacity-100 focus:opacity-100 w-5 h-5 rounded-md bg-cohab-bg hover:bg-cohab-terracotta hover:text-white text-cohab-medium text-[10px] flex items-center justify-center transition cursor-pointer shrink-0"
-          >
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        `;
-        cell.appendChild(headerRow);
-
-        if (holidayName) {
-          const holEl = document.createElement('div');
-          holEl.className = 'mb-1 xl:mb-1.5 px-1.5 xl:px-2 py-1 rounded-md bg-[#FFFDF2] border border-[#F3D97E] text-[9.5px] xl:text-[10px] font-bold text-amber-900 flex items-center gap-1 xl:gap-1.5 leading-tight min-w-0';
-          holEl.innerHTML = `
-            <i class="fa-solid fa-calendar-day text-amber-600 text-[9.5px] xl:text-[10px] shrink-0"></i>
-            <span class="truncate" title="${escapeHTML(holidayName)}">${escapeHTML(holidayName)}</span>
-          `;
-          cell.appendChild(holEl);
-        }
-
-        const cardsStack = document.createElement('div');
-        cardsStack.className = 'space-y-1 xl:space-y-1.5 min-w-0';
-
         dayPautas.forEach(pauta => {
           const statusInfo = STATUS_META[pauta.status] || STATUS_META['A Fazer'];
           const typeInfo = TYPE_META[pauta.tipo] || TYPE_META.FRIA;
           const isPublished = pauta.status === 'Publicado';
+          const assignees = normalizeAssignees(pauta.responsavel);
 
           const card = document.createElement('div');
           card.setAttribute('data-pauta-card', pauta.id);
@@ -1712,7 +1572,7 @@
             openPautaModal(pauta.id);
           };
 
-          card.className = `rounded-lg border border-l-4 ${statusInfo.borderClass} p-1.5 xl:p-2 shadow-2xs transition cursor-pointer min-w-0 ${
+          card.className = `w-full rounded-lg border border-l-4 ${statusInfo.borderClass} p-1.5 xl:p-2 shadow-2xs transition cursor-pointer min-w-0 ${
             isPastDay
               ? 'bg-[#E5E5E5] border-neutral-300 hover:bg-white hover:border-cohab-border'
               : 'bg-white border-cohab-border hover:shadow-sm'
@@ -1733,6 +1593,35 @@
             `;
           }).join('');
 
+          const primaryInitials = assignees.length > 0 ? getPersonInitials(assignees[0]) : '—';
+          const extraCount = assignees.length > 1 ? ` +${assignees.length - 1}` : '';
+          const hasMultipleAssignees = assignees.length > 1;
+          const singleTooltip = assignees.length === 1 ? `Designado: ${escapeHTML(assignees[0])}` : 'Sem designação';
+
+          const assigneeBoxHTML = `
+            <div class="relative group/assignee inline-flex items-center shrink-0">
+              <span
+                ${!hasMultipleAssignees ? `title="${singleTooltip}"` : ''}
+                class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-white text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap text-cohab-graphite"
+              >
+                <span class="leading-none translate-y-[0.5px]">${escapeHTML(primaryInitials)}${extraCount}</span>
+              </span>
+              ${hasMultipleAssignees ? `
+                <div class="invisible opacity-0 group-hover/assignee:visible group-hover/assignee:opacity-100 transition-opacity duration-150 pointer-events-none absolute right-0 bottom-full mb-1.5 z-40 bg-cohab-graphiteDark text-white rounded-lg shadow-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap border border-black/10">
+                  <div class="text-[8.5px] font-extrabold uppercase tracking-wider text-neutral-300 mb-1">Responsáveis</div>
+                  <div class="space-y-0.5">
+                    ${assignees.map(person => `
+                      <div class="flex items-center gap-1.5 font-semibold">
+                        <span class="px-1 py-0.2 rounded bg-white/15 text-[9px] font-extrabold">${escapeHTML(getPersonInitials(person))}</span>
+                        <span>${escapeHTML(person)}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+
           card.innerHTML = `
             <p class="text-[10.5px] xl:text-[11.5px] font-bold leading-snug truncate ${isPastDay ? 'text-neutral-700' : 'text-cohab-graphiteDark'} ${isPublished ? 'line-through text-cohab-medium' : ''}" title="${escapeHTML(pauta.titulo)}">
               ${escapeHTML(pauta.titulo)}
@@ -1752,37 +1641,34 @@
               </p>
             ` : ''}
 
-            <div class="mt-1 xl:mt-1.5 pt-1 xl:pt-1.5 border-t ${isPastDay ? 'border-neutral-300' : 'border-cohab-border/70'} flex items-center justify-between gap-1 min-w-0">
-              <div class="flex items-center gap-1 min-w-0 flex-1">
-                <div class="relative flex items-center min-w-0" data-dropdown-root>
-                  <button
-                    type="button"
-                    onclick="toggleCustomDropdown('statusMenu-${pauta.id}', event)"
-                    class="h-5 xl:h-6 max-w-full inline-flex items-center justify-center gap-1 xl:gap-1.5 text-[9px] xl:text-[9.5px] font-bold rounded-md px-1.5 xl:px-2 border cursor-pointer focus:outline-none ${statusInfo.badgeClass} hover:border-cohab-graphite/40 transition min-w-0"
-                  >
-                    <span class="w-1.5 h-1.5 xl:w-2 xl:h-2 rounded-full ${statusInfo.dotClass} shrink-0"></span>
-                    <span class="truncate leading-none translate-y-[0.5px]">${escapeHTML(pauta.status)}</span>
-                    <i class="fa-solid fa-chevron-down text-[6.5px] xl:text-[7px] text-cohab-medium leading-none shrink-0"></i>
-                  </button>
-                  <div
-                    id="statusMenu-${pauta.id}"
-                    data-dropdown-menu
-                    class="hidden absolute left-0 bottom-full mb-1 w-32 bg-white border border-cohab-border rounded-lg shadow-lg py-1 z-30"
-                  >
-                    ${statusOptionsHTML}
-                  </div>
+            <div class="mt-1 xl:mt-1.5 pt-1 xl:pt-1.5 border-t ${isPastDay ? 'border-neutral-300' : 'border-cohab-border/70'} flex items-center justify-between gap-1 w-full min-w-0">
+              <div class="relative flex items-center min-w-0 flex-1" data-dropdown-root>
+                <button
+                  type="button"
+                  onclick="toggleCustomDropdown('statusMenu-${pauta.id}', event)"
+                  class="w-full h-5 xl:h-6 inline-flex items-center justify-between gap-1 text-[9px] xl:text-[9.5px] font-bold rounded-md px-1.5 xl:px-2 border cursor-pointer focus:outline-none ${statusInfo.badgeClass} hover:border-cohab-graphite/40 transition min-w-0"
+                >
+                  <span class="truncate leading-none translate-y-[0.5px]">${escapeHTML(pauta.status)}</span>
+                  <i class="fa-solid fa-chevron-down text-[6.5px] xl:text-[7px] text-cohab-medium leading-none shrink-0"></i>
+                </button>
+                <div
+                  id="statusMenu-${pauta.id}"
+                  data-dropdown-menu
+                  class="hidden absolute left-0 bottom-full mb-1 w-32 bg-white border border-cohab-border rounded-lg shadow-lg py-1 z-30"
+                >
+                  ${statusOptionsHTML}
                 </div>
-
-                ${!isPublished ? `
-                  <span title="${typeInfo.label}" aria-label="${typeInfo.label}" class="w-5 h-5 xl:w-6 xl:h-6 inline-flex items-center justify-center rounded-md border ${typeInfo.badgeClass} shrink-0">
-                    <span class="w-1.5 h-1.5 xl:w-2 xl:h-2 rounded-full ${typeInfo.dotClass} shrink-0"></span>
-                  </span>
-                ` : ''}
               </div>
 
-              ${!isPublished ? `
-                <span class="h-5 xl:h-6 inline-flex items-center text-[9.5px] xl:text-[10px] font-extrabold leading-none whitespace-nowrap shrink-0 ${isPastDay ? 'text-neutral-600' : 'text-cohab-graphite'}">#${pauta.prioridade || 1}</span>
-              ` : ''}
+              <div class="flex items-center gap-1 shrink-0">
+                <span title="${typeInfo.label}" aria-label="${typeInfo.label}" class="w-5 h-5 xl:w-6 xl:h-6 inline-flex items-center justify-center rounded-md border ${typeInfo.badgeClass} shrink-0">
+                  <span class="w-1.5 h-1.5 xl:w-2 xl:h-2 rounded-full ${typeInfo.dotClass} shrink-0"></span>
+                </span>
+                <span title="${isPublished ? 'Conteúdo Publicado' : 'Prioridade #' + (pauta.prioridade || 1)}" class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-white text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap shrink-0 ${isPublished ? 'text-emerald-600' : 'text-cohab-graphite'}">
+                  <span class="leading-none translate-y-[0.5px]">${isPublished ? '<i class="fa-solid fa-check text-[8px]"></i>' : `#${pauta.prioridade || 1}`}</span>
+                </span>
+                ${assigneeBoxHTML}
+              </div>
             </div>
           `;
 
@@ -1792,22 +1678,11 @@
         cell.appendChild(cardsStack);
         grid.appendChild(cell);
       }
-
-      const totalRendered = firstDayOfMonth + daysInMonth;
-      const remainder = totalRendered % 7;
-      if (remainder !== 0) {
-        const trailingDays = 7 - remainder;
-        for (let d = 1; d <= trailingDays; d++) {
-          const nextCell = document.createElement('div');
-          nextCell.className = 'calendar-cell bg-neutral-50/70 p-1.5 xl:p-2';
-          nextCell.innerHTML = `<span class="text-xs font-semibold text-neutral-400">${d}</span>`;
-          grid.appendChild(nextCell);
-        }
-      }
     }
 
     function renderHierarchy() {
       const list = document.getElementById('hierarchyList');
+      if (!list) return;
       list.innerHTML = '';
 
       const activePautas = pautas
@@ -1815,17 +1690,14 @@
         .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
 
       if (activePautas.length === 0) {
-        list.innerHTML = `
-          <div class="text-center py-10 text-xs text-cohab-medium bg-cohab-bg/50 rounded-2xl border border-dashed border-cohab-border">
-            Nenhuma demanda ativa encontrada com os filtros atuais.
-          </div>
-        `;
+        list.innerHTML = `<div class="p-8 text-center text-xs text-cohab-medium">Nenhuma demanda ativa encontrada.</div>`;
         return;
       }
 
       activePautas.forEach((pauta, idx) => {
         const statusInfo = STATUS_META[pauta.status] || STATUS_META['A Fazer'];
         const typeInfo = TYPE_META[pauta.tipo] || TYPE_META.FRIA;
+        const assigneesLabel = formatAssigneesFull(pauta.responsavel);
 
         const row = document.createElement('div');
         row.className = `rounded-2xl border border-cohab-border border-l-4 ${statusInfo.borderClass} bg-white p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-2xs`;
@@ -1848,6 +1720,11 @@
                 <span class="text-[11px] font-bold text-cohab-medium bg-cohab-bg px-2 py-0.5 rounded-md border border-cohab-border">
                   <i class="fa-regular fa-calendar mr-1"></i>${formatDateBR(pauta.data)}
                 </span>
+                ${assigneesLabel ? `
+                  <span class="text-[11px] font-bold text-cohab-graphite bg-cohab-bg px-2 py-0.5 rounded-md border border-cohab-border inline-flex items-center gap-1">
+                    <i class="fa-solid fa-users text-[9px] text-cohab-terracotta"></i>${escapeHTML(assigneesLabel)}
+                  </span>
+                ` : ''}
               </div>
               <div class="mt-1 flex flex-wrap items-center gap-3 text-xs text-cohab-medium">
                 ${pauta.editoria ? `<span><i class="fa-solid fa-tag text-cohab-graphite/70 mr-1"></i>${escapeHTML(pauta.editoria)}</span>` : ''}
@@ -2143,11 +2020,11 @@
       document.querySelectorAll('.modal-status-btn').forEach(btn => {
         const isSelected = btn.getAttribute('data-status-val') === statusVal;
         if (isSelected) {
-          btn.classList.add('border-cohab-graphite', 'ring-1', 'ring-cohab-graphite/30', 'shadow-2xs');
-          btn.classList.remove('border-cohab-border');
+          btn.classList.add('bg-white', 'border-cohab-graphite', 'ring-1', 'ring-cohab-graphite/30', 'shadow-2xs');
+          btn.classList.remove('border-cohab-border', 'bg-cohab-bg/40');
         } else {
-          btn.classList.remove('border-cohab-graphite', 'ring-1', 'ring-cohab-graphite/30', 'shadow-2xs');
-          btn.classList.add('border-cohab-border');
+          btn.classList.remove('bg-white', 'border-cohab-graphite', 'ring-1', 'ring-cohab-graphite/30', 'shadow-2xs');
+          btn.classList.add('border-cohab-border', 'bg-cohab-bg/40');
         }
       });
       syncModalFieldsVisibility();
@@ -2162,6 +2039,83 @@
       } else {
         activeMetaRow.classList.remove('hidden');
       }
+    }
+
+    function getSelectedPautaResponsavel() {
+      const select = document.getElementById('pautaResponsavel');
+      if (select.value === 'CUSTOM') {
+        return document.getElementById('pautaResponsavelCustom').value.trim();
+      }
+      return select.value;
+    }
+
+    function renderModalAssigneesList() {
+      const container = document.getElementById('pautaResponsaveisList');
+      if (!container) return;
+      if (modalAssignees.length === 0) {
+        container.innerHTML = `<span class="text-[11px] text-cohab-medium italic">Nenhuma pessoa designada ainda.</span>`;
+        return;
+      }
+      container.innerHTML = modalAssignees.map((person, index) => `
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-cohab-border bg-cohab-bg text-xs font-bold text-cohab-graphite">
+          <span class="px-1.5 py-0.5 rounded bg-white border border-cohab-border text-[10px] font-extrabold text-cohab-terracotta">${escapeHTML(getPersonInitials(person))}</span>
+          <span>${escapeHTML(person)}</span>
+          <button type="button" onclick="removeModalAssignee(${index})" title="Remover ${escapeHTML(person)}" class="text-cohab-medium hover:text-red-600 ml-0.5 cursor-pointer">
+            <i class="fa-solid fa-xmark text-[10px]"></i>
+          </button>
+        </span>
+      `).join('');
+    }
+
+    function addSelectedResponsavel() {
+      const select = document.getElementById('pautaResponsavel');
+      const customInput = document.getElementById('pautaResponsavelCustom');
+      const chosenName = select.value === 'CUSTOM'
+        ? customInput.value.trim()
+        : select.value.trim();
+
+      if (!chosenName) {
+        showToast('Digite ou selecione o nome do responsável.', 'error');
+        if (select.value === 'CUSTOM') customInput.focus();
+        return;
+      }
+
+      if (modalAssignees.some(p => p.toLowerCase() === chosenName.toLowerCase())) {
+        showToast(`${chosenName} já está designado(a) nesta demanda.`, 'error');
+        return;
+      }
+
+      modalAssignees.push(chosenName);
+      if (select.value === 'CUSTOM') {
+        customInput.value = '';
+      }
+      renderModalAssigneesList();
+    }
+
+    function removeModalAssignee(index) {
+      modalAssignees.splice(index, 1);
+      renderModalAssigneesList();
+    }
+
+    function handlePautaResponsavelChange() {
+      const select = document.getElementById('pautaResponsavel');
+      const customInput = document.getElementById('pautaResponsavelCustom');
+      if (select.value === 'CUSTOM') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+      }
+    }
+
+    function setPautaResponsavelField(responsavelValue) {
+      const select = document.getElementById('pautaResponsavel');
+      const customInput = document.getElementById('pautaResponsavelCustom');
+      select.value = 'Fábio Felicio';
+      customInput.classList.add('hidden');
+      customInput.value = '';
+      modalAssignees = normalizeAssignees(responsavelValue);
+      renderModalAssigneesList();
     }
 
     function openPautaModal(pautaId = null, prefillDate = null) {
@@ -2179,7 +2133,8 @@
         document.getElementById('pautaTitulo').value = pauta.titulo;
         document.getElementById('pautaData').value = pauta.data;
         document.getElementById('pautaPrioridade').value = pauta.prioridade || 1;
-        selectModalStatus(pauta.status || 'A Fazer');
+        selectModalStatus(normalizeLegacyStatus(pauta.status));
+        setPautaResponsavelField(pauta.responsavel);
         setFormatoSelectValue('pautaFormato', pauta.formato || '');
         renderEditoriaOptions(pauta.editoria || 'Serviços');
         document.getElementById('pautaDescricao').value = pauta.descricao || '';
@@ -2197,6 +2152,7 @@
         const nextPrio = pautas.filter(p => p.status !== 'Publicado').length + 1;
         document.getElementById('pautaPrioridade').value = nextPrio;
         selectModalStatus('A Fazer');
+        setPautaResponsavelField(['Fábio Felicio']);
         setFormatoSelectValue('pautaFormato', '');
         renderEditoriaOptions('Serviços');
         document.getElementById('pautaDescricao').value = '';
@@ -2228,6 +2184,16 @@
       const tipo = document.querySelector('input[name="pautaTipo"]:checked')?.value || 'FRIA';
       const prioridade = parseInt(document.getElementById('pautaPrioridade').value, 10) || 1;
       const status = document.getElementById('pautaStatus').value;
+
+      // Caso o usuário tenha digitado um nome personalizado e não tenha clicado em "Adicionar", inclui automaticamente
+      const customPending = document.getElementById('pautaResponsavel').value === 'CUSTOM'
+        ? document.getElementById('pautaResponsavelCustom').value.trim()
+        : '';
+      if (customPending && !modalAssignees.some(p => p.toLowerCase() === customPending.toLowerCase())) {
+        modalAssignees.push(customPending);
+      }
+      const responsavel = [...modalAssignees];
+
       const formato = document.getElementById('pautaFormato').value;
       let editoria = document.getElementById('pautaEditoria').value;
       if (editoria === '__NEW__') {
@@ -2251,26 +2217,39 @@
       let targetPautaId = id;
 
       if (id) {
-        const idx = pautas.findIndex(p => p.id === id);
-        if (idx !== -1) {
-          pautas[idx] = { ...pautas[idx], titulo, data, tipo, prioridade, status, formato, editoria, descricao };
-          addLogEntry('EDIÇÃO', `Pauta "${titulo}" atualizada (${status}, ${formatDateBR(data)}).`);
+        const index = pautas.findIndex(p => p.id === id);
+        if (index !== -1) {
+          pautas[index] = {
+            ...pautas[index],
+            titulo,
+            data,
+            tipo,
+            prioridade,
+            status,
+            responsavel,
+            formato,
+            editoria,
+            descricao
+          };
+          addLogEntry('EDIÇÃO', `Pauta "${titulo}" atualizada.`);
           showToast('Pauta atualizada com sucesso!');
         }
       } else {
-        targetPautaId = 'pauta-' + Date.now();
-        pautas.push({
-          id: targetPautaId,
+        const newPauta = {
+          id: 'pauta-' + Date.now(),
           titulo,
           data,
           tipo,
           prioridade,
           status,
+          responsavel,
           formato,
           editoria,
           descricao
-        });
-        addLogEntry('CRIAÇÃO', `Nova pauta criada: "${titulo}" para ${formatDateBR(data)}.`);
+        };
+        targetPautaId = newPauta.id;
+        pautas.push(newPauta);
+        addLogEntry('CRIAÇÃO', `Nova pauta criada: "${titulo}" (${formatDateBR(data)}).`);
         showToast('Nova pauta criada!');
 
         if (fromSugId) {
@@ -2282,6 +2261,15 @@
       normalizePriorities(status !== 'Publicado' ? targetPautaId : null, prioridade);
       savePautasToStorage();
       closePautaModal();
+
+      const [py, pm] = data.split('-').map(Number);
+      if (py && pm) {
+        currentYear = py;
+        currentMonth = pm - 1;
+        document.getElementById('yearSelect').value = String(currentYear);
+        document.getElementById('monthSelect').value = String(currentMonth);
+      }
+
       renderAll();
     }
 
@@ -2290,7 +2278,7 @@
       const pauta = pautas.find(p => p.id === id);
       if (!pauta) return;
 
-      openConfirmModal('Excluir Pauta', `Tem certeza que deseja excluir permanentemente "${pauta.titulo}"?`, () => {
+      openConfirmModal('Excluir Pauta', `Deseja realmente excluir a pauta "${pauta.titulo}"?`, () => {
         pautas = pautas.filter(p => p.id !== id);
         normalizePriorities();
         savePautasToStorage();
@@ -2301,26 +2289,49 @@
       });
     }
 
-    function quickChangeStatus(pautaId, newStatus) {
-      closeAllDropdowns();
-      const pauta = pautas.find(p => p.id === pautaId);
-      if (!pauta || pauta.status === newStatus) return;
-
-      const oldStatus = pauta.status;
-      pauta.status = newStatus;
-      normalizePriorities();
-      savePautasToStorage();
-      addLogEntry('STATUS', `"${pauta.titulo}" alterada de "${oldStatus}" para "${newStatus}".`);
-      showToast(`Status alterado para ${newStatus}`);
-      renderAll();
+    function updateBadges() {
+      const activeCount = pautas.filter(p => p.status !== 'Publicado').length;
+      const completedCount = pautas.filter(p => p.status === 'Publicado').length;
+      document.getElementById('badgeCountSuggestions').textContent = suggestions.length;
+      document.getElementById('badgeCountPautas').textContent = activeCount;
+      document.getElementById('badgeCountCompleted').textContent = completedCount;
+      document.getElementById('badgeCountLogs').textContent = logs.length;
+      const pill = document.getElementById('completedSummaryPill');
+      if (pill) {
+        pill.textContent = `${completedCount} ${completedCount === 1 ? 'conteúdo realizado' : 'conteúdos realizados'}`;
+      }
     }
 
-    // =========================================================================
-    // EXPORTAÇÃO EXCEL (.XLS) E PNG POR INTERVALO DE DATAS
-    // =========================================================================
+    function renderAll() {
+      updateBadges();
+      renderCalendar();
+      renderHierarchy();
+      renderCompleted();
+      renderSuggestions();
+      renderLogs();
+    }
+
+    function getPresetDates(mode) {
+      if (mode === 'WEEK') {
+        const now = new Date();
+        const sun = new Date(now);
+        sun.setDate(now.getDate() - now.getDay());
+        const sat = new Date(sun);
+        sat.setDate(sun.getDate() + 6);
+        const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        return { start: fmt(sun), end: fmt(sat) };
+      }
+      const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const mm = String(currentMonth + 1).padStart(2, '0');
+      return {
+        start: `${currentYear}-${mm}-01`,
+        end: `${currentYear}-${mm}-${String(lastDay).padStart(2, '0')}`
+      };
+    }
+
     function openExcelExportModal() {
+      setExcelPreset('MONTH');
       const modal = document.getElementById('excelExportModal');
-      setExcelPreset('WEEK');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
     }
@@ -2332,135 +2343,54 @@
     }
 
     function setExcelPreset(mode) {
-      const y = currentYear;
-      const m = String(currentMonth + 1).padStart(2, '0');
-      const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-      if (mode === 'MONTH') {
-        document.getElementById('excelStartDate').value = `${y}-${m}-01`;
-        document.getElementById('excelEndDate').value = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
-      } else {
-        const today = new Date();
-        const sunday = addDaysToDate(today, -today.getDay());
-        const saturday = addDaysToDate(sunday, 6);
-        document.getElementById('excelStartDate').value = formatIsoDate(sunday);
-        document.getElementById('excelEndDate').value = formatIsoDate(saturday);
-      }
+      const { start, end } = getPresetDates(mode);
+      document.getElementById('excelStartDate').value = start;
+      document.getElementById('excelEndDate').value = end;
     }
 
     function exportToExcel(event) {
-      if (event) event.preventDefault();
+      event.preventDefault();
       const startStr = document.getElementById('excelStartDate').value;
       const endStr = document.getElementById('excelEndDate').value;
-
       if (!startStr || !endStr || startStr > endStr) {
-        showToast('Selecione um intervalo de datas válido para o Excel.', 'error');
+        showToast('Selecione um intervalo de datas válido.', 'error');
         return;
       }
 
-      const headers = ['Data', 'Dia da Semana', 'Título da Pauta', 'Editoria', 'Formato', 'Status', 'Classificação', 'Prioridade', 'Briefing / Observações'];
-      const weekDayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-
-      const filteredPautas = pautas
+      const items = pautas
         .filter(p => p.data >= startStr && p.data <= endStr)
         .sort((a, b) => (a.data || '').localeCompare(b.data || '') || (a.prioridade || 99) - (b.prioridade || 99));
 
-      const totalCount = filteredPautas.length;
-      const publishedCount = filteredPautas.filter(p => p.status === 'Publicado').length;
-      const activeCount = totalCount - publishedCount;
-      const hotCount = filteredPautas.filter(p => p.tipo === 'QUENTE').length;
-
-      const statusBadgeStyle = {
-        'A Fazer': 'background-color:#FEF3C7; color:#92400E;',
-        'Em Produção': 'background-color:#FFEDD5; color:#9A3412;',
-        'Aprovado': 'background-color:#F3E8FF; color:#6B21A8;',
-        'Publicado': 'background-color:#D1FAE5; color:#065F46;'
-      };
-
-      const rowsHTML = filteredPautas.length === 0
-        ? `
-          <tr>
-            <td colspan="9" style="border:1px solid #D9D9D9; padding:16px; text-align:center; color:#7A7A7A; font-style:italic;">
-              Nenhuma pauta cadastrada no período de ${escapeHTML(formatDateBR(startStr))} a ${escapeHTML(formatDateBR(endStr))}.
-            </td>
+      const rowsHTML = items.length === 0
+        ? `<tr><td colspan="8" style="padding:12px;text-align:center;color:#666;">Nenhuma pauta no período selecionado.</td></tr>`
+        : items.map((p, i) => `
+          <tr style="background:${i % 2 === 0 ? '#FFFFFF' : '#F8F8F8'};">
+            <td style="padding:8px;border:1px solid #DDD;">${formatDateBR(p.data)}</td>
+            <td style="padding:8px;border:1px solid #DDD;font-weight:bold;">${escapeHTML(p.titulo)}</td>
+            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(p.editoria || '-')}</td>
+            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(p.formato || '-')}</td>
+            <td style="padding:8px;border:1px solid #DDD;">${p.tipo === 'QUENTE' ? 'Pauta Quente' : 'Pauta Fria'}</td>
+            <td style="padding:8px;border:1px solid #DDD;">${p.status === 'Publicado' ? '-' : '#' + (p.prioridade || 1)}</td>
+            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(p.status)}</td>
+            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(formatAssigneesFull(p.responsavel) || '-')}</td>
           </tr>
-        `
-        : filteredPautas.map((p, index) => {
-            const [py, pm, pd] = p.data.split('-').map(Number);
-            const dayName = weekDayNames[new Date(py, pm - 1, pd).getDay()] || '';
-            const rowBg = index % 2 === 0 ? '#FFFFFF' : '#F9FAFB';
-            const stStyle = statusBadgeStyle[p.status] || 'background-color:#F3F4F6; color:#374151;';
+        `).join('');
 
-            const isPub = p.status === 'Publicado';
-            const classText = isPub ? 'Concluído' : (p.tipo === 'QUENTE' ? 'Pauta Quente' : 'Pauta Fria');
-            const classStyle = isPub
-              ? 'background-color:#F3F4F6; color:#6B7280;'
-              : (p.tipo === 'QUENTE' ? 'background-color:#FEE2E2; color:#991B1B;' : 'background-color:#E0F2FE; color:#075985;');
-
-            const prioText = isPub ? '—' : `#${p.prioridade || 1}`;
-
-            return `
-              <tr style="background-color:${rowBg};">
-                <td style="border:1px solid #E2E2E2; padding:8px 10px; text-align:center; font-weight:bold; color:#333333; white-space:nowrap;">${escapeHTML(formatDateBR(p.data))}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 10px; text-align:center; color:#666666; white-space:nowrap;">${escapeHTML(dayName)}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 12px; font-weight:bold; color:#1F1F1F;">${escapeHTML(p.titulo)}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 10px; color:#4A4A4A;">${escapeHTML(p.editoria || '—')}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 10px; text-align:center; color:#4A4A4A;">${escapeHTML(p.formato || '—')}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 10px; text-align:center; font-weight:bold; ${stStyle}">${escapeHTML(p.status)}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 10px; text-align:center; font-weight:bold; ${classStyle}">${escapeHTML(classText)}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 10px; text-align:center; font-weight:bold; color:#4A4A4A;">${escapeHTML(prioText)}</td>
-                <td style="border:1px solid #E2E2E2; padding:8px 12px; color:#555555;">${escapeHTML(p.descricao || '—')}</td>
-              </tr>
-            `;
-          }).join('');
-
-      const excelTemplate = `
+      const html = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-          <meta charset="UTF-8" />
-          <!--[if gte mso 9]>
-          <xml>
-            <x:ExcelWorkbook>
-              <x:ExcelWorksheets>
-                <x:ExcelWorksheet>
-                  <x:Name>Planejamento Editorial</x:Name>
-                  <x:WorksheetOptions>
-                    <x:DisplayGridlines/>
-                  </x:WorksheetOptions>
-                </x:ExcelWorksheet>
-              </x:ExcelWorksheets>
-            </x:ExcelWorkbook>
-          </xml>
-          <![endif]-->
-        </head>
-        <body style="font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #333333;">
-          <table style="border-collapse: collapse; width: 100%;">
-            <tr>
-              <td colspan="9" style="background-color:#B84231; color:#FFFFFF; font-weight:bold; font-size:14pt; padding:12px 14px; border:1px solid #963324;">
-                COHAB MINAS — Planejamento Editorial (Assessoria de Comunicação Social)
-              </td>
-            </tr>
-            <tr>
-              <td colspan="9" style="background-color:#FDF3F1; color:#4A4A4A; font-size:10.5pt; padding:8px 14px; border:1px solid #E2E2E2;">
-                <strong>Período Selecionado:</strong> ${escapeHTML(formatDateBR(startStr))} a ${escapeHTML(formatDateBR(endStr))}
-                &nbsp;&nbsp;|&nbsp;&nbsp;
-                <strong>Emitido por:</strong> ${escapeHTML(getCurrentMemberName())}
-                &nbsp;&nbsp;|&nbsp;&nbsp;
-                <strong>Gerado em:</strong> ${escapeHTML(new Date().toLocaleString('pt-BR'))}
-              </td>
-            </tr>
-            <tr>
-              <td colspan="9" style="background-color:#F5F5F5; color:#333333; font-size:10.5pt; padding:8px 14px; border:1px solid #E2E2E2;">
-                <strong>Resumo do Período:</strong>
-                &nbsp;Total de Pautas: <strong>${totalCount}</strong>
-                &nbsp;&bull;&nbsp;Publicados: <strong style="color:#065F46;">${publishedCount}</strong>
-                &nbsp;&bull;&nbsp;Em Andamento: <strong style="color:#9A3412;">${activeCount}</strong>
-                &nbsp;&bull;&nbsp;Pautas Quentes: <strong style="color:#991B1B;">${hotCount}</strong>
-              </td>
-            </tr>
-            <tr><td colspan="9" style="height:8px;"></td></tr>
-            <tr>
-              ${headers.map(h => `<th style="background-color:#333333; color:#FFFFFF; border:1px solid #333333; padding:9px 10px; text-align:center; font-size:10.5pt;">${escapeHTML(h)}</th>`).join('')}
+        <head><meta charset="UTF-8" /></head>
+        <body style="font-family:Arial,sans-serif;">
+          <table>
+            <tr><td colspan="8" style="background:#B84231;color:#FFF;font-size:15px;font-weight:bold;padding:12px;">COHAB MINAS &bull; Planejamento Editorial (${formatDateBR(startStr)} a ${formatDateBR(endStr)})</td></tr>
+            <tr style="background:#333;color:#FFF;font-weight:bold;">
+              <th style="padding:8px;border:1px solid #333;">Data</th>
+              <th style="padding:8px;border:1px solid #333;">Título da Pauta</th>
+              <th style="padding:8px;border:1px solid #333;">Editoria</th>
+              <th style="padding:8px;border:1px solid #333;">Formato</th>
+              <th style="padding:8px;border:1px solid #333;">Classificação</th>
+              <th style="padding:8px;border:1px solid #333;">Prioridade</th>
+              <th style="padding:8px;border:1px solid #333;">Status</th>
+              <th style="padding:8px;border:1px solid #333;">Designação</th>
             </tr>
             ${rowsHTML}
           </table>
@@ -2468,21 +2398,20 @@
         </html>
       `;
 
-      const blob = new Blob(['\uFEFF', excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `planejamento_editorial_cohab_${startStr}_a_${endStr}.xls`;
+      a.download = `planejamento_editorial_${startStr}_a_${endStr}.xls`;
       a.click();
       URL.revokeObjectURL(url);
-
       closeExcelExportModal();
-      showToast('Planilha Excel (.xls) exportada com sucesso!');
+      showToast('Planilha Excel exportada!');
     }
 
     function openPngExportModal() {
+      setPngPreset('MONTH');
       const modal = document.getElementById('pngExportModal');
-      setPngPreset('WEEK');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
     }
@@ -2494,41 +2423,9 @@
     }
 
     function setPngPreset(mode) {
-      const y = currentYear;
-      const m = String(currentMonth + 1).padStart(2, '0');
-      const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-      if (mode === 'MONTH') {
-        document.getElementById('pngStartDate').value = `${y}-${m}-01`;
-        document.getElementById('pngEndDate').value = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
-      } else {
-        const today = new Date();
-        const sunday = addDaysToDate(today, -today.getDay());
-        const saturday = addDaysToDate(sunday, 6);
-        document.getElementById('pngStartDate').value = formatIsoDate(sunday);
-        document.getElementById('pngEndDate').value = formatIsoDate(saturday);
-      }
-    }
-
-    function drawRoundedRect(ctx, x, y, width, height, radius) {
-      const r = Math.min(radius, width / 2, height / 2);
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + width, y, x + width, y + height, r);
-      ctx.arcTo(x + width, y + height, x, y + height, r);
-      ctx.arcTo(x, y + height, x, y, r);
-      ctx.arcTo(x, y, x + width, y, r);
-      ctx.closePath();
-    }
-
-    function fitCanvasText(ctx, text, maxWidth) {
-      if (!text) return '';
-      if (ctx.measureText(text).width <= maxWidth) return text;
-      let trimmed = text;
-      while (trimmed.length > 0 && ctx.measureText(trimmed + '…').width > maxWidth) {
-        trimmed = trimmed.slice(0, -1);
-      }
-      return trimmed + '…';
+      const { start, end } = getPresetDates(mode);
+      document.getElementById('pngStartDate').value = start;
+      document.getElementById('pngEndDate').value = end;
     }
 
     function generateCalendarPNG(event) {
@@ -2545,51 +2442,23 @@
       const startDate = new Date(sy, sm - 1, sd);
       const endDate = new Date(ey, em - 1, ed);
 
-      // Alinha início ao domingo e fim ao sábado para manter a grade semanal completa
-      const gridStart = addDaysToDate(startDate, -startDate.getDay());
-      const gridEnd = addDaysToDate(endDate, 6 - endDate.getDay());
+      const gridStart = new Date(startDate);
+      gridStart.setDate(startDate.getDate() - startDate.getDay());
+      const gridEnd = new Date(endDate);
+      gridEnd.setDate(endDate.getDate() + (6 - endDate.getDay()));
 
-      const totalDays = Math.round((gridEnd - gridStart) / (1000 * 60 * 60 * 24)) + 1;
-      const numWeeks = Math.max(1, Math.ceil(totalDays / 7));
-
-      const todayIso = formatIsoDate(new Date());
-      const holidaysCache = {};
-
-      // Calcula a altura ideal de cada semana para que todos os cards apareçam sem cortes
-      const cardHeight = 68;
-      const cardGap = 6;
-      const holidayHeight = 24;
-      const weekRowHeights = [];
-
-      for (let w = 0; w < numWeeks; w++) {
-        let maxWeekHeight = 148;
-        for (let c = 0; c < 7; c++) {
-          const idx = w * 7 + c;
-          const cellDate = addDaysToDate(gridStart, idx);
-          const iso = formatIsoDate(cellDate);
-          const yYear = cellDate.getFullYear();
-          if (!holidaysCache[yYear]) holidaysCache[yYear] = getPublicHolidaysForYear(yYear);
-
-          const hasHoliday = Boolean(holidaysCache[yYear][iso]);
-          const dayItems = pautas.filter(p => p.data === iso && matchesSearchAndFilter(p));
-          const contentH =
-            34 +
-            (hasHoliday ? holidayHeight + 6 : 0) +
-            dayItems.length * (cardHeight + cardGap) +
-            10;
-          if (contentH > maxWeekHeight) maxWeekHeight = contentH;
-        }
-        weekRowHeights.push(maxWeekHeight);
+      const days = [];
+      for (let d = new Date(gridStart); d <= gridEnd; d.setDate(d.getDate() + 1)) {
+        days.push(new Date(d));
       }
 
+      const weeks = Math.max(1, Math.ceil(days.length / 7));
       const scale = 2;
-      const width = 1480;
-      const padX = 28;
-      const headerHeight = 96;
-      const weekHeaderHeight = 38;
-      const footerHeight = 46;
-      const totalGridHeight = weekRowHeights.reduce((acc, h) => acc + h, 0);
-      const height = headerHeight + 16 + weekHeaderHeight + totalGridHeight + footerHeight;
+      const width = 1400;
+      const colW = (width - 80) / 7;
+      const headerH = 115;
+      const weekRowH = 175;
+      const height = headerH + 40 + weeks * weekRowH + 40;
 
       const canvas = document.createElement('canvas');
       canvas.width = width * scale;
@@ -2597,412 +2466,110 @@
       const ctx = canvas.getContext('2d');
       ctx.scale(scale, scale);
 
-      // Fundo geral (#F5F5F5)
       ctx.fillStyle = '#F5F5F5';
       ctx.fillRect(0, 0, width, height);
 
-      // Cabeçalho institucional branco com faixa terracota no topo
+      ctx.fillStyle = '#B84231';
+      ctx.fillRect(0, 0, width, 8);
+
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, width, headerHeight);
-      ctx.fillStyle = '#B84231';
-      ctx.fillRect(0, 0, width, 6);
-      ctx.fillStyle = '#E2E2E2';
-      ctx.fillRect(0, headerHeight - 1, width, 1);
+      ctx.fillRect(0, 8, width, headerH - 8);
 
-      // Logo Geométrico Cohab Minas desenhado vetorialmente
-      const lx = padX;
-      const ly = 22;
-      const s = 0.52;
-      const drawPoly = (pts, color) => {
-        ctx.beginPath();
-        pts.forEach(([px, py], i) => {
-          if (i === 0) ctx.moveTo(lx + px * s, ly + py * s);
-          else ctx.lineTo(lx + px * s, ly + py * s);
-        });
-        ctx.closePath();
-        ctx.fillStyle = color;
-        ctx.fill();
-      };
-      drawPoly([[48, 4], [8, 27], [48, 50]], '#1F1F1F');
-      drawPoly([[52, 4], [92, 27], [52, 50]], '#1F1F1F');
-      drawPoly([[6, 31], [6, 79], [46, 55]], '#1F1F1F');
-      drawPoly([[94, 31], [94, 79], [54, 55]], '#B84231');
-      drawPoly([[8, 83], [48, 106], [48, 60]], '#1F1F1F');
-      drawPoly([[92, 83], [52, 106], [52, 60]], '#1F1F1F');
-
-      // Marca Cohab Minas
-      const brandX = lx + 62;
-      ctx.font = '800 16px Inter, sans-serif';
-      ctx.fillStyle = '#B84231';
-      ctx.fillText('COHAB', brandX, 44);
-      const cohabW = ctx.measureText('COHAB ').width;
-      ctx.fillStyle = '#4A4A4A';
-      ctx.fillText('MINAS', brandX + cohabW, 44);
+      ctx.fillStyle = '#333333';
+      ctx.font = '800 24px Inter, sans-serif';
+      ctx.fillText('Planejamento Editorial • Cohab Minas', 40, 56);
 
       ctx.fillStyle = '#7A7A7A';
-      ctx.font = '600 9px Inter, sans-serif';
-      ctx.fillText('COMPANHIA DE HABITAÇÃO', brandX, 58);
-      ctx.fillText('DO ESTADO DE MINAS GERAIS', brandX, 69);
+      ctx.font = '600 14px Inter, sans-serif';
+      ctx.fillText(`Assessoria de Comunicação Social  |  Período: ${formatDateBR(startStr)} a ${formatDateBR(endStr)}`, 40, 84);
 
-      // Divisória vertical
-      ctx.fillStyle = '#E2E2E2';
-      ctx.fillRect(brandX + 158, 26, 1, 50);
-
-      // Título Institucional
-      const titleX = brandX + 176;
+      const weekNames = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
+      const topY = headerH + 12;
+      ctx.fillStyle = '#EAEAEA';
+      ctx.fillRect(40, topY, width - 80, 32);
       ctx.fillStyle = '#4A4A4A';
-      ctx.font = '800 20px Inter, sans-serif';
-      ctx.fillText('Planejamento Editorial', titleX, 49);
-      ctx.fillStyle = '#7A7A7A';
-      ctx.font = '500 13px Inter, sans-serif';
-      ctx.fillText('Assessoria de Comunicação Social', titleX, 69);
-
-      // Badge do período à direita
-      const periodLabel = `${MONTH_NAMES[currentMonth]} de ${currentYear}  •  ${formatDateBR(startStr)} a ${formatDateBR(endStr)}`;
-      ctx.font = '700 12px Inter, sans-serif';
-      const pillW = ctx.measureText(periodLabel).width + 28;
-      const pillX = width - padX - pillW;
-      drawRoundedRect(ctx, pillX, 34, pillW, 32, 10);
-      ctx.fillStyle = '#F5F5F5';
-      ctx.fill();
-      ctx.strokeStyle = '#E2E2E2';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      ctx.fillStyle = '#4A4A4A';
-      ctx.fillText(periodLabel, pillX + 14, 54);
-
-      // Container externo arredondado da grade do calendário
-      const gridX = padX;
-      const gridY = headerHeight + 16;
-      const gridW = width - padX * 2;
-      const gridTotalH = weekHeaderHeight + totalGridHeight;
-
-      ctx.save();
-      drawRoundedRect(ctx, gridX, gridY, gridW, gridTotalH, 16);
-      ctx.clip();
-
-      // Cabeçalho dos dias da semana (todos com a mesma cor, Sábado mais suave)
-      const weekDays = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
-      const colW = gridW / 7;
-
-      ctx.fillStyle = '#F5F5F5';
-      ctx.fillRect(gridX, gridY, gridW, weekHeaderHeight);
-
-      weekDays.forEach((wd, i) => {
-        ctx.fillStyle = i === 6 ? '#7A7A7A' : '#4A4A4A';
-        ctx.font = '800 11px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(wd, gridX + i * colW + colW / 2, gridY + 23);
+      ctx.font = '800 11px Inter, sans-serif';
+      weekNames.forEach((w, i) => {
+        ctx.fillText(w, 40 + i * colW + 12, topY + 20);
       });
-      ctx.textAlign = 'left';
 
-      // Renderiza semanas e células
-      let currentRowY = gridY + weekHeaderHeight;
+      days.forEach((d, idx) => {
+        const col = idx % 7;
+        const row = Math.floor(idx / 7);
+        const x = 40 + col * colW;
+        const y = topY + 32 + row * weekRowH;
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const inRange = iso >= startStr && iso <= endStr;
 
-      for (let w = 0; w < numWeeks; w++) {
-        const rowH = weekRowHeights[w];
+        ctx.fillStyle = inRange ? '#FFFFFF' : '#EFEFEF';
+        ctx.fillRect(x, y, colW, weekRowH);
+        ctx.strokeStyle = '#DCDCDC';
+        ctx.strokeRect(x, y, colW, weekRowH);
 
-        for (let c = 0; c < 7; c++) {
-          const idx = w * 7 + c;
-          const cellDate = addDaysToDate(gridStart, idx);
-          const iso = formatIsoDate(cellDate);
-          const yYear = cellDate.getFullYear();
-          const isOutsideTargetMonth =
-            cellDate.getMonth() !== currentMonth &&
-            startStr === `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+        ctx.fillStyle = inRange ? '#333333' : '#999999';
+        ctx.font = '800 13px Inter, sans-serif';
+        ctx.fillText(String(d.getDate()), x + 10, y + 22);
 
-          const x = gridX + c * colW;
-          const y = currentRowY;
+        const dayItems = pautas
+          .filter(p => p.data === iso)
+          .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
 
-          const isPast = iso < todayIso;
-          const isToday = iso === todayIso;
+        let cursorY = y + 32;
+        dayItems.slice(0, 3).forEach(item => {
+          const st = STATUS_META[item.status] || STATUS_META['A Fazer'];
+          const tp = TYPE_META[item.tipo] || TYPE_META.FRIA;
+          const cardH = 40;
 
-          // Fundo da célula igual ao site
-          if (isOutsideTargetMonth) {
-            ctx.fillStyle = '#FAFAFA';
-          } else if (isToday) {
-            ctx.fillStyle = '#FDF3F1';
-          } else if (isPast) {
-            ctx.fillStyle = '#EAEAEA';
-          } else {
-            ctx.fillStyle = '#FFFFFF';
-          }
-          ctx.fillRect(x, y, colW, rowH);
-
-          // Borda da célula
+          ctx.fillStyle = '#FAFAFA';
+          ctx.fillRect(x + 8, cursorY, colW - 16, cardH);
           ctx.strokeStyle = '#E2E2E2';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(x, y, colW, rowH);
+          ctx.strokeRect(x + 8, cursorY, colW - 16, cardH);
 
-          if (isToday) {
-            ctx.strokeStyle = '#B84231';
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(x + 0.75, y + 0.75, colW - 1.5, rowH - 1.5);
-          }
+          ctx.fillStyle = st.dotHex;
+          ctx.fillRect(x + 8, cursorY, 4, cardH);
 
-          // Número do dia (sem círculo atrás do dia atual, riscado nos passados, cor igual no domingo)
-          const dayStr = String(cellDate.getDate());
-          if (isToday) {
-            ctx.fillStyle = '#B84231';
-            ctx.font = '800 12.5px Inter, sans-serif';
-            ctx.fillText(dayStr, x + 10, y + 21);
-            const numW = ctx.measureText(dayStr).width;
+          ctx.fillStyle = '#333333';
+          ctx.font = '700 10px Inter, sans-serif';
+          const title = item.titulo.length > 24 ? item.titulo.slice(0, 23) + '…' : item.titulo;
+          ctx.fillText(title, x + 17, cursorY + 14);
 
-            drawRoundedRect(ctx, x + 10 + numW + 6, y + 10, 34, 14, 4);
-            ctx.fillStyle = '#B84231';
-            ctx.fill();
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '800 8.5px Inter, sans-serif';
-            ctx.fillText('HOJE', x + 10 + numW + 11, y + 20);
-          } else if (isOutsideTargetMonth) {
-            ctx.fillStyle = '#A3A3A3';
-            ctx.font = '600 12px Inter, sans-serif';
-            ctx.fillText(dayStr, x + 10, y + 21);
-          } else if (isPast) {
-            ctx.fillStyle = '#A3A3A3';
-            ctx.font = '700 12px Inter, sans-serif';
-            ctx.fillText(dayStr, x + 10, y + 21);
-            const numW = ctx.measureText(dayStr).width;
-            ctx.fillRect(x + 9, y + 16.5, numW + 2, 1.2);
-          } else {
-            ctx.fillStyle = '#4A4A4A';
-            ctx.font = '800 12px Inter, sans-serif';
-            ctx.fillText(dayStr, x + 10, y + 21);
-          }
+          ctx.fillStyle = '#666666';
+          ctx.font = '600 9px Inter, sans-serif';
+          const assignees = normalizeAssignees(item.responsavel);
+          const initials = assignees.length > 0
+            ? `${getPersonInitials(assignees[0])}${assignees.length > 1 ? ' +' + (assignees.length - 1) : ''}`
+            : '';
+          const sub = `${item.status}${item.status !== 'Publicado' ? ' • #' + (item.prioridade || 1) : ''}${initials ? ' • ' + initials : ''}`;
+          ctx.fillText(sub, x + 17, cursorY + 30);
 
-          let cursorY = y + 32;
+          ctx.fillStyle = tp.dotHex;
+          ctx.beginPath();
+          ctx.arc(x + colW - 16, cursorY + 12, 3.5, 0, Math.PI * 2);
+          ctx.fill();
 
-          // Etiqueta de feriado com ícone de calendário
-          const hol = holidaysCache[yYear][iso];
-          if (hol) {
-            drawRoundedRect(ctx, x + 8, cursorY, colW - 16, holidayHeight, 6);
-            ctx.fillStyle = '#FFFDF2';
-            ctx.fill();
-            ctx.strokeStyle = '#F3D97E';
-            ctx.lineWidth = 1;
-            ctx.stroke();
+          cursorY += cardH + 5;
+        });
+      });
 
-            // Mini ícone de calendário
-            const ix = x + 14;
-            const iy = cursorY + 7;
-            ctx.strokeStyle = '#D97706';
-            ctx.lineWidth = 1.2;
-            ctx.strokeRect(ix, iy + 1.5, 9, 8);
-            ctx.fillStyle = '#D97706';
-            ctx.fillRect(ix, iy + 1.5, 9, 2.5);
-
-            ctx.fillStyle = '#78350F';
-            ctx.font = '700 9.5px Inter, sans-serif';
-            const fittedHol = fitCanvasText(ctx, hol, colW - 36);
-            ctx.fillText(fittedHol, x + 27, cursorY + 15);
-            cursorY += holidayHeight + 6;
-          }
-
-          // Cards das pautas do dia
-          const dayItems = pautas
-            .filter(p => p.data === iso && matchesSearchAndFilter(p))
-            .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
-
-          dayItems.forEach(item => {
-            const stInfo = STATUS_META[item.status] || STATUS_META['A Fazer'];
-            const tpInfo = TYPE_META[item.tipo] || TYPE_META.FRIA;
-            const isPub = item.status === 'Publicado';
-
-            const cx = x + 8;
-            const cw = colW - 16;
-
-            // Fundo e borda arredondada do card
-            drawRoundedRect(ctx, cx, cursorY, cw, cardHeight, 8);
-            ctx.fillStyle = isPast ? '#E5E5E5' : '#FFFFFF';
-            ctx.fill();
-            ctx.strokeStyle = isPast ? '#D4D4D4' : '#E2E2E2';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // Faixa lateral esquerda da cor do status
-            ctx.save();
-            drawRoundedRect(ctx, cx, cursorY, cw, cardHeight, 8);
-            ctx.clip();
-            ctx.fillStyle = stInfo.dotHex;
-            ctx.fillRect(cx, cursorY, 4, cardHeight);
-            ctx.restore();
-
-            // 1ª linha: Título da pauta
-            ctx.fillStyle = isPub ? '#7A7A7A' : (isPast ? '#404040' : '#333333');
-            ctx.font = '700 10.5px Inter, sans-serif';
-            const fittedTitle = fitCanvasText(ctx, item.titulo, cw - 16);
-            ctx.fillText(fittedTitle, cx + 10, cursorY + 15);
-
-            if (isPub) {
-              const titleW = ctx.measureText(fittedTitle).width;
-              ctx.fillStyle = '#7A7A7A';
-              ctx.fillRect(cx + 10, cursorY + 11.5, titleW, 1);
-            }
-
-            // 2ª linha: Editoria com ícone vetorial de etiqueta (tag)
-            if (item.editoria) {
-              const tagX = cx + 10;
-              const tagY = cursorY + 21;
-              ctx.save();
-              ctx.fillStyle = '#6B7280';
-              ctx.beginPath();
-              ctx.moveTo(tagX, tagY);
-              ctx.lineTo(tagX + 4.2, tagY);
-              ctx.lineTo(tagX + 7.5, tagY + 3.3);
-              ctx.lineTo(tagX + 3.3, tagY + 7.5);
-              ctx.lineTo(tagX, tagY + 4.2);
-              ctx.closePath();
-              ctx.fill();
-              ctx.fillStyle = isPast ? '#E5E5E5' : '#FFFFFF';
-              ctx.beginPath();
-              ctx.arc(tagX + 2.1, tagY + 2.1, 0.85, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.restore();
-
-              ctx.fillStyle = '#7A7A7A';
-              ctx.font = '600 9px Inter, sans-serif';
-              const fittedEd = fitCanvasText(ctx, item.editoria, cw - 24);
-              ctx.fillText(fittedEd, cx + 20, cursorY + 27.5);
-            }
-
-            // 3ª linha: Formato com ícone vetorial de claquete (clapperboard)
-            if (item.formato) {
-              const clapX = cx + 10;
-              const clapY = cursorY + 32;
-              ctx.save();
-              ctx.fillStyle = '#6B7280';
-              drawRoundedRect(ctx, clapX, clapY + 2.4, 7.6, 5.1, 1);
-              ctx.fill();
-              ctx.beginPath();
-              ctx.moveTo(clapX, clapY + 2);
-              ctx.lineTo(clapX + 7.4, clapY + 0.5);
-              ctx.lineTo(clapX + 7.6, clapY + 2);
-              ctx.lineTo(clapX, clapY + 2.4);
-              ctx.closePath();
-              ctx.fill();
-              ctx.strokeStyle = isPast ? '#E5E5E5' : '#FFFFFF';
-              ctx.lineWidth = 0.8;
-              ctx.beginPath();
-              ctx.moveTo(clapX + 2.3, clapY + 0.8);
-              ctx.lineTo(clapX + 1.6, clapY + 2.3);
-              ctx.moveTo(clapX + 5.1, clapY + 0.4);
-              ctx.lineTo(clapX + 4.4, clapY + 2.1);
-              ctx.stroke();
-              ctx.restore();
-
-              ctx.fillStyle = '#7A7A7A';
-              ctx.font = '500 9px Inter, sans-serif';
-              const fittedFmt = fitCanvasText(ctx, item.formato, cw - 24);
-              ctx.fillText(fittedFmt, cx + 20, cursorY + 38.5);
-            }
-
-            // Linha divisória do rodapé do card
-            ctx.fillStyle = isPast ? '#D4D4D4' : '#EEEEEE';
-            ctx.fillRect(cx + 8, cursorY + 44, cw - 14, 1);
-
-            // Selo de Status (caixinha arredondada com bolinha chapada)
-            ctx.font = '700 8.5px Inter, sans-serif';
-            const statusTextW = ctx.measureText(item.status).width;
-            const statusPillW = statusTextW + 20;
-            const pillY = cursorY + 48;
-            const pillH = 15;
-
-            drawRoundedRect(ctx, cx + 9, pillY, statusPillW, pillH, 4);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fill();
-            ctx.strokeStyle = '#E2E2E2';
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(cx + 15, pillY + pillH / 2, 2.8, 0, Math.PI * 2);
-            ctx.fillStyle = stInfo.dotHex;
-            ctx.fill();
-
-            ctx.fillStyle = '#4A4A4A';
-            ctx.fillText(item.status, cx + 21, pillY + 10.5);
-
-            // Se não publicado, desenha caixinha da bolinha de classificação ao lado do status + #prioridade à direita
-            if (!isPub) {
-              const dotBoxX = cx + 9 + statusPillW + 4;
-              drawRoundedRect(ctx, dotBoxX, pillY, 15, pillH, 4);
-              ctx.fillStyle = '#FFFFFF';
-              ctx.fill();
-              ctx.strokeStyle = '#E2E2E2';
-              ctx.stroke();
-
-              ctx.beginPath();
-              ctx.arc(dotBoxX + 7.5, pillY + pillH / 2, 2.8, 0, Math.PI * 2);
-              ctx.fillStyle = tpInfo.dotHex;
-              ctx.fill();
-
-              ctx.fillStyle = isPast ? '#525252' : '#4A4A4A';
-              ctx.font = '800 9.5px Inter, sans-serif';
-              ctx.textAlign = 'right';
-              ctx.fillText(`#${item.prioridade || 1}`, cx + cw - 7, pillY + 11);
-              ctx.textAlign = 'left';
-            }
-
-            cursorY += cardHeight + cardGap;
-          });
-        }
-
-        currentRowY += rowH;
-      }
-
-      ctx.restore();
-
-      // Borda arredondada externa da grade
-      drawRoundedRect(ctx, gridX, gridY, gridW, gridTotalH, 16);
-      ctx.strokeStyle = '#E2E2E2';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // Rodapé institucional
-      ctx.fillStyle = '#7A7A7A';
-      ctx.font = '600 11px Inter, sans-serif';
-      ctx.fillText(
-        `Assessoria de Comunicação Social • Cohab Minas — Gerado em ${new Date().toLocaleString('pt-BR')}`,
-        padX,
-        height - 16
-      );
-
-      const link = document.createElement('a');
-      link.download = `planejamento_cohab_${startStr}_a_${endStr}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-
-      closePngExportModal();
-      showToast('Imagem PNG exportada com sucesso!');
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `calendario_cohab_${startStr}_a_${endStr}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        closePngExportModal();
+        showToast('Imagem PNG exportada!');
+      }, 'image/png');
     }
 
-    // =========================================================================
-    // RELATÓRIO ANALÍTICO EDITORIAL (QUANTIDADE, CATEGORIAS, MAPA DE PALAVRAS E TÓPICOS)
-    // =========================================================================
-    let lastGeneratedReportHTML = '';
-    let lastReportPeriodLabel = '';
-
-    const PT_STOPWORDS = new Set([
-      'a', 'o', 'as', 'os', 'um', 'uma', 'uns', 'umas', 'de', 'do', 'da', 'dos', 'das',
-      'em', 'no', 'na', 'nos', 'nas', 'por', 'pelo', 'pela', 'pelos', 'pelas', 'para',
-      'com', 'sem', 'sob', 'sobre', 'entre', 'ate', 'até', 'apos', 'após', 'e', 'ou',
-      'mas', 'que', 'se', 'ao', 'aos', 'à', 'às', 'como', 'mais', 'menos', 'muito',
-      'ja', 'já', 'nao', 'não', 'sim', 'sao', 'são', 'foi', 'ser', 'esta', 'está',
-      'este', 'esta', 'esse', 'essa', 'isso', 'isto', 'aquilo', 'seu', 'sua', 'seus',
-      'suas', 'meu', 'minha', 'nosso', 'nossa', 'ele', 'ela', 'eles', 'elas', 'voce',
-      'você', 'que', 'qual', 'quais', 'onde', 'quando', 'porque', 'porquê', 'tambem',
-      'também', 'ainda', 'bem', 'mal', 'cada', 'todo', 'toda', 'todos', 'todas', 'outro',
-      'outra', 'outros', 'outras', 'mesmo', 'mesma', 'sobre', 'via', 'num', 'numa',
-      'pauta', 'pautas', 'conteudo', 'conteúdo', 'conteudos', 'conteúdos', 'cohab', 'minas'
-    ]);
-
     function openReportModal() {
-      const modal = document.getElementById('reportModal');
       setReportPreset('MONTH');
-      generateEditorialReport();
+      const modal = document.getElementById('reportModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      generateEditorialReport();
     }
 
     function closeReportModal() {
@@ -3012,132 +2579,10 @@
     }
 
     function setReportPreset(mode) {
-      const y = currentYear;
-      const m = String(currentMonth + 1).padStart(2, '0');
-      const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-      if (mode === 'MONTH') {
-        document.getElementById('reportStartDate').value = `${y}-${m}-01`;
-        document.getElementById('reportEndDate').value = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
-      } else {
-        const today = new Date();
-        const sunday = addDaysToDate(today, -today.getDay());
-        const saturday = addDaysToDate(sunday, 6);
-        document.getElementById('reportStartDate').value = formatIsoDate(sunday);
-        document.getElementById('reportEndDate').value = formatIsoDate(saturday);
-      }
+      const { start, end } = getPresetDates(mode);
+      document.getElementById('reportStartDate').value = start;
+      document.getElementById('reportEndDate').value = end;
       generateEditorialReport();
-    }
-
-    function extractWordFrequency(items) {
-      const freqMap = new Map();
-      items.forEach(item => {
-        const rawText = `${item.titulo || ''} ${item.descricao || ''} ${item.editoria || ''}`;
-        const tokens = rawText
-          .toLowerCase()
-          .replace(/[^a-zà-ú0-9\s-]/gi, ' ')
-          .split(/\s+/)
-          .map(t => t.replace(/^-+|-+$/g, ''))
-          .filter(t => t.length >= 3 && !/^\d+$/.test(t) && !PT_STOPWORDS.has(t));
-
-        tokens.forEach(token => {
-          const formatted = token.charAt(0).toUpperCase() + token.slice(1);
-          freqMap.set(formatted, (freqMap.get(formatted) || 0) + 1);
-        });
-      });
-
-      return [...freqMap.entries()]
-        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-        .slice(0, 24);
-    }
-
-    function extractEditorialTopics(items) {
-      const topicRules = [
-        {
-          name: 'Regularização Fundiária e Escrituras',
-          icon: 'fa-file-signature',
-          keywords: ['audiência', 'audiencia', 'escritura', 'regularização', 'regularizacao', 'fundiária', 'fundiaria', 'arcos', 'título', 'titulo']
-        },
-        {
-          name: 'Cadastro Habitacional e Atendimento',
-          icon: 'fa-address-card',
-          keywords: ['cadastral', 'cadastro', 'etapa', 'timóteo', 'timoteo', 'famílias', 'familias', 'mutuário', 'mutuario', 'inscrição', 'inscricao']
-        },
-        {
-          name: 'Serviços ao Cidadão e Comunicados',
-          icon: 'fa-headset',
-          keywords: ['serviços', 'servicos', 'boleto', 'atendimento', 'comunicado', 'feriado', 'suspensão', 'suspensao', 'canais', 'informa']
-        },
-        {
-          name: 'Eventos, Palestras e Institucional',
-          icon: 'fa-microphone-lines',
-          keywords: ['palestra', 'evento', 'zezinho', 'institucional', 'cobertura', 'convite', 'sede', 'governo']
-        }
-      ];
-
-      const topicsResult = topicRules.map(rule => ({
-        name: rule.name,
-        icon: rule.icon,
-        items: []
-      }));
-      const otherItems = [];
-
-      items.forEach(item => {
-        const hay = `${item.titulo || ''} ${item.descricao || ''} ${item.editoria || ''}`.toLowerCase();
-        let matched = false;
-        topicRules.forEach((rule, idx) => {
-          if (rule.keywords.some(kw => hay.includes(kw))) {
-            topicsResult[idx].items.push(item);
-            matched = true;
-          }
-        });
-        if (!matched) {
-          otherItems.push(item);
-        }
-      });
-
-      const activeTopics = topicsResult.filter(t => t.items.length > 0);
-      if (otherItems.length > 0) {
-        activeTopics.push({
-          name: 'Outros Temas Editoriais',
-          icon: 'fa-folder-open',
-          items: otherItems
-        });
-      }
-      return activeTopics.sort((a, b) => b.items.length - a.items.length);
-    }
-
-    function buildDonutSVG(segments, centerValue, centerSub) {
-      const size = 132;
-      const strokeWidth = 18;
-      const radius = (size - strokeWidth) / 2;
-      const circumference = 2 * Math.PI * radius;
-      const total = segments.reduce((acc, s) => acc + s.value, 0);
-
-      let accumulatedPercent = 0;
-      const circles = total === 0
-        ? `<circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="transparent" stroke="#E5E5E5" stroke-width="${strokeWidth}" />`
-        : segments.map(seg => {
-            if (seg.value <= 0) return '';
-            const pct = seg.value / total;
-            const dashArray = `${pct * circumference} ${circumference}`;
-            const dashOffset = -accumulatedPercent * circumference;
-            accumulatedPercent += pct;
-            return `<circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="transparent" stroke="${seg.hex}" stroke-width="${strokeWidth}" stroke-dasharray="${dashArray}" stroke-dashoffset="${dashOffset}" stroke-linecap="butt" />`;
-          }).join('');
-
-      return `
-        <div class="relative inline-flex items-center justify-center shrink-0" style="width:${size}px; height:${size}px;">
-          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="-rotate-90">
-            <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="transparent" stroke="#F0F0F0" stroke-width="${strokeWidth}" />
-            ${circles}
-          </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <span class="text-lg font-extrabold text-cohab-graphiteDark leading-none">${escapeHTML(String(centerValue))}</span>
-            <span class="text-[9.5px] font-bold uppercase tracking-wider text-cohab-medium mt-1">${escapeHTML(centerSub)}</span>
-          </div>
-        </div>
-      `;
     }
 
     function generateEditorialReport(event) {
@@ -3146,532 +2591,166 @@
       const endStr = document.getElementById('reportEndDate').value;
       const container = document.getElementById('reportOutputContainer');
 
-      if (!startStr || !endStr || startStr > endStr) {
-        showToast('Selecione um intervalo de datas válido para o relatório.', 'error');
-        return;
-      }
-
-      lastReportPeriodLabel = `${formatDateBR(startStr)} a ${formatDateBR(endStr)}`;
-
-      const periodItems = pautas
+      const items = pautas
         .filter(p => p.data >= startStr && p.data <= endStr)
         .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
 
-      if (periodItems.length === 0) {
-        const emptyHTML = `
-          <div class="text-center py-14 bg-white rounded-2xl border border-dashed border-cohab-border">
-            <div class="w-12 h-12 rounded-2xl bg-cohab-bg text-cohab-medium flex items-center justify-center mx-auto mb-3">
-              <i class="fa-regular fa-folder-open text-xl"></i>
-            </div>
-            <p class="text-sm font-extrabold text-cohab-graphite">Nenhum conteúdo registrado no período selecionado</p>
-            <p class="text-xs text-cohab-medium mt-1">Período analisado: ${escapeHTML(lastReportPeriodLabel)}</p>
-          </div>
-        `;
-        container.innerHTML = emptyHTML;
-        lastGeneratedReportHTML = emptyHTML;
-        return;
-      }
+      const total = items.length;
+      const countBy = (fn) => items.reduce((acc, it) => {
+        const k = fn(it);
+        acc[k] = (acc[k] || 0) + 1;
+        return acc;
+      }, {});
 
-      const total = periodItems.length;
-      const publishedCount = periodItems.filter(p => p.status === 'Publicado').length;
-      const inProdCount = periodItems.filter(p => p.status === 'Em Produção').length;
-      const approvedCount = periodItems.filter(p => p.status === 'Aprovado').length;
-      const todoCount = periodItems.filter(p => p.status === 'A Fazer').length;
-      const hotCount = periodItems.filter(p => p.tipo === 'QUENTE').length;
-      const coldCount = periodItems.filter(p => p.tipo === 'FRIA').length;
-      const completionRate = Math.round((publishedCount / total) * 100);
+      const byStatus = countBy(i => i.status || 'A Fazer');
+      const byFormato = countBy(i => i.formato || 'Não definido');
+      const byEditoria = countBy(i => i.editoria || 'Serviços');
+      const quentes = items.filter(i => i.tipo === 'QUENTE').length;
+      const frias = total - quentes;
+      const publicados = byStatus['Publicado'] || 0;
+      const taxaConclusao = total > 0 ? Math.round((publicados / total) * 100) : 0;
 
-      // Agrupamentos por Categoria (Formato, Editoria, Status)
-      const countBy = (arr, keyFn) => {
-        const map = new Map();
-        arr.forEach(item => {
-          const k = keyFn(item) || 'Não informado';
-          map.set(k, (map.get(k) || 0) + 1);
-        });
-        return [...map.entries()].sort((a, b) => b[1] - a[1]);
-      };
+      const stopWords = new Set(['para', 'com', 'sobre', 'pela', 'pelo', 'das', 'dos', 'nos', 'nas', 'uma', 'uns', 'umas', 'que', 'por', 'como', 'mais', 'em', 'de', 'da', 'do', 'no', 'na', 'os', 'as', 'ao', 'aos']);
+      const wordFreq = {};
+      items.forEach(it => {
+        const words = `${it.titulo || ''} ${it.descricao || ''}`
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+          .split(/\s+/)
+          .filter(w => w.length > 3 && !stopWords.has(w));
+        words.forEach(w => { wordFreq[w] = (wordFreq[w] || 0) + 1; });
+      });
 
-      const byFormat = countBy(periodItems, p => p.formato || 'Sem formato');
-      const byEditoria = countBy(periodItems, p => p.editoria || 'Sem editoria');
+      const topWords = Object.entries(wordFreq)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20);
 
-      const topFormat = byFormat[0] ? `${byFormat[0][0]} (${byFormat[0][1]})` : 'N/A';
-      const topEditoria = byEditoria[0] ? `${byEditoria[0][0]} (${byEditoria[0][1]})` : 'N/A';
-
-      const statusSegments = [
-        { label: 'Publicado', value: publishedCount, hex: '#10B981', dotClass: 'bg-emerald-500' },
-        { label: 'Em Produção', value: inProdCount, hex: '#F97316', dotClass: 'bg-orange-500' },
-        { label: 'Aprovado', value: approvedCount, hex: '#A855F7', dotClass: 'bg-purple-500' },
-        { label: 'A Fazer', value: todoCount, hex: '#FBBF24', dotClass: 'bg-amber-400' }
-      ];
-
-      const typeSegments = [
-        { label: 'Pautas Quentes', value: hotCount, hex: '#EF4444', dotClass: 'bg-red-500' },
-        { label: 'Pautas Frias', value: coldCount, hex: '#38BDF8', dotClass: 'bg-sky-400' }
-      ];
-
-      const words = extractWordFrequency(periodItems);
-      const maxWordFreq = words.length > 0 ? words[0][1] : 1;
-      const topics = extractEditorialTopics(periodItems);
-
-      const renderBars = (entries, barColorClass = 'bg-cohab-terracotta') => {
-        return entries.map(([label, count], idx) => {
-          const pct = Math.round((count / total) * 100);
+      const renderBars = (obj) => {
+        const entries = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+        if (entries.length === 0) return `<p class="text-xs text-cohab-medium">Sem dados no período.</p>`;
+        return entries.map(([label, count]) => {
+          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
           return `
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-cohab-graphite truncate pr-2 flex items-center gap-1.5">
-                  <span class="w-4 h-4 rounded-md bg-cohab-bg text-[10px] font-extrabold text-cohab-medium inline-flex items-center justify-center shrink-0">${idx + 1}</span>
-                  <span class="truncate">${escapeHTML(label)}</span>
-                </span>
-                <span class="font-extrabold text-cohab-graphiteDark shrink-0">${count} <span class="text-cohab-medium font-semibold">(${pct}%)</span></span>
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-bold text-cohab-graphite">
+                <span>${escapeHTML(label)}</span>
+                <span>${count} (${pct}%)</span>
               </div>
-              <div class="w-full h-2 bg-cohab-bg rounded-full overflow-hidden">
-                <div class="h-full ${barColorClass} rounded-full transition-all" style="width: ${pct}%"></div>
+              <div class="h-2 rounded-full bg-cohab-bg overflow-hidden">
+                <div class="h-full bg-cohab-terracotta rounded-full" style="width:${pct}%"></div>
               </div>
             </div>
           `;
         }).join('');
       };
 
-      const wordCloudHTML = words.map(([word, freq], idx) => {
-        const ratio = freq / maxWordFreq;
-        let pillStyle = 'text-xs font-semibold px-2.5 py-1 bg-white text-cohab-graphite border-cohab-border';
-        if (idx === 0 || ratio >= 0.85) {
-          pillStyle = 'text-sm font-extrabold px-3.5 py-1.5 bg-cohab-terracotta text-white border-cohab-terracotta shadow-2xs';
-        } else if (ratio >= 0.55) {
-          pillStyle = 'text-xs font-extrabold px-3 py-1 bg-cohab-terracottaLight text-cohab-terracotta border-cohab-terracotta/35';
-        } else if (ratio >= 0.35) {
-          pillStyle = 'text-xs font-bold px-2.5 py-1 bg-cohab-bg text-cohab-graphiteDark border-cohab-border';
-        }
-        return `
-          <span class="inline-flex items-center gap-1.5 rounded-xl border ${pillStyle}">
-            <span>${escapeHTML(word)}</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10 font-extrabold">${freq}</span>
-          </span>
-        `;
-      }).join('');
-
-      const topicsHTML = topics.map(topic => {
-        const topicPct = Math.round((topic.items.length / total) * 100);
-        return `
-          <div class="rounded-2xl border border-cohab-border bg-white p-4 space-y-3 shadow-2xs">
-            <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-cohab-border/70">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-xl bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center shrink-0">
-                  <i class="fa-solid ${topic.icon} text-xs"></i>
-                </div>
-                <div class="min-w-0">
-                  <h5 class="text-xs font-extrabold text-cohab-graphiteDark truncate">${escapeHTML(topic.name)}</h5>
-                  <span class="text-[10.5px] font-semibold text-cohab-medium">${topicPct}% da produção do período</span>
-                </div>
-              </div>
-              <span class="px-2.5 py-1 rounded-lg bg-cohab-bg border border-cohab-border text-[11px] font-extrabold text-cohab-graphite shrink-0">
-                ${topic.items.length} ${topic.items.length === 1 ? 'pauta' : 'pautas'}
-              </span>
-            </div>
-            <ul class="space-y-1.5 text-xs">
-              ${topic.items.map(it => {
-                const stMeta = STATUS_META[it.status] || STATUS_META['A Fazer'];
-                return `
-                  <li class="flex items-center justify-between gap-2 bg-cohab-bg/60 px-3 py-2 rounded-xl border border-cohab-border/60">
-                    <span class="font-bold text-cohab-graphiteDark truncate">${escapeHTML(it.titulo)}</span>
-                    <div class="flex items-center gap-2 shrink-0">
-                      <span class="text-[10.5px] font-semibold text-cohab-medium">${formatDateBR(it.data)}</span>
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-cohab-border text-[10px] font-bold text-cohab-graphite">
-                        <span class="w-1.5 h-1.5 rounded-full ${stMeta.dotClass}"></span>
-                        ${escapeHTML(it.status)}
-                      </span>
-                    </div>
-                  </li>
-                `;
-              }).join('')}
-            </ul>
-          </div>
-        `;
-      }).join('');
-
-      const tableRowsHTML = periodItems.map(it => {
-        const stMeta = STATUS_META[it.status] || STATUS_META['A Fazer'];
-        const tpMeta = TYPE_META[it.tipo] || TYPE_META.FRIA;
-        return `
-          <tr class="hover:bg-cohab-bg/40 transition">
-            <td class="px-3.5 py-2.5 text-xs font-bold text-cohab-graphite whitespace-nowrap">${formatDateBR(it.data)}</td>
-            <td class="px-3.5 py-2.5 text-xs font-extrabold text-cohab-graphiteDark">${escapeHTML(it.titulo)}</td>
-            <td class="px-3.5 py-2.5 text-xs font-semibold text-cohab-medium whitespace-nowrap">${escapeHTML(it.editoria || '-')}</td>
-            <td class="px-3.5 py-2.5 text-xs font-semibold text-cohab-medium whitespace-nowrap">${escapeHTML(it.formato || '-')}</td>
-            <td class="px-3.5 py-2.5 text-xs whitespace-nowrap">
-              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-cohab-border font-bold text-cohab-graphite">
-                <span class="w-2 h-2 rounded-full ${tpMeta.dotClass}"></span>
-                ${it.tipo === 'QUENTE' ? 'Quente' : 'Fria'}
-              </span>
-            </td>
-            <td class="px-3.5 py-2.5 text-xs whitespace-nowrap">
-              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-cohab-border font-bold text-cohab-graphite">
-                <span class="w-2 h-2 rounded-full ${stMeta.dotClass}"></span>
-                ${escapeHTML(it.status)}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      const reportHTML = `
-        <!-- Banner Executivo Institucional -->
-        <div class="rounded-2xl border border-cohab-border bg-white p-5 shadow-2xs relative overflow-hidden">
-          <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-cohab-terracotta"></div>
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pl-2">
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-cohab-border p-5 space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-cohab-border">
             <div>
-              <div class="flex items-center gap-2 text-[10.5px] font-extrabold uppercase tracking-wider text-cohab-terracotta">
-                <span>Relatório de Desempenho Editorial</span>
-                <span>&bull;</span>
-                <span>Ascom Cohab Minas</span>
-              </div>
-              <h4 class="text-lg sm:text-xl font-extrabold text-cohab-graphiteDark mt-0.5">
-                Período: ${escapeHTML(lastReportPeriodLabel)}
-              </h4>
-              <p class="text-xs text-cohab-medium mt-1">
-                Emitido por <strong class="text-cohab-graphite">${escapeHTML(getCurrentMemberName())}</strong> em ${new Date().toLocaleDateString('pt-BR')}
-              </p>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-cohab-terracotta">Relatório Executivo • Ascom Cohab Minas</span>
+              <h4 class="text-lg font-extrabold text-cohab-graphiteDark">Período: ${formatDateBR(startStr)} a ${formatDateBR(endStr)}</h4>
             </div>
-
-            <div class="flex items-center gap-3 bg-cohab-bg px-4 py-3 rounded-2xl border border-cohab-border shrink-0">
-              <div>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-cohab-medium block">Taxa de Entrega</span>
-                <span class="text-2xl font-extrabold text-cohab-graphiteDark">${completionRate}%</span>
-              </div>
-              <div class="h-8 w-px bg-cohab-border"></div>
-              <div class="text-xs text-cohab-medium leading-snug">
-                <strong class="text-cohab-graphite block">${publishedCount} de ${total}</strong>
-                <span>conteúdos publicados</span>
-              </div>
-            </div>
+            <span class="text-xs font-bold text-cohab-medium">Emitido por ${escapeHTML(getCurrentMemberName())}</span>
           </div>
 
-          <!-- Síntese Automática (Executive Highlights) -->
-          <div class="mt-4 pt-3.5 border-t border-cohab-border/80 pl-2 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div class="flex items-center gap-2.5 bg-cohab-bg/70 px-3 py-2 rounded-xl">
-              <i class="fa-solid fa-clapperboard text-cohab-terracotta"></i>
-              <div>
-                <span class="text-[10px] uppercase font-bold text-cohab-medium block">Formato Predominante</span>
-                <strong class="text-cohab-graphiteDark">${escapeHTML(topFormat)}</strong>
-              </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3.5 rounded-xl bg-cohab-bg border border-cohab-border">
+              <div class="text-[11px] font-bold text-cohab-medium">Total de Conteúdos</div>
+              <div class="text-2xl font-extrabold text-cohab-graphiteDark mt-1">${total}</div>
             </div>
-            <div class="flex items-center gap-2.5 bg-cohab-bg/70 px-3 py-2 rounded-xl">
-              <i class="fa-solid fa-tag text-cohab-terracotta"></i>
-              <div>
-                <span class="text-[10px] uppercase font-bold text-cohab-medium block">Editoria Principal</span>
-                <strong class="text-cohab-graphiteDark">${escapeHTML(topEditoria)}</strong>
-              </div>
+            <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
+              <div class="text-[11px] font-bold text-emerald-800">Publicados</div>
+              <div class="text-2xl font-extrabold text-emerald-700 mt-1">${publicados} <span class="text-xs">(${taxaConclusao}%)</span></div>
             </div>
-            <div class="flex items-center gap-2.5 bg-cohab-bg/70 px-3 py-2 rounded-xl">
-              <i class="fa-solid fa-fire text-cohab-terracotta"></i>
-              <div>
-                <span class="text-[10px] uppercase font-bold text-cohab-medium block">Perfil das Demandas</span>
-                <strong class="text-cohab-graphiteDark">${hotCount} Quentes &bull; ${coldCount} Frias</strong>
-              </div>
+            <div class="p-3.5 rounded-xl bg-red-50 border border-red-200">
+              <div class="text-[11px] font-bold text-red-800">Pautas Quentes</div>
+              <div class="text-2xl font-extrabold text-red-600 mt-1">${quentes}</div>
             </div>
-          </div>
-        </div>
-
-        <!-- KPIs de Quantidade de Conteúdos Produzidos -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
-            <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-cohab-medium">Total Geral</span>
-              <i class="fa-solid fa-layer-group text-cohab-graphite/60 text-xs"></i>
-            </div>
-            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${total}</span>
-            <span class="text-[11px] text-cohab-medium mt-0.5 block">pautas no período</span>
-          </div>
-
-          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
-            <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-emerald-700">Publicados</span>
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            </div>
-            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${publishedCount}</span>
-            <span class="text-[11px] text-cohab-medium mt-0.5 block">${completionRate}% concluído</span>
-          </div>
-
-          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
-            <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-orange-700">Em Produção</span>
-              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
-            </div>
-            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${inProdCount}</span>
-            <span class="text-[11px] text-cohab-medium mt-0.5 block">${Math.round((inProdCount / total) * 100)}% do total</span>
-          </div>
-
-          <div class="rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
-            <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-purple-700">Aprovados</span>
-              <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-            </div>
-            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${approvedCount}</span>
-            <span class="text-[11px] text-cohab-medium mt-0.5 block">${Math.round((approvedCount / total) * 100)}% do total</span>
-          </div>
-
-          <div class="col-span-2 sm:col-span-1 rounded-2xl border border-cohab-border bg-white p-4 shadow-2xs">
-            <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-amber-700">A Fazer</span>
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-            </div>
-            <span class="text-2xl font-extrabold text-cohab-graphiteDark mt-2 block">${todoCount}</span>
-            <span class="text-[11px] text-cohab-medium mt-0.5 block">${Math.round((todoCount / total) * 100)}% do total</span>
-          </div>
-        </div>
-
-        <!-- Gráficos de Rosca (Status e Classificação) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="rounded-2xl border border-cohab-border bg-white p-5 shadow-2xs">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2 mb-4">
-              <i class="fa-solid fa-chart-pie text-cohab-terracotta"></i> Distribuição por Status de Produção
-            </h5>
-            <div class="flex flex-col sm:flex-row items-center gap-5">
-              ${buildDonutSVG(statusSegments, total, 'Pautas')}
-              <div class="flex-1 w-full space-y-2.5">
-                ${statusSegments.map(seg => {
-                  const pct = Math.round((seg.value / total) * 100);
-                  return `
-                    <div class="flex items-center justify-between text-xs border-b border-cohab-border/50 pb-1.5 last:border-b-0 last:pb-0">
-                      <span class="font-bold text-cohab-graphite flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full ${seg.dotClass}"></span>
-                        ${escapeHTML(seg.label)}
-                      </span>
-                      <span class="font-extrabold text-cohab-graphiteDark">${seg.value} <span class="text-cohab-medium font-semibold">(${pct}%)</span></span>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
+            <div class="p-3.5 rounded-xl bg-sky-50 border border-sky-200">
+              <div class="text-[11px] font-bold text-sky-800">Pautas Frias</div>
+              <div class="text-2xl font-extrabold text-sky-600 mt-1">${frias}</div>
             </div>
           </div>
 
-          <div class="rounded-2xl border border-cohab-border bg-white p-5 shadow-2xs">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2 mb-4">
-              <i class="fa-solid fa-bullseye text-cohab-terracotta"></i> Classificação Editorial (Quentes vs. Frias)
-            </h5>
-            <div class="flex flex-col sm:flex-row items-center gap-5">
-              ${buildDonutSVG(typeSegments, `${Math.round((hotCount / total) * 100)}%`, 'Quentes')}
-              <div class="flex-1 w-full space-y-3">
-                ${typeSegments.map(seg => {
-                  const pct = Math.round((seg.value / total) * 100);
-                  return `
-                    <div class="space-y-1">
-                      <div class="flex items-center justify-between text-xs">
-                        <span class="font-bold text-cohab-graphite flex items-center gap-2">
-                          <span class="w-2.5 h-2.5 rounded-full ${seg.dotClass}"></span>
-                          ${escapeHTML(seg.label)}
-                        </span>
-                        <span class="font-extrabold text-cohab-graphiteDark">${seg.value} <span class="text-cohab-medium font-semibold">(${pct}%)</span></span>
-                      </div>
-                      <div class="w-full h-2 bg-cohab-bg rounded-full overflow-hidden">
-                        <div class="h-full ${seg.dotClass} rounded-full" style="width:${pct}%"></div>
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 rounded-xl border border-cohab-border space-y-2.5">
+              <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Por Status</h5>
+              ${renderBars(byStatus)}
+            </div>
+            <div class="p-4 rounded-xl border border-cohab-border space-y-2.5">
+              <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Por Formato</h5>
+              ${renderBars(byFormato)}
+            </div>
+            <div class="p-4 rounded-xl border border-cohab-border space-y-2.5">
+              <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Por Editoria / Tópico</h5>
+              ${renderBars(byEditoria)}
             </div>
           </div>
-        </div>
 
-        <!-- Categorização por Formato e Editoria -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="rounded-2xl border border-cohab-border bg-white p-5 space-y-3.5 shadow-2xs">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-clapperboard text-cohab-terracotta"></i> Categorização por Formato
-            </h5>
-            <div class="space-y-3">${renderBars(byFormat, 'bg-cohab-graphite')}</div>
-          </div>
-
-          <div class="rounded-2xl border border-cohab-border bg-white p-5 space-y-3.5 shadow-2xs">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-tag text-cohab-terracotta"></i> Categorização por Editoria
-            </h5>
-            <div class="space-y-3">${renderBars(byEditoria, 'bg-cohab-terracotta')}</div>
-          </div>
-        </div>
-
-        <!-- Mapa de Palavras Utilizadas -->
-        <div class="rounded-2xl border border-cohab-border bg-white p-5 space-y-3.5 shadow-2xs">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-cloud text-cohab-terracotta"></i> Mapa de Palavras Utilizadas
-            </h5>
-            <span class="text-[11px] text-cohab-medium font-medium">Frequência dos termos principais nos títulos, editorias e briefings</span>
-          </div>
-          <div class="p-4 rounded-xl bg-cohab-bg/60 border border-cohab-border/70 flex flex-wrap items-center gap-2">
-            ${wordCloudHTML || '<span class="text-xs text-cohab-medium">Sem palavras suficientes para análise.</span>'}
-          </div>
-        </div>
-
-        <!-- Tópicos Abordados no Período -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between px-1">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-sitemap text-cohab-terracotta"></i> Tópicos e Eixos Temáticos Abordados
-            </h5>
-            <span class="text-[11px] text-cohab-medium font-semibold">${topics.length} ${topics.length === 1 ? 'eixo identificado' : 'eixos identificados'}</span>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            ${topicsHTML}
-          </div>
-        </div>
-
-        <!-- Matriz Cronológica Detalhada das Entregas -->
-        <div class="rounded-2xl border border-cohab-border bg-white overflow-hidden shadow-2xs">
-          <div class="px-5 py-3.5 border-b border-cohab-border flex items-center justify-between bg-white">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-table-list text-cohab-terracotta"></i> Detalhamento Cronológico das Pautas (${total})
-            </h5>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-cohab-bg border-b border-cohab-border text-[10.5px] font-extrabold uppercase tracking-wider text-cohab-graphite">
-                  <th class="px-3.5 py-2.5">Data</th>
-                  <th class="px-3.5 py-2.5">Título da Pauta</th>
-                  <th class="px-3.5 py-2.5">Editoria</th>
-                  <th class="px-3.5 py-2.5">Formato</th>
-                  <th class="px-3.5 py-2.5">Tipo</th>
-                  <th class="px-3.5 py-2.5">Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-cohab-border/70">
-                ${tableRowsHTML}
-              </tbody>
-            </table>
+          <div class="p-4 rounded-xl border border-cohab-border">
+            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-2.5">Mapa de Palavras Utilizadas</h5>
+            <div class="flex flex-wrap gap-2">
+              ${topWords.length === 0
+                ? '<span class="text-xs text-cohab-medium">Nenhuma palavra relevante no período.</span>'
+                : topWords.map(([w, c]) => `
+                    <span class="px-2.5 py-1 rounded-lg bg-cohab-bg border border-cohab-border text-xs font-bold text-cohab-graphite">
+                      ${escapeHTML(w)} <span class="text-cohab-terracotta">(${c})</span>
+                    </span>
+                  `).join('')}
+            </div>
           </div>
         </div>
       `;
-
-      container.innerHTML = reportHTML;
-      lastGeneratedReportHTML = reportHTML;
     }
 
     function printEditorialReport() {
-      if (!lastGeneratedReportHTML) generateEditorialReport();
-      const printWin = window.open('', '_blank', 'width=1024,height=800');
-      if (!printWin) {
-        showToast('Permita pop-ups no navegador para imprimir ou salvar em PDF.', 'error');
-        return;
-      }
-      printWin.document.write(`<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Relatório Editorial Cohab Minas (${lastReportPeriodLabel})</title>
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            cohab: {
-              terracotta: '#B84231',
-              terracottaDark: '#963324',
-              terracottaLight: '#FDF3F1',
-              graphite: '#4A4A4A',
-              graphiteDark: '#333333',
-              medium: '#7A7A7A',
-              bg: '#F5F5F5',
-              border: '#E2E2E2'
-            }
-          }
-        }
-      }
-    };
-  <\/script>
-  <style>
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #FFFFFF !important; }
-    }
-  </style>
-</head>
-<body class="bg-white text-cohab-graphite font-sans p-6">
-  <div class="max-w-5xl mx-auto space-y-5">
-    ${lastGeneratedReportHTML}
-  </div>
-  <script>
-    window.onload = function() {
-      setTimeout(function() { window.print(); }, 450);
-    };
-  <\/script>
-</body>
-</html>`);
-      printWin.document.close();
+      const content = document.getElementById('reportOutputContainer').innerHTML;
+      const win = window.open('', '_blank');
+      if (!win) return;
+      win.document.write(`
+        <html><head><title>Relatório Editorial - Cohab Minas</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        </head><body class="p-6 bg-white">${content}<script>window.onload=function(){window.print();}<\/script></body></html>
+      `);
+      win.document.close();
     }
 
     function downloadReportHTML() {
+      const content = document.getElementById('reportOutputContainer').innerHTML;
       const startStr = document.getElementById('reportStartDate').value;
       const endStr = document.getElementById('reportEndDate').value;
-      if (!lastGeneratedReportHTML) generateEditorialReport();
-
-      const fullDoc = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Relatório Editorial Cohab Minas (${lastReportPeriodLabel})</title>
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            cohab: {
-              terracotta: '#B84231',
-              terracottaDark: '#963324',
-              terracottaLight: '#FDF3F1',
-              graphite: '#4A4A4A',
-              graphiteDark: '#333333',
-              medium: '#7A7A7A',
-              bg: '#F5F5F5',
-              border: '#E2E2E2'
-            }
-          }
-        }
-      }
-    };
-  <\/script>
-</head>
-<body class="bg-cohab-bg text-cohab-graphite font-sans p-6">
-  <div class="max-w-5xl mx-auto space-y-5">
-    ${lastGeneratedReportHTML}
-  </div>
-</body>
-</html>`;
-
-      const blob = new Blob([fullDoc], { type: 'text/html;charset=utf-8;' });
+      const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Editorial - Cohab Minas</title><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-6 bg-neutral-100">${content}</body></html>`;
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `relatorio_editorial_cohab_${startStr}_a_${endStr}.html`;
+      a.download = `relatorio_editorial_${startStr}_a_${endStr}.html`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('Relatório exportado com sucesso!');
     }
 
-    // =========================================================================
-    // INICIALIZAÇÃO DA APLICAÇÃO
-    // =========================================================================
     function initApp() {
-      // Garante que nunca haja cabeçalho duplicado em ambientes de hospedagem estática (ex: GitHub Pages)
-      const allHeaders = document.querySelectorAll('header');
-      if (allHeaders.length > 1) {
-        for (let i = 1; i < allHeaders.length; i++) {
-          allHeaders[i].remove();
-        }
-      }
+      const headers = document.querySelectorAll('header');
+      headers.forEach((h, idx) => {
+        if (idx > 0 || h.id !== 'institutionalHeader') h.remove();
+      });
 
-      loadFromStorage();
-      document.getElementById('monthSelect').value = String(currentMonth);
-      document.getElementById('yearSelect').value = String(currentYear);
+      document.getElementById('confirmCancelBtn').onclick = closeConfirmModal;
+      document.getElementById('confirmAcceptBtn').onclick = () => {
+        if (typeof confirmCallback === 'function') confirmCallback();
+        closeConfirmModal();
+      };
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('[data-dropdown-root]')) {
+          document.querySelectorAll('[data-dropdown-menu]').forEach(m => m.classList.add('hidden'));
+        }
+      });
+
+      loadStateFromStorage();
+      normalizePriorities();
+      renderEditoriaOptions('Serviços');
       renderAll();
     }
 
