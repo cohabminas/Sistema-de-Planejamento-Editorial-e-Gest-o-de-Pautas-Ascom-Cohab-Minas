@@ -1,0 +1,69 @@
+/* Fonte Inter (self-hosted) */
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/inter-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/inter-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 800; font-display: swap; src: url('../fonts/inter-latin-800-normal.woff2') format('woff2'); }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  button:not(:disabled), [role="button"], select:not(:disabled), label[for] { cursor: pointer; }
+  :focus-visible { outline: 2px solid rgb(184 66 49 / 0.55); outline-offset: 2px; }
+  input[type="search"]::-webkit-search-cancel-button { display: none; }
+}
+
+@layer components {
+  .input-base { @apply w-full rounded-xl border border-cohab-border bg-cohab-bg/40 px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite placeholder:text-cohab-medium/70 transition focus:bg-white focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta disabled:cursor-not-allowed disabled:bg-cohab-bg/60; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-cohab-terracotta font-bold text-white shadow-xs transition hover:bg-cohab-terracottaDark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60; }
+  .btn-dark { @apply inline-flex items-center justify-center gap-1.5 rounded-xl bg-cohab-graphite font-bold text-white transition hover:bg-cohab-graphiteDark disabled:opacity-60; }
+  .label-caps { @apply block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1; }
+  .card-section { @apply rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs; }
+  .section-head { @apply flex items-center gap-2 pb-2 border-b border-cohab-border/70; }
+  .section-head h4 { @apply text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite; }
+  .section-num { @apply w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold; }
+  .choice-chip { @apply h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 text-cohab-graphite px-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5 peer-checked:bg-white peer-checked:border-cohab-graphite peer-checked:ring-1 peer-checked:ring-cohab-graphite/30 peer-checked:shadow-2xs peer-focus-visible:ring-2 peer-focus-visible:ring-cohab-terracotta/40; }
+  .modal-status-btn { @apply h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition; }
+  .modal-status-btn.selected { @apply bg-white border-cohab-graphite ring-1 ring-cohab-graphite/30 shadow-2xs; }
+  .tab-btn { @apply flex-1 min-w-fit px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5 sm:gap-2 text-cohab-graphite hover:bg-cohab-bg whitespace-nowrap; }
+  .tab-btn.active { @apply bg-cohab-graphite text-white font-bold shadow-2xs hover:bg-cohab-graphite; }
+  .tab-badge { @apply text-[11px] bg-cohab-bg text-cohab-graphite font-bold px-1.5 rounded-full border border-cohab-border shrink-0; }
+  .tab-btn.active .tab-badge { @apply bg-white/15 text-white border-white/20; }
+  .menu-item { @apply w-full px-3.5 py-2 text-left text-xs font-semibold text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2; }
+  .modal-x { @apply text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition; }
+  .preset-btn { @apply flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap; }
+  .icon-btn { @apply w-8 h-8 rounded-lg text-cohab-medium hover:text-cohab-graphite hover:bg-cohab-bg flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed; }
+  .kbd { @apply inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-md border border-cohab-border bg-cohab-bg text-[11px] font-bold text-cohab-graphite shadow-2xs; }
+}
+
+@layer components {
+  .calendar-grid-7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+}
+
+@layer utilities {
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
+
+/* Calendário */
+.calendar-cell { min-height: 122px; min-width: 0; transition: background-color .15s ease-in-out; }
+.calendar-cell .add-day-btn { opacity: 0; }
+.calendar-cell:hover .add-day-btn, .calendar-cell .add-day-btn:focus { opacity: 1; }
+@media (hover: none) { .calendar-cell .add-day-btn { opacity: .7; } }
+@media (max-width: 1180px) { .calendar-cell { min-height: 108px; } }
+
+.search-overlay-panel { transition: opacity .28s cubic-bezier(.16,1,.3,1), transform .28s cubic-bezier(.16,1,.3,1); transform-origin: left center; will-change: opacity, transform; }
+input[type="number"].always-spin::-webkit-inner-spin-button,
+input[type="number"].always-spin::-webkit-outer-spin-button { opacity: 1 !important; height: 22px; cursor: pointer; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F5F5F5; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #CCCCCC; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #7A7A7A; }
+
+fieldset:disabled .choice-chip, fieldset:disabled .modal-status-btn { cursor: default; }
+
+@media print { #toastContainer { display: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }

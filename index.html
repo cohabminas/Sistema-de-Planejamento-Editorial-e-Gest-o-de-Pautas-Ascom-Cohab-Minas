@@ -3,88 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Planejamento Editorial | Assessoria de Comunicação Social - Cohab Minas</title>
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Ícones Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <!-- Tipografia Institucional Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'none'; manifest-src 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#B84231" />
+  <title>Planejamento Editorial | Ascom - Cohab Minas</title>
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            cohab: {
-              terracotta: '#B84231',
-              terracottaDark: '#963324',
-              terracottaLight: '#FDF3F1',
-              graphite: '#4A4A4A',
-              graphiteDark: '#333333',
-              medium: '#7A7A7A',
-              bg: '#F5F5F5',
-              border: '#E2E2E2'
-            }
-          }
-        }
-      }
-    };
-  </script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
 
-  <style>
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #F5F5F5;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #CCCCCC;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #7A7A7A;
-    }
-    .calendar-grid-7 {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-    }
-    .calendar-cell {
-      min-height: 122px;
-      min-width: 0;
-      transition: background-color 0.15s ease-in-out;
-    }
-    @media (max-width: 1180px) {
-      .calendar-cell {
-        min-height: 108px;
-      }
-    }
-    .search-overlay-panel {
-      transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      transform-origin: left center;
-      will-change: opacity, transform;
-    }
-    input[type="number"].always-spin::-webkit-inner-spin-button,
-    input[type="number"].always-spin::-webkit-outer-spin-button {
-      opacity: 1 !important;
-      height: 22px;
-      cursor: pointer;
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css" />
 </head>
-<body class="bg-cohab-bg text-cohab-graphite font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-cohab-bg text-cohab-graphite font-sans antialiased min-h-screen" data-role="none">
 
-  <!-- Toast de Notificação -->
-  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <!-- Toasts -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-[70] flex flex-col gap-2 pointer-events-none" aria-live="polite"></div>
 
-  <!-- Modal de Confirmação Customizado -->
-  <div id="confirmModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+  <!-- Confirmação -->
+  <div id="confirmModal" data-modal class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[60] hidden items-center justify-center p-4" role="dialog" aria-modal="true">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-cohab-border">
       <div class="flex items-center gap-3 text-cohab-terracotta mb-3">
         <div class="w-10 h-10 rounded-full bg-cohab-terracottaLight flex items-center justify-center shrink-0">
@@ -94,172 +34,225 @@
       </div>
       <p id="confirmMessage" class="text-sm text-cohab-medium mb-6 leading-relaxed">Tem certeza que deseja continuar?</p>
       <div class="flex justify-end gap-3">
-        <button type="button" id="confirmCancelBtn" class="px-4 py-2 rounded-xl text-sm font-semibold text-cohab-medium hover:bg-cohab-bg transition cursor-pointer">Cancelar</button>
-        <button type="button" id="confirmAcceptBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-cohab-terracotta text-white hover:bg-cohab-terracottaDark shadow-xs transition cursor-pointer">Confirmar</button>
+        <button type="button" id="confirmCancelBtn" class="px-4 py-2 rounded-xl text-sm font-semibold text-cohab-medium hover:bg-cohab-bg transition">Cancelar</button>
+        <button type="button" id="confirmAcceptBtn" class="px-4 py-2 rounded-xl text-sm font-bold bg-cohab-terracotta text-white hover:bg-cohab-terracottaDark shadow-xs transition">Confirmar</button>
       </div>
     </div>
   </div>
 
-  <!-- HEADER INSTITUCIONAL -->
+  <!-- ===================================================================== -->
+  <!-- TELA DE CONFIGURAÇÃO PENDENTE                                         -->
+  <!-- ===================================================================== -->
+  <section id="setupScreen" class="hidden min-h-screen items-center justify-center p-6">
+    <div class="bg-white max-w-lg w-full rounded-2xl border border-cohab-border shadow-sm p-7">
+      <div class="h-1.5 -mt-7 -mx-7 mb-6 rounded-t-2xl bg-cohab-terracotta"></div>
+      <h1 class="text-lg font-extrabold text-cohab-graphiteDark flex items-center gap-2"><i class="fa-solid fa-plug-circle-exclamation text-cohab-terracotta"></i> Conexão com o Supabase não configurada</h1>
+      <p class="text-sm text-cohab-medium mt-2 leading-relaxed">Edite o arquivo <code class="px-1.5 py-0.5 rounded bg-cohab-bg border border-cohab-border text-xs font-bold">assets/js/config.js</code> e informe a <strong>Project URL</strong> e a <strong>chave pública (anon/publishable)</strong> do seu projeto Supabase. O passo a passo está no README.</p>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- TELA DE LOGIN                                                         -->
+  <!-- ===================================================================== -->
+  <section id="authScreen" class="hidden min-h-screen items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-cohab-bg via-white to-cohab-terracottaLight">
+    <div class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-cohab-border overflow-hidden grid md:grid-cols-5">
+
+      <!-- Painel institucional -->
+      <div class="md:col-span-2 bg-cohab-graphiteDark text-white p-7 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-16 -bottom-16 opacity-10 pointer-events-none">
+          <svg width="260" height="286" viewBox="0 0 100 110" aria-hidden="true" style="--mk-d:#FFFFFF;--mk-r:#FFFFFF"><use href="#cohabMark" /></svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-3">
+            <svg width="44" height="48" viewBox="0 0 100 110" aria-label="Logo Cohab Minas" style="--mk-d:#FFFFFF;--mk-r:#E06A57"><use href="#cohabMark" /></svg>
+            <div>
+              <div class="font-extrabold tracking-tight"><span class="text-[#E06A57]">COHAB</span> MINAS</div>
+              <p class="text-[9px] uppercase tracking-wider text-white/60 font-semibold leading-tight">Companhia de Habitação<br />do Estado de Minas Gerais</p>
+            </div>
+          </div>
+          <h1 class="mt-10 text-2xl font-extrabold leading-tight">Planejamento<br />Editorial</h1>
+          <p class="mt-2 text-sm text-white/70">Assessoria de Comunicação Social</p>
+        </div>
+        <ul class="mt-10 space-y-2.5 text-xs text-white/75">
+          <li class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-[#E06A57] w-4"></i> Acesso restrito à equipe autorizada</li>
+          <li class="flex items-center gap-2"><i class="fa-solid fa-mobile-screen text-[#E06A57] w-4"></i> Verificação em duas etapas</li>
+          <li class="flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-[#E06A57] w-4"></i> Todas as ações ficam registradas</li>
+        </ul>
+      </div>
+
+      <!-- Formulários -->
+      <div class="md:col-span-3 p-7 sm:p-10">
+
+        <div id="authError" class="hidden mb-4 px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-800 flex items-start gap-2" role="alert">
+          <i class="fa-solid fa-circle-exclamation mt-0.5"></i><span id="authErrorText"></span>
+        </div>
+        <div id="authInfo" class="hidden mb-4 px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-start gap-2" role="status">
+          <i class="fa-solid fa-circle-check mt-0.5"></i><span id="authInfoText"></span>
+        </div>
+
+        <!-- Passo: login -->
+        <form id="loginForm" data-auth-step="login" class="space-y-4" autocomplete="on" novalidate>
+          <div>
+            <h2 class="text-xl font-extrabold text-cohab-graphiteDark">Entrar</h2>
+            <p class="text-xs text-cohab-medium mt-1">Use o e-mail institucional cadastrado pela administração.</p>
+          </div>
+          <div>
+            <label for="loginEmail" class="block text-[11px] font-bold text-cohab-medium mb-1">E-mail</label>
+            <div class="relative">
+              <i class="fa-regular fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-cohab-medium text-sm"></i>
+              <input id="loginEmail" type="email" autocomplete="username" required maxlength="254" class="input-base pl-9" placeholder="nome@cohab.mg.gov.br" />
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="loginPassword" class="block text-[11px] font-bold text-cohab-medium">Senha</label>
+              <button type="button" onclick="showAuthStep('forgot')" class="text-[11px] font-bold text-cohab-terracotta hover:underline">Esqueci minha senha</button>
+            </div>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-cohab-medium text-sm"></i>
+              <input id="loginPassword" type="password" autocomplete="current-password" required maxlength="128" class="input-base pl-9 pr-10" placeholder="••••••••••••" />
+              <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" title="Mostrar senha" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-cohab-medium hover:text-cohab-graphite hover:bg-cohab-bg"><i class="fa-regular fa-eye text-xs"></i></button>
+            </div>
+            <p id="capsLockHint" class="hidden mt-1 text-[11px] font-semibold text-amber-700"><i class="fa-solid fa-arrow-up mr-1"></i>Caps Lock está ativado</p>
+          </div>
+          <label class="flex items-center gap-2 text-xs font-semibold text-cohab-graphite cursor-pointer select-none">
+            <input id="loginRemember" type="checkbox" class="w-4 h-4 accent-cohab-terracotta" />
+            Manter conectado neste dispositivo
+          </label>
+          <button id="loginSubmit" type="submit" class="btn-primary w-full h-11">
+            <span>Entrar</span><i class="fa-solid fa-arrow-right-to-bracket"></i>
+          </button>
+          <p class="text-[11px] text-cohab-medium text-center">Não tem acesso? Solicite ao administrador da Ascom.</p>
+        </form>
+
+        <!-- Passo: MFA -->
+        <form id="mfaForm" data-auth-step="mfa" class="hidden space-y-4" novalidate>
+          <div>
+            <h2 class="text-xl font-extrabold text-cohab-graphiteDark">Verificação em duas etapas</h2>
+            <p class="text-xs text-cohab-medium mt-1">Digite o código de 6 dígitos do seu app autenticador (Google Authenticator, Microsoft Authenticator, Authy…).</p>
+          </div>
+          <input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required class="input-base text-center text-2xl tracking-[0.5em] font-extrabold h-14" placeholder="000000" />
+          <button type="submit" class="btn-primary w-full h-11"><span>Verificar</span><i class="fa-solid fa-shield-halved"></i></button>
+          <button type="button" onclick="signOut()" class="w-full text-xs font-bold text-cohab-medium hover:text-cohab-graphite">Usar outra conta</button>
+        </form>
+
+        <!-- Passo: esqueci senha -->
+        <form id="forgotForm" data-auth-step="forgot" class="hidden space-y-4" novalidate>
+          <div>
+            <h2 class="text-xl font-extrabold text-cohab-graphiteDark">Redefinir senha</h2>
+            <p class="text-xs text-cohab-medium mt-1">Se o e-mail estiver cadastrado, você receberá um link seguro para criar uma nova senha.</p>
+          </div>
+          <input id="forgotEmail" type="email" autocomplete="username" required maxlength="254" class="input-base" placeholder="nome@cohab.mg.gov.br" />
+          <button type="submit" class="btn-primary w-full h-11"><span>Enviar link</span><i class="fa-regular fa-paper-plane"></i></button>
+          <button type="button" onclick="showAuthStep('login')" class="w-full text-xs font-bold text-cohab-medium hover:text-cohab-graphite"><i class="fa-solid fa-arrow-left mr-1"></i>Voltar ao login</button>
+        </form>
+
+        <!-- Passo: definir senha (convite / recuperação) -->
+        <form id="setPasswordForm" data-auth-step="setpw" class="hidden space-y-4" novalidate>
+          <div>
+            <h2 class="text-xl font-extrabold text-cohab-graphiteDark">Crie sua senha</h2>
+            <p class="text-xs text-cohab-medium mt-1">Defina uma senha forte para acessar o sistema.</p>
+          </div>
+          <div class="relative">
+            <input id="newPassword" type="password" autocomplete="new-password" required maxlength="128" class="input-base pr-10" placeholder="Nova senha" oninput="renderPasswordRules('newPassword','pwRules')" />
+            <button type="button" onclick="togglePasswordVisibility('newPassword', this)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-cohab-medium hover:bg-cohab-bg"><i class="fa-regular fa-eye text-xs"></i></button>
+          </div>
+          <input id="newPasswordConfirm" type="password" autocomplete="new-password" required maxlength="128" class="input-base" placeholder="Confirme a nova senha" />
+          <ul id="pwRules" class="grid grid-cols-2 gap-1 text-[11px] font-semibold"></ul>
+          <button type="submit" class="btn-primary w-full h-11"><span>Salvar senha e entrar</span><i class="fa-solid fa-check"></i></button>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- APLICAÇÃO                                                             -->
+  <!-- ===================================================================== -->
+  <div id="appShell" class="hidden min-h-screen flex-col">
+
   <header id="institutionalHeader" class="bg-white border-b border-cohab-border shadow-2xs sticky top-0 z-30">
     <div class="h-1.5 w-full bg-cohab-terracotta"></div>
 
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        
-        <!-- Logo Geométrico Cohab Minas + Título Institucional -->
-        <div class="flex items-center gap-4">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-4 min-w-0">
           <div class="flex items-center gap-3 shrink-0">
-            <svg width="46" height="50" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Cohab Minas">
-              <polygon points="48,4 8,27 48,50" fill="#1F1F1F" />
-              <polygon points="52,4 92,27 52,50" fill="#1F1F1F" />
-              <polygon points="6,31 6,79 46,55" fill="#1F1F1F" />
-              <polygon points="94,31 94,79 54,55" fill="#B84231" />
-              <polygon points="8,83 48,106 48,60" fill="#1F1F1F" />
-              <polygon points="92,83 52,106 52,60" fill="#1F1F1F" />
-            </svg>
-
-            <div class="border-r border-cohab-border pr-4 hidden sm:block">
+            <svg width="40" height="44" viewBox="0 0 100 110" aria-label="Logo Cohab Minas"><use href="#cohabMark" /></svg>
+            <div class="border-r border-cohab-border pr-4 hidden md:block">
               <div class="flex items-center gap-1">
                 <span class="font-extrabold text-sm tracking-tight text-cohab-terracotta">COHAB</span>
                 <span class="font-extrabold text-sm tracking-tight text-cohab-graphite">MINAS</span>
               </div>
-              <p class="text-[8.5px] leading-tight font-semibold text-cohab-medium uppercase tracking-wider">
-                Companhia de Habitação<br/>do Estado de Minas Gerais
-              </p>
+              <p class="text-[8.5px] leading-tight font-semibold text-cohab-medium uppercase tracking-wider">Companhia de Habitação<br/>do Estado de Minas Gerais</p>
             </div>
           </div>
-
-          <div>
-            <h1 class="text-base sm:text-lg font-extrabold text-cohab-graphite tracking-tight">
-              Planejamento Editorial
-            </h1>
-            <p class="text-xs font-medium text-cohab-medium">
-              Assessoria de Comunicação Social
-            </p>
+          <div class="min-w-0">
+            <h1 class="text-base sm:text-lg font-extrabold text-cohab-graphite tracking-tight truncate">Planejamento Editorial</h1>
+            <p class="text-xs font-medium text-cohab-medium truncate">Assessoria de Comunicação Social</p>
           </div>
         </div>
 
-        <!-- Responsável Log + Botão Nova Pauta -->
-        <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full lg:w-auto justify-between sm:justify-end">
-          <div class="flex items-center bg-cohab-bg border border-cohab-border rounded-xl px-2.5 sm:px-3 py-1.5 text-xs min-w-0 flex-1 sm:flex-initial">
-            <i class="fa-solid fa-user-check text-cohab-terracotta mr-2 shrink-0"></i>
-            <span class="text-cohab-medium font-medium mr-1.5 hidden md:inline shrink-0">Responsável Log:</span>
-            <select id="teamMemberSelect" onchange="handleTeamMemberChange()" class="bg-transparent text-cohab-graphite font-bold focus:outline-none cursor-pointer pr-1 truncate max-w-[165px] sm:max-w-none">
-              <option value="Fábio Felicio">Fábio Felicio</option>
-              <option value="Leo Cardoso">Leo Cardoso</option>
-              <option value="Davi Caetano">Davi Caetano</option>
-              <option value="Giovanna Ribeiro">Giovanna Ribeiro</option>
-              <option value="CUSTOM">Outro membro...</option>
-            </select>
-            <input 
-              type="text" 
-              id="customMemberInput" 
-              placeholder="Digite seu nome..." 
-              class="hidden ml-2 bg-white border border-cohab-border rounded-lg px-2 py-0.5 text-cohab-graphite font-semibold w-28 sm:w-32 focus:outline-none focus:border-cohab-terracotta"
-            />
-          </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span id="syncIndicator" title="Sincronização" class="hidden sm:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-cohab-border bg-cohab-bg text-[11px] font-bold text-cohab-medium">
+            <span id="syncDot" class="w-2 h-2 rounded-full bg-neutral-400"></span><span id="syncLabel">Conectando…</span>
+          </span>
 
-          <button type="button" onclick="openPautaModal()" class="bg-cohab-terracotta hover:bg-cohab-terracottaDark active:scale-95 text-white font-bold text-xs sm:text-sm px-3.5 sm:px-4 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer shrink-0">
-            <i class="fa-solid fa-plus"></i>
-            <span>Nova Pauta</span>
+          <button type="button" data-requires="edit" onclick="openPautaModal()" title="Nova pauta (N)" class="btn-primary h-9 px-3.5 text-xs sm:text-sm">
+            <i class="fa-solid fa-plus"></i><span class="hidden sm:inline">Nova Pauta</span>
           </button>
-        </div>
 
+          <!-- Menu do usuário -->
+          <div class="relative" data-dropdown-root>
+            <button type="button" onclick="toggleCustomDropdown('userMenu', event)" class="h-9 pl-1 pr-2.5 rounded-xl border border-cohab-border bg-white hover:bg-cohab-bg flex items-center gap-2 transition" aria-haspopup="menu">
+              <span id="userAvatar" class="w-7 h-7 rounded-lg bg-cohab-terracotta text-white text-[11px] font-extrabold flex items-center justify-center">--</span>
+              <span class="hidden lg:flex flex-col items-start leading-tight">
+                <span id="userName" class="text-xs font-bold text-cohab-graphite max-w-[150px] truncate">—</span>
+                <span id="userRoleLabel" class="text-[10px] font-semibold text-cohab-medium">—</span>
+              </span>
+              <i class="fa-solid fa-chevron-down text-[9px] text-cohab-medium"></i>
+            </button>
+            <div id="userMenu" data-dropdown-menu class="hidden absolute right-0 mt-1.5 w-60 bg-white border border-cohab-border rounded-xl shadow-lg py-1.5 z-40" role="menu">
+              <div class="px-3.5 py-2 border-b border-cohab-border mb-1">
+                <p id="userMenuName" class="text-xs font-extrabold text-cohab-graphiteDark truncate">—</p>
+                <p id="userMenuEmail" class="text-[11px] text-cohab-medium truncate">—</p>
+              </div>
+              <button type="button" onclick="openAccountModal()" class="menu-item"><i class="fa-regular fa-user w-4"></i> Minha conta e segurança</button>
+              <button type="button" onclick="openShortcutsHelp()" class="menu-item"><i class="fa-regular fa-keyboard w-4"></i> Atalhos de teclado</button>
+              <div class="border-t border-cohab-border my-1"></div>
+              <button type="button" onclick="signOut()" class="menu-item text-cohab-terracotta"><i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Sair</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Barra Fixa de Navegação + Lupa Expansível -->
+    <!-- Navegação + busca -->
     <div class="bg-cohab-bg/85 border-t border-cohab-border">
       <div class="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-2">
-        <div
-          id="navSearchContainer"
-          onmouseleave="handleSearchMouseLeave()"
-          class="relative bg-white p-1.5 rounded-xl border border-cohab-border shadow-2xs flex items-center gap-1.5"
-        >
-          
-          <!-- 1º Ícone: Lupa -->
-          <button
-            type="button"
-            id="searchTriggerBtn"
-            onmouseenter="openSearchOverlay(false)"
-            onclick="openSearchOverlay(true)"
-            title="Pesquisar por título, categorização, tipo de pauta, prioridade, designação, dia ou formato"
-            class="w-9 h-9 rounded-lg flex items-center justify-center text-cohab-graphite hover:bg-cohab-terracottaLight hover:text-cohab-terracotta transition shrink-0 cursor-pointer relative z-10"
-          >
+        <div id="navSearchContainer" onmouseleave="handleSearchMouseLeave()" class="relative bg-white p-1.5 rounded-xl border border-cohab-border shadow-2xs flex items-center gap-1.5">
+          <button type="button" id="searchTriggerBtn" onmouseenter="openSearchOverlay(false)" onclick="openSearchOverlay(true)" title="Pesquisar ( / )" class="w-9 h-9 rounded-lg flex items-center justify-center text-cohab-graphite hover:bg-cohab-terracottaLight hover:text-cohab-terracotta transition shrink-0 relative z-10">
             <i class="fa-solid fa-magnifying-glass text-sm"></i>
             <span id="searchActiveDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cohab-terracotta"></span>
           </button>
 
-          <!-- Abas Principais (Responsivas sem quebra estranha em telas médias/reduzidas) -->
-          <nav class="flex items-center gap-1.5 flex-1 overflow-x-auto no-scrollbar">
-            <button type="button" onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn active flex-1 min-w-fit px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 sm:gap-2 bg-cohab-graphite text-white shadow-2xs cursor-pointer whitespace-nowrap">
-              <i class="fa-regular fa-calendar-days shrink-0"></i>
-              <span>Calendário Mensal</span>
-            </button>
-
-            <button type="button" onclick="switchTab('suggestions')" id="tab-suggestions" class="tab-btn flex-1 min-w-fit px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5 sm:gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer whitespace-nowrap">
-              <i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i>
-              <span>Sugestões</span>
-              <span id="badgeCountSuggestions" class="text-[11px] bg-cohab-bg text-cohab-graphite font-bold px-1.5 py-0.2 rounded-full border border-cohab-border shrink-0">2</span>
-            </button>
-
-            <button type="button" onclick="switchTab('hierarchy')" id="tab-hierarchy" class="tab-btn flex-1 min-w-fit px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5 sm:gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer whitespace-nowrap">
-              <i class="fa-solid fa-layer-group text-cohab-terracotta shrink-0"></i>
-              <span>Prioridades</span>
-              <span id="badgeCountPautas" class="text-[11px] bg-cohab-bg text-cohab-graphite font-bold px-1.5 py-0.2 rounded-full border border-cohab-border shrink-0">4</span>
-            </button>
-
-            <button type="button" onclick="switchTab('completed')" id="tab-completed" class="tab-btn flex-1 min-w-fit px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5 sm:gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer whitespace-nowrap">
-              <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i>
-              <span>Realizados</span>
-              <span id="badgeCountCompleted" class="text-[11px] bg-cohab-bg text-cohab-graphite font-bold px-1.5 py-0.2 rounded-full border border-cohab-border shrink-0">1</span>
-            </button>
-
-            <button type="button" onclick="switchTab('logs')" id="tab-logs" class="tab-btn flex-1 min-w-fit px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5 sm:gap-2 text-cohab-graphite hover:bg-cohab-bg cursor-pointer whitespace-nowrap">
-              <i class="fa-solid fa-clock-rotate-left text-cohab-medium shrink-0"></i>
-              <span>Log de Atividades</span>
-              <span id="badgeCountLogs" class="text-[11px] bg-cohab-bg text-cohab-graphite font-bold px-1.5 py-0.2 rounded-full border border-cohab-border shrink-0">1</span>
-            </button>
+          <nav class="flex items-center gap-1.5 flex-1 overflow-x-auto no-scrollbar" role="tablist">
+            <button type="button" onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn"><i class="fa-regular fa-calendar-days shrink-0"></i><span>Calendário</span></button>
+            <button type="button" onclick="switchTab('suggestions')" id="tab-suggestions" class="tab-btn"><i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i><span>Sugestões</span><span id="badgeCountSuggestions" class="tab-badge">0</span></button>
+            <button type="button" onclick="switchTab('hierarchy')" id="tab-hierarchy" class="tab-btn"><i class="fa-solid fa-layer-group text-cohab-terracotta shrink-0"></i><span>Prioridades</span><span id="badgeCountPautas" class="tab-badge">0</span></button>
+            <button type="button" onclick="switchTab('completed')" id="tab-completed" class="tab-btn"><i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i><span>Realizados</span><span id="badgeCountCompleted" class="tab-badge">0</span></button>
+            <button type="button" onclick="switchTab('logs')" id="tab-logs" class="tab-btn"><i class="fa-solid fa-clock-rotate-left text-cohab-medium shrink-0"></i><span>Log</span><span id="badgeCountLogs" class="tab-badge">0</span></button>
+            <button type="button" data-requires="admin-role" onclick="switchTab('users')" id="tab-users" class="tab-btn"><i class="fa-solid fa-users-gear text-cohab-graphite shrink-0"></i><span>Usuários</span><span id="badgeCountUsers" class="tab-badge">0</span></button>
           </nav>
 
-          <!-- Overlay Expansível da Barra de Pesquisa -->
-          <div
-            id="searchOverlayPanel"
-            onmouseenter="openSearchOverlay(false)"
-            class="search-overlay-panel opacity-0 scale-x-95 pointer-events-none invisible absolute inset-1.5 bg-white rounded-lg z-20 flex items-center px-3 gap-2.5 border border-cohab-terracotta/40 shadow-md"
-          >
+          <div id="searchOverlayPanel" onmouseenter="openSearchOverlay(false)" class="search-overlay-panel opacity-0 scale-x-95 pointer-events-none invisible absolute inset-1.5 bg-white rounded-lg z-20 flex items-center px-3 gap-2.5 border border-cohab-terracotta/40 shadow-md">
             <i class="fa-solid fa-magnifying-glass text-cohab-terracotta text-sm shrink-0"></i>
-            <input
-              type="text"
-              id="searchInput"
-              oninput="applyFilters()"
-              onblur="handleSearchBlur()"
-              onkeydown="if(event.key==='Escape'){ closeSearchOverlay(true); }"
-              placeholder="Pesquisar por título, categorização, pauta quente/fria, status, #prioridade, designação, dia, palavras-chave ou formato..."
-              class="w-full bg-transparent text-xs sm:text-sm font-medium text-cohab-graphite placeholder-cohab-medium/75 focus:outline-none"
-            />
-            <button
-              type="button"
-              id="clearSearchBtn"
-              onclick="clearSearchInput()"
-              class="hidden text-xs font-bold text-cohab-medium hover:text-cohab-terracotta px-2 py-1 rounded-md hover:bg-cohab-bg transition shrink-0 cursor-pointer"
-            >
-              Limpar
-            </button>
-            <button
-              type="button"
-              onclick="closeSearchOverlay(true)"
-              title="Fechar busca"
-              class="w-7 h-7 rounded-lg flex items-center justify-center text-cohab-medium hover:text-cohab-graphite hover:bg-cohab-bg transition shrink-0 cursor-pointer"
-            >
-              <i class="fa-solid fa-xmark text-xs"></i>
-            </button>
+            <input type="search" id="searchInput" oninput="applyFilters()" onblur="handleSearchBlur()" onkeydown="if(event.key==='Escape'){ closeSearchOverlay(true); }" maxlength="120" placeholder="Pesquisar por título, editoria, quente/fria, status, #prioridade, responsável, dia ou formato..." class="w-full bg-transparent text-xs sm:text-sm font-medium text-cohab-graphite placeholder-cohab-medium/75 focus:outline-none" />
+            <button type="button" id="clearSearchBtn" onclick="clearSearchInput()" class="hidden text-xs font-bold text-cohab-medium hover:text-cohab-terracotta px-2 py-1 rounded-md hover:bg-cohab-bg transition shrink-0">Limpar</button>
+            <button type="button" onclick="closeSearchOverlay(true)" title="Fechar busca" class="w-7 h-7 rounded-lg flex items-center justify-center text-cohab-medium hover:text-cohab-graphite hover:bg-cohab-bg transition shrink-0"><i class="fa-solid fa-xmark text-xs"></i></button>
           </div>
-
         </div>
 
-        <!-- Banner de Resultados em Outros Meses -->
         <div id="searchCrossMonthBanner" class="hidden mt-2 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2 flex-wrap items-center justify-between gap-2 text-xs">
           <span id="searchCrossMonthText" class="font-semibold text-amber-900"></span>
           <div id="searchCrossMonthActions" class="flex flex-wrap items-center gap-1.5"></div>
@@ -268,72 +261,65 @@
     </div>
   </header>
 
-  <!-- CONTEÚDO PRINCIPAL -->
   <main class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 flex-1">
 
-    <!-- ABA 1: CALENDÁRIO MENSAL -->
-    <div id="view-calendar" class="space-y-4">
+    <!-- Banners de contexto -->
+    <div id="readOnlyBanner" class="hidden mb-4 px-4 py-2.5 rounded-xl border border-sky-200 bg-sky-50 text-xs font-semibold text-sky-900 flex items-center gap-2">
+      <i class="fa-regular fa-eye"></i> Você está no modo <strong>somente leitura</strong>. Para criar ou editar pautas, solicite o papel de Editor ao administrador.
+    </div>
+    <div id="mfaAdminBanner" class="hidden mb-4 px-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50 text-xs font-semibold text-amber-900 flex flex-wrap items-center justify-between gap-2">
+      <span><i class="fa-solid fa-shield-halved mr-1.5"></i>Como administrador, ative a <strong>verificação em duas etapas</strong> para gerenciar usuários e excluir pautas.</span>
+      <button type="button" onclick="openAccountModal()" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold">Ativar agora</button>
+    </div>
+    <div id="importBanner" class="hidden mb-4 px-4 py-2.5 rounded-xl border border-cohab-terracotta/30 bg-cohab-terracottaLight text-xs font-semibold text-cohab-terracottaDark flex flex-wrap items-center justify-between gap-2">
+      <span id="importBannerText"></span>
+      <div class="flex gap-2">
+        <button type="button" onclick="dismissLocalImport()" class="px-3 py-1.5 rounded-lg bg-white border border-cohab-border text-cohab-graphite font-bold">Descartar</button>
+        <button type="button" onclick="importLocalData()" class="px-3 py-1.5 rounded-lg bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white font-bold">Importar para o Supabase</button>
+      </div>
+    </div>
+
+    <!-- Carregando -->
+    <div id="loadingState" class="py-24 flex flex-col items-center justify-center gap-3 text-cohab-medium">
+      <i class="fa-solid fa-circle-notch fa-spin text-2xl text-cohab-terracotta"></i>
+      <span class="text-xs font-bold">Carregando planejamento…</span>
+    </div>
+
+    <!-- ABA: CALENDÁRIO -->
+    <div id="view-calendar" class="hidden space-y-4">
       <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border overflow-hidden">
-        
-        <!-- Controles do Calendário: Mês e Ano -->
-        <div class="px-4 sm:px-5 py-3.5 border-b border-cohab-border flex flex-wrap items-center justify-between gap-2.5 bg-white">
-          <div class="flex items-center gap-2">
-            <!-- Seletor de Mês com setas de navegação (< e >) -->
+        <div class="px-4 sm:px-5 py-3 border-b border-cohab-border flex flex-wrap items-center justify-between gap-2.5 bg-white">
+          <div class="flex items-center gap-2 flex-wrap">
             <div class="inline-flex items-center bg-cohab-bg border border-cohab-border rounded-xl overflow-hidden">
-              <button
-                type="button"
-                onclick="stepMonth(-1)"
-                title="Mês anterior"
-                class="px-2.5 py-2 text-cohab-graphite hover:bg-cohab-border/50 transition cursor-pointer flex items-center justify-center"
-              >
-                <i class="fa-solid fa-chevron-left text-[10px]"></i>
-              </button>
+              <button type="button" onclick="stepMonth(-1)" title="Mês anterior (←)" class="px-2.5 py-2 text-cohab-graphite hover:bg-cohab-border/50 transition"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
               <div class="relative border-x border-cohab-border">
-                <select id="monthSelect" onchange="handleMonthYearChange()" class="appearance-none bg-transparent hover:bg-cohab-border/50 text-cohab-graphite pl-3 pr-7 py-2 text-xs font-bold focus:outline-none cursor-pointer transition">
-                  <option value="0">Janeiro</option>
-                  <option value="1">Fevereiro</option>
-                  <option value="2">Março</option>
-                  <option value="3">Abril</option>
-                  <option value="4">Maio</option>
-                  <option value="5">Junho</option>
-                  <option value="6">Julho</option>
-                  <option value="7">Agosto</option>
-                  <option value="8">Setembro</option>
-                  <option value="9">Outubro</option>
-                  <option value="10" selected>Novembro</option>
-                  <option value="11">Dezembro</option>
-                </select>
+                <select id="monthSelect" onchange="handleMonthYearChange()" class="appearance-none bg-transparent hover:bg-cohab-border/50 text-cohab-graphite pl-3 pr-7 py-2 text-xs font-bold focus:outline-none cursor-pointer transition"></select>
                 <i class="fa-solid fa-chevron-down text-[10px] text-cohab-medium pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
               </div>
-              <button
-                type="button"
-                onclick="stepMonth(1)"
-                title="Próximo mês"
-                class="px-2.5 py-2 text-cohab-graphite hover:bg-cohab-border/50 transition cursor-pointer flex items-center justify-center"
-              >
-                <i class="fa-solid fa-chevron-right text-[10px]"></i>
-              </button>
+              <button type="button" onclick="stepMonth(1)" title="Próximo mês (→)" class="px-2.5 py-2 text-cohab-graphite hover:bg-cohab-border/50 transition"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
             </div>
-
-            <!-- Seletor de Ano -->
             <div class="relative">
-              <select id="yearSelect" onchange="handleMonthYearChange()" class="appearance-none bg-cohab-bg hover:bg-cohab-border/50 text-cohab-graphite border border-cohab-border rounded-xl pl-3 pr-7 py-2 text-xs font-bold focus:outline-none focus:border-cohab-terracotta cursor-pointer transition">
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
-                <option value="2026" selected>2026</option>
-                <option value="2027">2027</option>
-                <option value="2028">2028</option>
-                <option value="2029">2029</option>
-                <option value="2030">2030</option>
-              </select>
+              <select id="yearSelect" onchange="handleMonthYearChange()" class="appearance-none bg-cohab-bg hover:bg-cohab-border/50 text-cohab-graphite border border-cohab-border rounded-xl pl-3 pr-7 py-2 text-xs font-bold focus:outline-none focus:border-cohab-terracotta cursor-pointer transition"></select>
               <i class="fa-solid fa-chevron-down text-[10px] text-cohab-medium pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"></i>
             </div>
+            <button type="button" onclick="goToToday()" title="Ir para hoje (T)" class="px-3 py-2 rounded-xl border border-cohab-border bg-white hover:bg-cohab-bg text-xs font-bold text-cohab-graphite transition">Hoje</button>
+            <span id="monthSummary" class="text-[11px] font-semibold text-cohab-medium ml-1"></span>
+          </div>
+
+          <!-- Legenda -->
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] font-semibold text-cohab-medium">
+            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span>Quente</span>
+            <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sky-400"></span>Fria</span>
+            <span class="text-cohab-border">|</span>
+            <span class="inline-flex items-center gap-1"><span class="w-1 h-3 rounded-sm bg-amber-400"></span>A Fazer</span>
+            <span class="inline-flex items-center gap-1"><span class="w-1 h-3 rounded-sm bg-orange-500"></span>Produzindo</span>
+            <span class="inline-flex items-center gap-1"><span class="w-1 h-3 rounded-sm bg-purple-500"></span>Aprovado</span>
+            <span class="inline-flex items-center gap-1"><span class="w-1 h-3 rounded-sm bg-emerald-500"></span>Publicado</span>
           </div>
         </div>
 
-        <!-- Cabeçalho dos Dias da Semana -->
-        <div class="grid calendar-grid-7 bg-cohab-bg border-b border-cohab-border text-center py-2 xl:py-2.5 text-[10px] xl:text-xs font-extrabold text-cohab-graphite uppercase tracking-wider">
-          <div><span class="hidden xl:inline">Domingo</span><span class="xl:hidden">Dom</span></div>
+        <div id="calendarWeekHeader" class="grid calendar-grid-7 bg-cohab-bg border-b border-cohab-border text-center py-2 xl:py-2.5 text-[10px] xl:text-xs font-extrabold text-cohab-graphite uppercase tracking-wider">
+          <div class="text-cohab-medium"><span class="hidden xl:inline">Domingo</span><span class="xl:hidden">Dom</span></div>
           <div><span class="hidden xl:inline">Segunda</span><span class="xl:hidden">Seg</span></div>
           <div><span class="hidden xl:inline">Terça</span><span class="xl:hidden">Ter</span></div>
           <div><span class="hidden xl:inline">Quarta</span><span class="xl:hidden">Qua</span></div>
@@ -341,192 +327,163 @@
           <div><span class="hidden xl:inline">Sexta</span><span class="xl:hidden">Sex</span></div>
           <div class="text-cohab-medium"><span class="hidden xl:inline">Sábado</span><span class="xl:hidden">Sáb</span></div>
         </div>
-
-        <!-- Grade do Calendário -->
         <div id="calendarGrid" class="calendar-grid-7 gap-px bg-cohab-border"></div>
       </div>
+      <p class="text-[11px] text-cohab-medium text-center" data-requires="edit"><i class="fa-regular fa-hand-pointer mr-1"></i>Dica: clique duas vezes em um dia para criar uma pauta nele.</p>
     </div>
 
-    <!-- ABA 2: PRIORIDADES (APENAS DEMANDAS ATIVAS / NÃO PUBLICADAS) -->
+    <!-- ABA: PRIORIDADES -->
     <div id="view-hierarchy" class="hidden space-y-4">
       <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border p-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-cohab-border">
           <div>
-            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-arrow-down-wide-short text-cohab-terracotta"></i>
-              Prioridades de Produção (Demandas Ativas)
-            </h2>
-            <p class="text-xs text-cohab-medium mt-0.5">
-              Apenas conteúdos em andamento (A Fazer, Produzindo e Aprovado). Quando marcados como Publicados, movem-se automaticamente para a aba Realizados.
-            </p>
+            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2"><i class="fa-solid fa-arrow-down-wide-short text-cohab-terracotta"></i> Prioridades de Produção</h2>
+            <p class="text-xs text-cohab-medium mt-0.5">Conteúdos em andamento (A Fazer, Produzindo e Aprovado). Ao marcar como Publicado, vão automaticamente para Realizados.</p>
           </div>
-          <button type="button" onclick="sortByHotAndDate()" class="text-xs font-bold px-3.5 py-2 rounded-xl bg-cohab-bg hover:bg-cohab-border/60 text-cohab-graphite border border-cohab-border transition flex items-center gap-2 cursor-pointer self-start sm:self-auto">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
-            Priorizar Quentes + Data
+          <button type="button" data-requires="edit" onclick="sortByHotAndDate()" class="text-xs font-bold px-3.5 py-2 rounded-xl bg-cohab-bg hover:bg-cohab-border/60 text-cohab-graphite border border-cohab-border transition flex items-center gap-2 self-start sm:self-auto">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Priorizar Quentes + Data
           </button>
         </div>
-
-        <div id="hierarchyList" class="mt-4 space-y-3"></div>
+        <div id="hierarchyStatusFilter" class="mt-4 flex flex-wrap gap-1.5"></div>
+        <div id="hierarchyList" class="mt-3 space-y-3"></div>
       </div>
     </div>
 
-    <!-- ABA 3: REALIZADOS (CONTEÚDOS PUBLICADOS EM LISTA COM DATA AO LADO) -->
+    <!-- ABA: REALIZADOS -->
     <div id="view-completed" class="hidden space-y-4">
       <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border p-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-cohab-border">
           <div>
-            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-circle-check text-emerald-600"></i>
-              Conteúdos Realizados (Publicados)
-            </h2>
-            <p class="text-xs text-cohab-medium mt-0.5">
-              Histórico de todas as entregas concluídas e publicadas pela Assessoria de Comunicação Social, organizadas por data de publicação.
-            </p>
+            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i> Conteúdos Realizados</h2>
+            <p class="text-xs text-cohab-medium mt-0.5">Histórico das entregas publicadas, da mais recente para a mais antiga.</p>
           </div>
-          <span id="completedSummaryPill" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
-            1 conteúdo realizado
-          </span>
+          <span id="completedSummaryPill" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">0 conteúdos realizados</span>
         </div>
-
         <div id="completedList" class="mt-4 divide-y divide-cohab-border border border-cohab-border rounded-2xl overflow-hidden bg-white"></div>
       </div>
     </div>
 
-    <!-- ABA 4: SUGESTÕES DE CONTEÚDOS -->
+    <!-- ABA: SUGESTÕES -->
     <div id="view-suggestions" class="hidden space-y-4">
       <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border p-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-cohab-border">
-          <div>
-            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-lightbulb text-amber-500"></i>
-              Banco de Sugestões de Conteúdos
-            </h2>
-            <p class="text-xs text-cohab-medium mt-0.5">
-              Registre ideias de pautas da equipe e transforme rapidamente as sugestões aprovadas em demandas agendadas no calendário.
-            </p>
-          </div>
+        <div class="pb-4 border-b border-cohab-border">
+          <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2"><i class="fa-solid fa-lightbulb text-amber-500"></i> Banco de Sugestões de Conteúdos</h2>
+          <p class="text-xs text-cohab-medium mt-0.5">Registre ideias da equipe e transforme as aprovadas em pautas agendadas no calendário.</p>
         </div>
 
-        <!-- Formulário de Nova Sugestão -->
-        <form onsubmit="addSuggestion(event)" class="mt-4 bg-cohab-bg p-4 rounded-2xl border border-cohab-border space-y-3">
+        <form onsubmit="addSuggestion(event)" data-requires="edit" class="mt-4 bg-cohab-bg p-4 rounded-2xl border border-cohab-border space-y-3">
           <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
             <div class="md:col-span-5">
-              <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Ideia / Título da Sugestão *</label>
-              <input
-                type="text"
-                id="sugTitulo"
-                required
-                placeholder="Ex: Série tira-dúvidas sobre quitação de contrato"
-                class="w-full bg-white border border-cohab-border rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
-              />
+              <label for="sugTitulo" class="label-caps">Ideia / Título *</label>
+              <input type="text" id="sugTitulo" required maxlength="200" placeholder="Ex: Série tira-dúvidas sobre quitação de contrato" class="input-base bg-white" />
             </div>
-
             <div class="md:col-span-2">
-              <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Classificação</label>
-              <select id="sugTipo" class="w-full bg-white border border-cohab-border rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta cursor-pointer">
-                <option value="FRIA">Pauta Fria</option>
-                <option value="QUENTE">Pauta Quente</option>
-              </select>
+              <label for="sugTipo" class="label-caps">Classificação</label>
+              <select id="sugTipo" class="input-base bg-white font-bold cursor-pointer"><option value="FRIA">Pauta Fria</option><option value="QUENTE">Pauta Quente</option></select>
             </div>
-
             <div class="md:col-span-2">
-              <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Formato</label>
-              <select id="sugFormato" class="w-full bg-white border border-cohab-border rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta cursor-pointer">
-                <option value="">Selecione...</option>
-                <option value="Reels">Reels</option>
-                <option value="Carrossel">Carrossel</option>
-                <option value="Card Único">Card Único</option>
-                <option value="Story">Story</option>
-              </select>
+              <label for="sugFormato" class="label-caps">Formato</label>
+              <select id="sugFormato" class="input-base bg-white cursor-pointer"><option value="">Selecione...</option><option>Reels</option><option>Carrossel</option><option>Card Único</option><option>Story</option></select>
             </div>
-
             <div class="md:col-span-3 min-w-0">
-              <label class="block text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Editoria</label>
-              <select id="sugEditoria" onchange="handleEditoriaSelectChange('sugEditoria', 'sugNovaEditoriaWrapper', 'sugNovaEditoriaInput')" class="w-full bg-white border border-cohab-border rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta cursor-pointer">
-                <option value="Serviços">Serviços</option>
-                <option value="__NEW__">+ Nova editoria...</option>
-              </select>
+              <label for="sugEditoria" class="label-caps">Editoria</label>
+              <select id="sugEditoria" onchange="handleEditoriaSelectChange('sugEditoria', 'sugNovaEditoriaWrapper', 'sugNovaEditoriaInput')" class="input-base bg-white cursor-pointer"><option value="Serviços">Serviços</option></select>
               <div id="sugNovaEditoriaWrapper" class="hidden mt-1.5 flex items-center gap-1.5 w-full min-w-0">
-                <input
-                  type="text"
-                  id="sugNovaEditoriaInput"
-                  placeholder="Nova editoria..."
-                  onkeydown="if(event.key==='Enter'){ event.preventDefault(); confirmNewEditoria('sugEditoria', 'sugNovaEditoriaWrapper', 'sugNovaEditoriaInput'); }"
-                  class="min-w-0 flex-1 bg-white border border-cohab-border rounded-lg px-2.5 py-1.5 text-xs font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
-                />
-                <button type="button" onclick="confirmNewEditoria('sugEditoria', 'sugNovaEditoriaWrapper', 'sugNovaEditoriaInput')" class="px-2.5 py-1.5 rounded-lg bg-cohab-terracotta text-white text-xs font-bold hover:bg-cohab-terracottaDark transition cursor-pointer shrink-0">
-                  OK
-                </button>
+                <input type="text" id="sugNovaEditoriaInput" maxlength="60" placeholder="Nova editoria..." onkeydown="if(event.key==='Enter'){ event.preventDefault(); confirmNewEditoria('sugEditoria', 'sugNovaEditoriaWrapper', 'sugNovaEditoriaInput'); }" class="min-w-0 flex-1 bg-white border border-cohab-border rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-cohab-terracotta" />
+                <button type="button" onclick="confirmNewEditoria('sugEditoria', 'sugNovaEditoriaWrapper', 'sugNovaEditoriaInput')" class="px-2.5 py-1.5 rounded-lg bg-cohab-terracotta text-white text-xs font-bold hover:bg-cohab-terracottaDark transition shrink-0">OK</button>
               </div>
             </div>
           </div>
-
           <div class="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              id="sugDescricao"
-              placeholder="Detalhes da ideia, objetivo, porta-voz sugerido ou referência..."
-              class="flex-1 bg-white border border-cohab-border rounded-xl px-3 py-2 text-xs sm:text-sm text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
-            />
-            <button type="submit" class="px-4 py-2 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shrink-0">
-              <i class="fa-solid fa-plus"></i>
-              Adicionar Sugestão
-            </button>
+            <input type="text" id="sugDescricao" maxlength="2000" placeholder="Detalhes da ideia, objetivo, porta-voz sugerido ou referência..." class="input-base bg-white flex-1" />
+            <button type="submit" class="btn-primary px-4 h-10 text-xs sm:text-sm shrink-0"><i class="fa-solid fa-plus"></i> Adicionar Sugestão</button>
           </div>
         </form>
 
-        <div id="suggestionsList" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+        <div id="suggestionsList" class="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5"></div>
       </div>
     </div>
 
-    <!-- ABA 5: LOG DE ATIVIDADES -->
+    <!-- ABA: LOG -->
     <div id="view-logs" class="hidden space-y-4">
       <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border p-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-cohab-border">
           <div>
-            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2">
-              <i class="fa-solid fa-clock-rotate-left text-cohab-terracotta"></i>
-              Log de Atividades da Equipe
-            </h2>
-            <p class="text-xs text-cohab-medium mt-0.5">
-              Registro cronológico de criações, edições, mudanças de status, sugestões e notas da equipe.
-            </p>
+            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-cohab-terracotta"></i> Log de Atividades da Equipe</h2>
+            <p class="text-xs text-cohab-medium mt-0.5">Registro automático e imutável gerado pelo servidor. Ninguém pode editar ou apagar entradas.</p>
           </div>
+          <select id="logFilterAction" onchange="renderLogs()" class="bg-cohab-bg text-cohab-graphite border border-cohab-border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none">
+            <option value="ALL">Todas as ações</option>
+            <option value="CRIAÇÃO">Criações</option>
+            <option value="EDIÇÃO">Edições</option>
+            <option value="EXCLUSÃO">Exclusões</option>
+            <option value="STATUS">Mudanças de Status</option>
+            <option value="HIERARQUIA">Hierarquia</option>
+            <option value="SUGESTÃO">Sugestões</option>
+            <option value="NOTA">Notas Manuais</option>
+            <option value="USUÁRIO">Usuários</option>
+            <option value="ACESSO">Acessos</option>
+          </select>
+        </div>
+        <form onsubmit="addManualLogNote(event)" data-requires="edit" class="mt-4 bg-cohab-bg p-3 rounded-xl border border-cohab-border flex flex-col sm:flex-row gap-2">
+          <input type="text" id="manualLogInput" maxlength="1000" required placeholder="Registrar observação (ex: Roteiro de escrituras enviado para aprovação)..." class="input-base bg-white flex-1" />
+          <button type="submit" class="px-4 py-2 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"><i class="fa-solid fa-pen-clip"></i> Registrar Nota</button>
+        </form>
+        <div id="logsContainer" class="mt-4 space-y-2 max-h-[560px] overflow-y-auto pr-1"></div>
+      </div>
+    </div>
 
-          <div class="flex items-center gap-2">
-            <select id="logFilterAction" onchange="renderLogs()" class="bg-cohab-bg text-cohab-graphite border border-cohab-border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none">
-              <option value="ALL">Todas as ações</option>
-              <option value="CRIAÇÃO">Criações</option>
-              <option value="EDIÇÃO">Edições</option>
-              <option value="STATUS">Mudanças de Status</option>
-              <option value="HIERARQUIA">Hierarquia</option>
-              <option value="SUGESTÃO">Sugestões</option>
-              <option value="NOTA">Notas Manuais</option>
-            </select>
+    <!-- ABA: USUÁRIOS (ADMIN) -->
+    <div id="view-users" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl shadow-2xs border border-cohab-border p-5">
+        <div class="pb-4 border-b border-cohab-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-cohab-graphite flex items-center gap-2"><i class="fa-solid fa-users-gear text-cohab-terracotta"></i> Gestão de Usuários e Acessos</h2>
+            <p class="text-xs text-cohab-medium mt-0.5">Somente administradores com verificação em duas etapas podem alterar acessos.</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-[11px] font-bold">
+            <span class="px-2 py-1 rounded-lg bg-cohab-terracottaLight text-cohab-terracottaDark border border-cohab-terracotta/20"><i class="fa-solid fa-crown mr-1"></i>Admin: tudo + usuários</span>
+            <span class="px-2 py-1 rounded-lg bg-cohab-bg border border-cohab-border"><i class="fa-solid fa-pen mr-1"></i>Editor: cria e edita</span>
+            <span class="px-2 py-1 rounded-lg bg-cohab-bg border border-cohab-border"><i class="fa-regular fa-eye mr-1"></i>Leitor: só visualiza</span>
           </div>
         </div>
 
-        <form onsubmit="addManualLogNote(event)" class="mt-4 bg-cohab-bg p-3 rounded-xl border border-cohab-border flex flex-col sm:flex-row gap-2">
-          <input 
-            type="text" 
-            id="manualLogInput" 
-            placeholder="Registrar observação manual no log (ex: Roteiro de escrituras enviado para aprovação)..." 
-            class="flex-1 bg-white border border-cohab-border rounded-xl px-3.5 py-2 text-xs sm:text-sm text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
-            required
-          />
-          <button type="submit" class="px-4 py-2 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
-            <i class="fa-solid fa-pen-clip"></i>
-            Registrar Nota
-          </button>
+        <form id="createUserForm" onsubmit="createUser(event)" class="mt-4 bg-cohab-bg p-4 rounded-2xl border border-cohab-border space-y-3">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Adicionar pessoa à equipe</h3>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+            <div class="md:col-span-3"><label for="newUserNome" class="label-caps">Nome completo *</label><input id="newUserNome" required maxlength="120" class="input-base bg-white" placeholder="Ex: Giovanna Ribeiro" /></div>
+            <div class="md:col-span-4"><label for="newUserEmail" class="label-caps">E-mail *</label><input id="newUserEmail" type="email" required maxlength="254" class="input-base bg-white" placeholder="nome@cohab.mg.gov.br" /></div>
+            <div class="md:col-span-2"><label for="newUserRole" class="label-caps">Papel</label>
+              <select id="newUserRole" class="input-base bg-white font-bold cursor-pointer"><option value="editor">Editor</option><option value="leitor">Leitor</option><option value="admin">Administrador</option></select></div>
+            <div class="md:col-span-3"><label for="newUserMode" class="label-caps">Forma de acesso</label>
+              <select id="newUserMode" onchange="document.getElementById('newUserPasswordWrap').classList.toggle('hidden', this.value!=='password')" class="input-base bg-white cursor-pointer"><option value="invite">Convite por e-mail</option><option value="password">Senha temporária</option></select></div>
+          </div>
+          <div id="newUserPasswordWrap" class="hidden">
+            <label for="newUserPassword" class="label-caps">Senha temporária (a pessoa poderá trocá-la em "Minha conta")</label>
+            <div class="flex gap-2">
+              <input id="newUserPassword" type="text" maxlength="128" autocomplete="off" class="input-base bg-white font-mono" oninput="renderPasswordRules('newUserPassword','newUserPwRules')" />
+              <button type="button" onclick="generateStrongPassword('newUserPassword','newUserPwRules')" class="px-3 rounded-xl border border-cohab-border bg-white text-xs font-bold whitespace-nowrap hover:bg-cohab-bg"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Gerar</button>
+            </div>
+            <ul id="newUserPwRules" class="mt-1.5 grid grid-cols-2 md:grid-cols-5 gap-1 text-[11px] font-semibold"></ul>
+          </div>
+          <div class="flex justify-end">
+            <button type="submit" class="btn-primary px-4 h-10 text-xs sm:text-sm"><i class="fa-solid fa-user-plus"></i> Adicionar usuário</button>
+          </div>
         </form>
 
-        <div id="logsContainer" class="mt-4 space-y-2.5 max-h-[520px] overflow-y-auto pr-1"></div>
+        <div class="mt-4 overflow-x-auto border border-cohab-border rounded-2xl">
+          <table class="w-full text-xs">
+            <thead class="bg-cohab-bg text-[10.5px] uppercase tracking-wider text-cohab-graphite">
+              <tr><th class="text-left px-4 py-2.5 font-extrabold">Pessoa</th><th class="text-left px-3 py-2.5 font-extrabold">Papel</th><th class="text-left px-3 py-2.5 font-extrabold">Status</th><th class="text-right px-4 py-2.5 font-extrabold">Ações</th></tr>
+            </thead>
+            <tbody id="usersTableBody" class="divide-y divide-cohab-border"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
   </main>
 
-  <!-- RODAPÉ INSTITUCIONAL -->
   <footer class="bg-white border-t border-cohab-border mt-8 py-5">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-cohab-medium">
       <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-center sm:text-left">
@@ -534,2227 +491,312 @@
         <span class="hidden sm:inline">&bull;</span>
         <span>Rod. Papa João Paulo II, 4001 - 14º andar (Prédio Gerais), Belo Horizonte - MG</span>
       </div>
-
       <div class="flex flex-wrap items-center justify-center gap-2">
-        <button type="button" onclick="openExcelExportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite font-bold border border-cohab-border transition flex items-center gap-1.5 cursor-pointer">
-          <i class="fa-solid fa-file-excel text-emerald-700"></i> Exportar Excel
-        </button>
-        <button type="button" onclick="openPngExportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white font-bold transition flex items-center gap-1.5 cursor-pointer">
-          <i class="fa-regular fa-image"></i> Exportar PNG
-        </button>
-        <button type="button" onclick="openReportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white font-bold transition flex items-center gap-1.5 cursor-pointer">
-          <i class="fa-solid fa-chart-pie"></i> Gerar Relatório
-        </button>
+        <button type="button" onclick="openExcelExportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite font-bold border border-cohab-border transition flex items-center gap-1.5"><i class="fa-solid fa-file-excel text-emerald-700"></i> Exportar Excel</button>
+        <button type="button" onclick="openPngExportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white font-bold transition flex items-center gap-1.5"><i class="fa-regular fa-image"></i> Exportar PNG</button>
+        <button type="button" onclick="openReportModal()" class="px-3.5 py-1.5 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-chart-pie"></i> Gerar Relatório</button>
       </div>
     </div>
   </footer>
+  </div><!-- /appShell -->
 
-  <!-- MODAL DE EXPORTAÇÃO EXCEL POR INTERVALO DE DATAS -->
-  <div id="excelExportModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+  <!-- ===================================================================== -->
+  <!-- MODAIS                                                                -->
+  <!-- ===================================================================== -->
+
+  <!-- Minha conta -->
+  <div id="accountModal" data-modal class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-3 overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-cohab-border overflow-hidden my-auto">
+      <div class="h-1.5 w-full bg-cohab-terracotta"></div>
+      <div class="px-5 py-3.5 border-b border-cohab-border flex items-center justify-between">
+        <h3 class="font-extrabold text-base text-cohab-graphite flex items-center gap-2"><i class="fa-regular fa-user text-cohab-terracotta"></i> Minha conta e segurança</h3>
+        <button type="button" onclick="closeModal('accountModal')" class="modal-x"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto bg-[#FAFAFA]">
+        <form onsubmit="saveMyName(event)" class="card-section space-y-2">
+          <h4 class="label-caps">Nome de exibição</h4>
+          <div class="flex gap-2"><input id="myNameInput" maxlength="120" required class="input-base" /><button class="btn-dark px-4 text-xs">Salvar</button></div>
+          <p class="text-[11px] text-cohab-medium">E-mail: <strong id="myEmailLabel"></strong> &bull; Papel: <strong id="myRoleLabel"></strong></p>
+        </form>
+
+        <form onsubmit="changeMyPassword(event)" class="card-section space-y-2">
+          <h4 class="label-caps">Alterar senha</h4>
+          <input id="myNewPassword" type="password" autocomplete="new-password" maxlength="128" required class="input-base" placeholder="Nova senha" oninput="renderPasswordRules('myNewPassword','myPwRules')" />
+          <input id="myNewPasswordConfirm" type="password" autocomplete="new-password" maxlength="128" required class="input-base" placeholder="Confirme a nova senha" />
+          <ul id="myPwRules" class="grid grid-cols-2 sm:grid-cols-3 gap-1 text-[11px] font-semibold"></ul>
+          <div class="flex justify-end"><button class="btn-dark px-4 h-9 text-xs">Atualizar senha</button></div>
+        </form>
+
+        <div class="card-section space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <h4 class="label-caps mb-0">Verificação em duas etapas (2FA)</h4>
+            <span id="mfaStatusPill" class="text-[11px] font-bold px-2 py-0.5 rounded-md border"></span>
+          </div>
+          <p class="text-[11px] text-cohab-medium leading-relaxed">Protege sua conta mesmo que a senha vaze. Obrigatória para administradores.</p>
+          <div id="mfaFactorsList" class="space-y-1.5"></div>
+          <button type="button" id="mfaEnrollBtn" onclick="startMfaEnroll()" class="btn-primary h-9 px-4 text-xs"><i class="fa-solid fa-qrcode"></i> Ativar 2FA</button>
+          <div id="mfaEnrollBox" class="hidden space-y-3 pt-3 border-t border-dashed border-cohab-border">
+            <p class="text-xs font-semibold text-cohab-graphite">1. Escaneie o QR Code no app autenticador:</p>
+            <div class="flex flex-col sm:flex-row gap-3 items-center">
+              <img id="mfaQr" alt="QR Code para 2FA" class="w-40 h-40 bg-white border border-cohab-border rounded-xl p-1.5" />
+              <div class="text-[11px] text-cohab-medium min-w-0">Ou digite a chave manualmente:<br /><code id="mfaSecret" class="block mt-1 px-2 py-1 rounded bg-white border border-cohab-border font-bold text-cohab-graphite break-all select-all"></code></div>
+            </div>
+            <p class="text-xs font-semibold text-cohab-graphite">2. Digite o código gerado:</p>
+            <div class="flex gap-2">
+              <input id="mfaEnrollCode" inputmode="numeric" maxlength="6" class="input-base text-center tracking-[0.4em] font-extrabold" placeholder="000000" />
+              <button type="button" onclick="verifyMfaEnroll()" class="btn-primary px-4 text-xs">Confirmar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-section flex items-center justify-between gap-3">
+          <div><h4 class="label-caps mb-0">Sessões</h4><p class="text-[11px] text-cohab-medium">Encerra o acesso em todos os dispositivos.</p></div>
+          <button type="button" onclick="signOutEverywhere()" class="px-3.5 h-9 rounded-xl border border-cohab-terracotta/40 text-cohab-terracotta text-xs font-bold hover:bg-cohab-terracotta hover:text-white transition">Sair de todos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Atalhos -->
+  <div id="shortcutsModal" data-modal class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full border border-cohab-border p-5">
+      <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold text-cohab-graphite"><i class="fa-regular fa-keyboard text-cohab-terracotta mr-1.5"></i>Atalhos de teclado</h3><button type="button" onclick="closeModal('shortcutsModal')" class="modal-x"><i class="fa-solid fa-xmark"></i></button></div>
+      <ul class="space-y-2 text-xs">
+        <li class="flex justify-between"><span>Nova pauta</span><kbd class="kbd">N</kbd></li>
+        <li class="flex justify-between"><span>Pesquisar</span><kbd class="kbd">/</kbd></li>
+        <li class="flex justify-between"><span>Mês anterior / próximo</span><span><kbd class="kbd">←</kbd> <kbd class="kbd">→</kbd></span></li>
+        <li class="flex justify-between"><span>Ir para hoje</span><kbd class="kbd">T</kbd></li>
+        <li class="flex justify-between"><span>Abas 1–6</span><span><kbd class="kbd">1</kbd> … <kbd class="kbd">6</kbd></span></li>
+        <li class="flex justify-between"><span>Fechar janela</span><kbd class="kbd">Esc</kbd></li>
+        <li class="flex justify-between"><span>Salvar pauta</span><span><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Enter</kbd></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Aviso de inatividade -->
+  <div id="idleModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[65] hidden items-center justify-center p-4" role="alertdialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full border border-cohab-border p-6 text-center">
+      <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3"><i class="fa-regular fa-clock text-xl"></i></div>
+      <h3 class="font-extrabold text-cohab-graphite">Sessão prestes a expirar</h3>
+      <p class="text-xs text-cohab-medium mt-1.5">Por segurança, você será desconectado por inatividade em <strong id="idleCountdown">60</strong>s.</p>
+      <button type="button" onclick="resetIdleTimer(true)" class="btn-primary w-full h-10 mt-4 text-sm">Continuar conectado</button>
+    </div>
+  </div>
+
+  <!-- Excel -->
+  <div id="excelExportModal" data-modal class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4" role="dialog" aria-modal="true">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-cohab-border overflow-hidden">
       <div class="h-1.5 w-full bg-emerald-700"></div>
       <div class="px-6 py-4 border-b border-cohab-border flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-            <i class="fa-solid fa-file-excel"></i>
-          </div>
-          <h3 class="font-extrabold text-base text-cohab-graphite">Exportar Planilha Excel</h3>
-        </div>
-        <button type="button" onclick="closeExcelExportModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-file-excel"></i></div><h3 class="font-extrabold text-base text-cohab-graphite">Exportar Planilha Excel</h3></div>
+        <button type="button" onclick="closeModal('excelExportModal')" class="modal-x"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
       <form onsubmit="exportToExcel(event)" class="p-6 space-y-4">
         <div class="p-2 rounded-xl bg-cohab-bg border border-cohab-border flex items-center gap-2">
-          <button type="button" onclick="setExcelPreset('MONTH')" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center justify-center gap-1.5">
-            <i class="fa-regular fa-calendar text-emerald-700"></i>
-            <span>Mês Inteiro</span>
-          </button>
-          <button type="button" onclick="setExcelPreset('WEEK')" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-calendar-week text-emerald-700"></i>
-            <span>Semana Atual</span>
-          </button>
+          <button type="button" onclick="setRangePreset('excel','MONTH')" class="preset-btn"><i class="fa-regular fa-calendar text-emerald-700"></i><span>Mês exibido</span></button>
+          <button type="button" onclick="setRangePreset('excel','WEEK')" class="preset-btn"><i class="fa-solid fa-calendar-week text-emerald-700"></i><span>Semana atual</span></button>
         </div>
-
         <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Inicial</label>
-            <input type="date" id="excelStartDate" required class="w-full rounded-xl border border-cohab-border px-3 py-2 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-emerald-700" />
-          </div>
-          <div>
-            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Final</label>
-            <input type="date" id="excelEndDate" required class="w-full rounded-xl border border-cohab-border px-3 py-2 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-emerald-700" />
-          </div>
+          <div><label class="label-caps">Data Inicial</label><input type="date" id="excelStartDate" required class="input-base" /></div>
+          <div><label class="label-caps">Data Final</label><input type="date" id="excelEndDate" required class="input-base" /></div>
         </div>
-
         <div class="pt-3 border-t border-cohab-border flex justify-end gap-2">
-          <button type="button" onclick="closeExcelExportModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-cohab-medium hover:bg-cohab-bg transition cursor-pointer">Cancelar</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-download"></i> Baixar Excel
-          </button>
+          <button type="button" onclick="closeModal('excelExportModal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-cohab-medium hover:bg-cohab-bg transition">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition flex items-center gap-1.5"><i class="fa-solid fa-download"></i> Baixar Excel</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL DE GERAÇÃO DE RELATÓRIO EDITORIAL -->
-  <div id="reportModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  <!-- Relatório -->
+  <div id="reportModal" data-modal class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true">
     <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full border border-cohab-border overflow-hidden my-auto max-h-[92vh] flex flex-col">
       <div class="h-1.5 w-full bg-cohab-terracotta shrink-0"></div>
       <div class="px-5 py-3.5 border-b border-cohab-border flex items-center justify-between shrink-0 bg-white">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center">
-            <i class="fa-solid fa-chart-pie"></i>
-          </div>
-          <div>
-            <h3 class="font-extrabold text-sm sm:text-base text-cohab-graphite">Relatório Analítico Editorial</h3>
-            <p class="text-[11px] text-cohab-medium">Assessoria de Comunicação Social &bull; Cohab Minas</p>
-          </div>
+          <div class="w-8 h-8 rounded-lg bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center"><i class="fa-solid fa-chart-pie"></i></div>
+          <div><h3 class="font-extrabold text-sm sm:text-base text-cohab-graphite">Relatório Analítico Editorial</h3><p class="text-[11px] text-cohab-medium">Assessoria de Comunicação Social &bull; Cohab Minas</p></div>
         </div>
-        <button type="button" onclick="closeReportModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button type="button" onclick="closeModal('reportModal')" class="modal-x"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
-      <!-- Filtro de Período do Relatório (Todos os botões alinhados na mesma linha) -->
       <div class="px-5 py-3 bg-cohab-bg border-b border-cohab-border shrink-0">
         <form onsubmit="generateEditorialReport(event)" class="flex flex-wrap items-end justify-between gap-2.5">
           <div class="flex items-center gap-2">
-            <button type="button" onclick="setReportPreset('MONTH')" class="h-[34px] px-3 rounded-xl text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
-              <i class="fa-regular fa-calendar text-cohab-terracotta"></i>
-              <span>Mês Inteiro</span>
-            </button>
-            <button type="button" onclick="setReportPreset('WEEK')" class="h-[34px] px-3 rounded-xl text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap">
-              <i class="fa-solid fa-calendar-week text-cohab-terracotta"></i>
-              <span>Semana Atual</span>
-            </button>
+            <button type="button" onclick="setRangePreset('report','MONTH')" class="preset-btn h-[34px] flex-none"><i class="fa-regular fa-calendar text-cohab-terracotta"></i><span>Mês exibido</span></button>
+            <button type="button" onclick="setRangePreset('report','WEEK')" class="preset-btn h-[34px] flex-none"><i class="fa-solid fa-calendar-week text-cohab-terracotta"></i><span>Semana atual</span></button>
           </div>
-
           <div class="flex flex-wrap items-end gap-2">
-            <div>
-              <label class="block text-[10px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Inicial</label>
-              <input type="date" id="reportStartDate" required class="h-[34px] rounded-xl border border-cohab-border bg-white px-2.5 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
-            </div>
-            <div>
-              <label class="block text-[10px] font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Final</label>
-              <input type="date" id="reportEndDate" required class="h-[34px] rounded-xl border border-cohab-border bg-white px-2.5 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
-            </div>
-            <div class="flex items-center gap-2">
-              <button type="submit" class="h-[34px] px-3.5 rounded-xl text-xs font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                <i class="fa-solid fa-rotate"></i>
-                <span>Atualizar</span>
-              </button>
-              <button type="button" onclick="printEditorialReport()" class="h-[34px] px-3.5 rounded-xl text-xs font-bold bg-white hover:bg-cohab-bg text-cohab-graphite border border-cohab-border shadow-2xs transition inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                <i class="fa-solid fa-print text-cohab-terracotta"></i>
-                <span>Imprimir / PDF</span>
-              </button>
-              <button type="button" onclick="downloadReportHTML()" class="h-[34px] px-3.5 rounded-xl text-xs font-bold bg-cohab-graphite hover:bg-cohab-graphiteDark text-white shadow-xs transition inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                <i class="fa-solid fa-file-arrow-down"></i>
-                <span>Baixar HTML</span>
-              </button>
-            </div>
+            <div><label class="label-caps text-[10px]">Data Inicial</label><input type="date" id="reportStartDate" required class="input-base h-[34px] py-0 bg-white" /></div>
+            <div><label class="label-caps text-[10px]">Data Final</label><input type="date" id="reportEndDate" required class="input-base h-[34px] py-0 bg-white" /></div>
+            <button type="submit" class="btn-primary h-[34px] px-3.5 text-xs"><i class="fa-solid fa-rotate"></i><span>Atualizar</span></button>
+            <button type="button" onclick="printEditorialReport()" class="h-[34px] px-3.5 rounded-xl text-xs font-bold bg-white hover:bg-cohab-bg text-cohab-graphite border border-cohab-border inline-flex items-center gap-1.5"><i class="fa-solid fa-print text-cohab-terracotta"></i><span>Imprimir / PDF</span></button>
+            <button type="button" onclick="downloadReportHTML()" class="btn-dark h-[34px] px-3.5 text-xs"><i class="fa-solid fa-file-arrow-down"></i><span>Baixar HTML</span></button>
           </div>
         </form>
       </div>
-
-      <!-- Conteúdo Gerado do Relatório -->
       <div id="reportOutputContainer" class="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-[#FAFAFA]"></div>
     </div>
   </div>
 
-  <!-- MODAL DE EXPORTAÇÃO PNG POR INTERVALO DE DATAS -->
-  <div id="pngExportModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+  <!-- PNG -->
+  <div id="pngExportModal" data-modal class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4" role="dialog" aria-modal="true">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-cohab-border overflow-hidden">
       <div class="h-1.5 w-full bg-cohab-terracotta"></div>
       <div class="px-6 py-4 border-b border-cohab-border flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center">
-            <i class="fa-regular fa-image"></i>
-          </div>
-          <h3 class="font-extrabold text-base text-cohab-graphite">Exportar Imagem PNG</h3>
-        </div>
-        <button type="button" onclick="closePngExportModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-lg flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-lg bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center"><i class="fa-regular fa-image"></i></div><h3 class="font-extrabold text-base text-cohab-graphite">Exportar Imagem PNG</h3></div>
+        <button type="button" onclick="closeModal('pngExportModal')" class="modal-x"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
       <form onsubmit="generateCalendarPNG(event)" class="p-6 space-y-4">
         <div class="p-2 rounded-xl bg-cohab-bg border border-cohab-border flex items-center gap-2">
-          <button type="button" onclick="setPngPreset('MONTH')" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center justify-center gap-1.5">
-            <i class="fa-regular fa-calendar text-cohab-terracotta"></i>
-            <span>Mês Inteiro</span>
-          </button>
-          <button type="button" onclick="setPngPreset('WEEK')" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:border-cohab-graphite/50 text-cohab-graphite border border-cohab-border shadow-2xs transition cursor-pointer inline-flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-calendar-week text-cohab-terracotta"></i>
-            <span>Semana Atual</span>
-          </button>
+          <button type="button" onclick="setRangePreset('png','MONTH')" class="preset-btn"><i class="fa-regular fa-calendar text-cohab-terracotta"></i><span>Mês exibido</span></button>
+          <button type="button" onclick="setRangePreset('png','WEEK')" class="preset-btn"><i class="fa-solid fa-calendar-week text-cohab-terracotta"></i><span>Semana atual</span></button>
         </div>
-
         <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Inicial</label>
-            <input type="date" id="pngStartDate" required class="w-full rounded-xl border border-cohab-border px-3 py-2 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
-          </div>
-          <div>
-            <label class="block text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-1">Data Final</label>
-            <input type="date" id="pngEndDate" required class="w-full rounded-xl border border-cohab-border px-3 py-2 text-xs font-bold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta" />
-          </div>
+          <div><label class="label-caps">Data Inicial</label><input type="date" id="pngStartDate" required class="input-base" /></div>
+          <div><label class="label-caps">Data Final</label><input type="date" id="pngEndDate" required class="input-base" /></div>
         </div>
-
         <div class="pt-3 border-t border-cohab-border flex justify-end gap-2">
-          <button type="button" onclick="closePngExportModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-cohab-medium hover:bg-cohab-bg transition cursor-pointer">Cancelar</button>
-          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-download"></i> Baixar PNG
-          </button>
+          <button type="button" onclick="closeModal('pngExportModal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-cohab-medium hover:bg-cohab-bg transition">Cancelar</button>
+          <button type="submit" class="btn-primary px-4 py-2 text-xs"><i class="fa-solid fa-download"></i> Baixar PNG</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL DE CRIAÇÃO / EDIÇÃO DE PAUTA -->
-  <div id="pautaModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 hidden items-center justify-center p-3 overflow-y-auto">
+  <!-- Pauta -->
+  <div id="pautaModal" data-modal class="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 hidden items-center justify-center p-3 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-cohab-border overflow-hidden my-auto">
       <div class="h-1.5 w-full bg-cohab-terracotta"></div>
       <div class="bg-white border-b border-cohab-border px-5 py-3 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center">
-            <i class="fa-solid fa-pen-to-square text-xs"></i>
-          </div>
+          <div class="w-8 h-8 rounded-xl bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center"><i class="fa-solid fa-pen-to-square text-xs"></i></div>
           <div>
             <h3 id="modalTitle" class="font-extrabold text-sm sm:text-base text-cohab-graphite leading-tight">Nova Pauta</h3>
-            <p class="text-[11px] text-cohab-medium">Preencha os blocos abaixo para organizar a demanda no calendário</p>
+            <p id="modalSubtitle" class="text-[11px] text-cohab-medium">Preencha os blocos abaixo para organizar a demanda no calendário</p>
           </div>
         </div>
-        <button type="button" onclick="closePautaModal()" class="text-cohab-medium hover:text-cohab-graphite w-8 h-8 rounded-xl flex items-center justify-center hover:bg-cohab-bg transition cursor-pointer">
-          <i class="fa-solid fa-xmark text-base"></i>
-        </button>
+        <button type="button" onclick="closePautaModal()" class="modal-x"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
 
       <form id="pautaForm" onsubmit="savePauta(event)" class="p-4 sm:p-5 bg-[#FAFAFA] space-y-3 max-h-[82vh] overflow-y-auto">
         <input type="hidden" id="pautaId" />
         <input type="hidden" id="fromSuggestionId" />
 
-        <!-- BLOCO 1: IDENTIFICAÇÃO & AGENDAMENTO -->
-        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-3">
-          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
-            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">1</span>
-            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Identificação e Data</h4>
-          </div>
-
+        <fieldset id="pautaFieldset" class="space-y-3 disabled:opacity-90">
+        <section class="card-section space-y-3">
+          <div class="section-head"><span class="section-num">1</span><h4>Identificação e Data</h4></div>
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
             <div class="sm:col-span-8">
-              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Título da Pauta</label>
-              <input 
-                type="text" 
-                id="pautaTitulo" 
-                required 
-                placeholder="Ex: Audiência pública em Arcos"
-                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta transition"
-              />
+              <label for="pautaTitulo" class="block text-[11px] font-bold text-cohab-medium mb-1">Título da Pauta *</label>
+              <input type="text" id="pautaTitulo" required maxlength="200" placeholder="Ex: Audiência pública em Arcos" class="input-base" />
             </div>
-
             <div class="sm:col-span-4">
-              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Data Prevista</label>
-              <input 
-                type="date" 
-                id="pautaData" 
-                required
-                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta transition"
-              />
+              <label for="pautaData" class="block text-[11px] font-bold text-cohab-medium mb-1">Data Prevista *</label>
+              <input type="date" id="pautaData" required class="input-base" />
             </div>
           </div>
         </section>
 
-        <!-- BLOCO 2: PRIORIZAÇÃO & FLUXO DE PRODUÇÃO -->
-        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-3">
-          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
-            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">2</span>
-            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Classificação, Prioridade e Status</h4>
-          </div>
-
+        <section class="card-section space-y-3">
+          <div class="section-head"><span class="section-num">2</span><h4>Classificação, Prioridade e Status</h4></div>
           <div id="modalActiveMetaRow" class="pb-3 border-b border-dashed border-cohab-border">
-            <div id="modalTipoWrapper">
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="block text-[11px] font-bold text-cohab-medium">Classificação da Pauta</label>
-                <span class="text-[10px] font-semibold text-cohab-medium">Define o nível de urgência</span>
-              </div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <label class="cursor-pointer">
-                  <input type="radio" name="pautaTipo" value="QUENTE" class="peer sr-only" checked />
-                  <div class="h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 peer-checked:bg-white peer-checked:border-cohab-graphite peer-checked:ring-1 peer-checked:ring-cohab-graphite/30 peer-checked:shadow-2xs text-cohab-graphite px-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
-                    <span class="truncate">Pauta Quente</span>
-                  </div>
-                </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="pautaTipo" value="FRIA" class="peer sr-only" />
-                  <div class="h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 peer-checked:bg-white peer-checked:border-cohab-graphite peer-checked:ring-1 peer-checked:ring-cohab-graphite/30 peer-checked:shadow-2xs text-cohab-graphite px-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400 shrink-0"></span>
-                    <span class="truncate">Pauta Fria</span>
-                  </div>
-                </label>
-                <div id="modalPrioridadeWrapper" class="col-span-2 flex items-center justify-between gap-2 bg-cohab-bg/40 border border-cohab-border rounded-xl px-2.5 h-9">
-                  <label for="pautaPrioridade" class="text-xs font-bold text-cohab-graphite whitespace-nowrap">Prioridade (#)</label>
-                  <input 
-                    type="number" 
-                    id="pautaPrioridade" 
-                    min="1" 
-                    max="99" 
-                    value="1"
-                    required
-                    class="always-spin h-7 w-16 rounded-lg border border-cohab-border bg-white px-1 text-xs font-extrabold text-center text-cohab-terracotta focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta shrink-0"
-                  />
-                </div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-[11px] font-bold text-cohab-medium">Classificação da Pauta</label>
+              <span class="text-[10px] font-semibold text-cohab-medium">Define o nível de urgência</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="pautaTipo" value="QUENTE" class="peer sr-only" checked />
+                <div class="choice-chip"><span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span><span class="truncate">Pauta Quente</span></div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="pautaTipo" value="FRIA" class="peer sr-only" />
+                <div class="choice-chip"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 shrink-0"></span><span class="truncate">Pauta Fria</span></div>
+              </label>
+              <div class="col-span-2 flex items-center justify-between gap-2 bg-cohab-bg/40 border border-cohab-border rounded-xl px-2.5 h-9">
+                <label for="pautaPrioridade" class="text-xs font-bold text-cohab-graphite whitespace-nowrap">Prioridade (#)</label>
+                <input type="number" id="pautaPrioridade" min="1" max="999" value="1" required class="always-spin h-7 w-16 rounded-lg border border-cohab-border bg-white px-1 text-xs font-extrabold text-center text-cohab-terracotta focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta shrink-0" />
               </div>
             </div>
           </div>
-
           <div>
             <label class="block text-[11px] font-bold text-cohab-medium mb-1.5">Status de Produção</label>
             <input type="hidden" id="pautaStatus" value="A Fazer" />
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="modalStatusButtons">
-              <button type="button" data-status-val="A Fazer" onclick="selectModalStatus('A Fazer')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0"></span>
-                <span class="truncate">A Fazer</span>
-              </button>
-              <button type="button" data-status-val="Produzindo" onclick="selectModalStatus('Produzindo')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span>
-                <span class="truncate">Produzindo</span>
-              </button>
-              <button type="button" data-status-val="Aprovado" onclick="selectModalStatus('Aprovado')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span>
-                <span class="truncate">Aprovado</span>
-              </button>
-              <button type="button" data-status-val="Publicado" onclick="selectModalStatus('Publicado')" class="modal-status-btn h-9 rounded-xl border border-cohab-border bg-cohab-bg/40 px-2.5 text-xs font-bold text-cohab-graphite flex items-center justify-center gap-1.5 transition cursor-pointer">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                <span class="truncate">Publicado</span>
-              </button>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button type="button" data-status-val="A Fazer" onclick="selectModalStatus('A Fazer')" class="modal-status-btn"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0"></span><span class="truncate">A Fazer</span></button>
+              <button type="button" data-status-val="Produzindo" onclick="selectModalStatus('Produzindo')" class="modal-status-btn"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span><span class="truncate">Produzindo</span></button>
+              <button type="button" data-status-val="Aprovado" onclick="selectModalStatus('Aprovado')" class="modal-status-btn"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span><span class="truncate">Aprovado</span></button>
+              <button type="button" data-status-val="Publicado" onclick="selectModalStatus('Publicado')" class="modal-status-btn"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span><span class="truncate">Publicado</span></button>
             </div>
           </div>
         </section>
 
-        <!-- BLOCO 3: CATEGORIZAÇÃO -->
-        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-3">
-          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
-            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">3</span>
-            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Categorização</h4>
-          </div>
-
+        <section class="card-section space-y-3">
+          <div class="section-head"><span class="section-num">3</span><h4>Categorização</h4></div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="min-w-0">
-              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Formato do Conteúdo</label>
-              <select 
-                id="pautaFormato" 
-                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer transition"
-              >
-                <option value="">Selecione o formato...</option>
-                <option value="Reels">Reels</option>
-                <option value="Carrossel">Carrossel</option>
-                <option value="Card Único">Card Único</option>
-                <option value="Story">Story</option>
-              </select>
+              <label for="pautaFormato" class="block text-[11px] font-bold text-cohab-medium mb-1">Formato do Conteúdo</label>
+              <select id="pautaFormato" class="input-base cursor-pointer"><option value="">Selecione o formato...</option><option>Reels</option><option>Carrossel</option><option>Card Único</option><option>Story</option></select>
             </div>
-
             <div class="min-w-0">
-              <label class="block text-[11px] font-bold text-cohab-medium mb-1">Editoria / Núcleo</label>
-              <select 
-                id="pautaEditoria" 
-                onchange="handleEditoriaSelectChange('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')"
-                class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer transition"
-              >
-                <option value="Serviços">Serviços</option>
-                <option value="__NEW__">+ Adicionar nova editoria...</option>
-              </select>
+              <label for="pautaEditoria" class="block text-[11px] font-bold text-cohab-medium mb-1">Editoria / Núcleo</label>
+              <select id="pautaEditoria" onchange="handleEditoriaSelectChange('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')" class="input-base cursor-pointer"><option value="Serviços">Serviços</option></select>
               <div id="pautaNovaEditoriaWrapper" class="hidden mt-1.5 flex items-center gap-1.5 w-full min-w-0">
-                <input 
-                  type="text" 
-                  id="pautaNovaEditoriaInput" 
-                  placeholder="Nome da nova editoria..."
-                  onkeydown="if(event.key==='Enter'){ event.preventDefault(); confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput'); }"
-                  class="min-w-0 flex-1 rounded-xl border border-cohab-border bg-white px-2.5 py-1.5 text-xs font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
-                />
-                <button 
-                  type="button" 
-                  onclick="confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')"
-                  class="px-2.5 py-1.5 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white text-xs font-bold transition cursor-pointer shrink-0"
-                >
-                  OK
-                </button>
+                <input type="text" id="pautaNovaEditoriaInput" maxlength="60" placeholder="Nome da nova editoria..." onkeydown="if(event.key==='Enter'){ event.preventDefault(); confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput'); }" class="min-w-0 flex-1 rounded-xl border border-cohab-border bg-white px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-cohab-terracotta" />
+                <button type="button" onclick="confirmNewEditoria('pautaEditoria', 'pautaNovaEditoriaWrapper', 'pautaNovaEditoriaInput')" class="px-2.5 py-1.5 rounded-xl bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white text-xs font-bold transition shrink-0">OK</button>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- BLOCO 4: DESIGNAÇÃO DE DEMANDA -->
-        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-2.5">
-          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
-            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">4</span>
-            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Designação da Demanda</h4>
-          </div>
-
+        <section class="card-section space-y-2.5">
+          <div class="section-head"><span class="section-num">4</span><h4>Designação da Demanda</h4></div>
           <div>
-            <label class="block text-[11px] font-bold text-cohab-medium mb-1">Selecionar Responsáveis</label>
+            <label for="pautaResponsavel" class="block text-[11px] font-bold text-cohab-medium mb-1">Selecionar Responsáveis</label>
             <div class="flex items-center gap-2">
-              <select 
-                id="pautaResponsavel" 
-                onchange="handlePautaResponsavelChange()"
-                class="flex-1 rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta cursor-pointer transition"
-              >
-                <option value="Fábio Felicio">Fábio Felicio (FF)</option>
-                <option value="Leo Cardoso">Leo Cardoso (LC)</option>
-                <option value="Davi Caetano">Davi Caetano (DC)</option>
-                <option value="Giovanna Ribeiro">Giovanna Ribeiro (GR)</option>
-                <option value="CUSTOM">Outro responsável...</option>
-              </select>
-              <input 
-                type="text" 
-                id="pautaResponsavelCustom" 
-                onkeydown="if(event.key==='Enter'){ event.preventDefault(); addSelectedResponsavel(); }"
-                placeholder="Nome completo..."
-                class="hidden flex-1 rounded-xl border border-cohab-border bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-cohab-graphite focus:outline-none focus:border-cohab-terracotta"
-              />
-              <button 
-                type="button" 
-                onclick="addSelectedResponsavel()"
-                class="h-9 px-3.5 rounded-xl bg-cohab-graphite hover:bg-cohab-graphiteDark text-white text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer shrink-0"
-              >
-                <i class="fa-solid fa-plus text-[10px]"></i>
-                <span>Adicionar</span>
-              </button>
+              <select id="pautaResponsavel" onchange="handlePautaResponsavelChange()" class="input-base flex-1 cursor-pointer"></select>
+              <input type="text" id="pautaResponsavelCustom" maxlength="120" onkeydown="if(event.key==='Enter'){ event.preventDefault(); addSelectedResponsavel(); }" placeholder="Nome completo..." class="hidden input-base flex-1 bg-white" />
+              <button type="button" onclick="addSelectedResponsavel()" class="btn-dark h-9 px-3.5 text-xs shrink-0"><i class="fa-solid fa-plus text-[10px]"></i><span>Adicionar</span></button>
             </div>
             <div id="pautaResponsaveisList" class="mt-2 p-2 rounded-xl bg-cohab-bg/50 border border-cohab-border/70 flex flex-wrap items-center gap-1.5 min-h-[36px]"></div>
           </div>
         </section>
 
-        <!-- BLOCO 5: BRIEFING & OBSERVAÇÕES -->
-        <section class="rounded-2xl border border-cohab-border bg-white p-3.5 shadow-2xs space-y-2">
-          <div class="flex items-center gap-2 pb-2 border-b border-cohab-border/70">
-            <span class="w-5 h-5 rounded-md bg-cohab-terracottaLight text-cohab-terracotta flex items-center justify-center text-[10px] font-extrabold">5</span>
-            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-cohab-graphite">Briefing e Roteiro</h4>
-          </div>
-          <textarea 
-            id="pautaDescricao" 
-            rows="2" 
-            placeholder="Descreva os detalhes da pauta, porta-vozes, roteiro ou orientações..."
-            class="w-full rounded-xl border border-cohab-border bg-cohab-bg/40 focus:bg-white px-3 py-2 text-xs sm:text-sm text-cohab-graphite focus:outline-none focus:ring-2 focus:ring-cohab-terracotta/25 focus:border-cohab-terracotta transition"
-          ></textarea>
+        <section class="card-section space-y-2">
+          <div class="section-head"><span class="section-num">5</span><h4>Briefing e Roteiro</h4></div>
+          <textarea id="pautaDescricao" rows="3" maxlength="5000" placeholder="Descreva os detalhes da pauta, porta-vozes, roteiro ou orientações..." class="input-base"></textarea>
         </section>
+        </fieldset>
 
-        <!-- RODAPÉ DE AÇÕES DO MODAL -->
+        <p id="pautaMetaInfo" class="hidden text-[10.5px] text-cohab-medium text-right"></p>
+
         <div class="pt-1 flex items-center justify-between gap-3">
-          <button type="button" id="deletePautaBtn" onclick="deleteCurrentPauta()" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold text-cohab-terracotta bg-white border border-cohab-terracotta/30 hover:bg-cohab-terracotta hover:text-white transition items-center gap-1.5 cursor-pointer">
-            <i class="fa-regular fa-trash-can"></i> Excluir Pauta
-          </button>
+          <button type="button" id="deletePautaBtn" onclick="deleteCurrentPauta()" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold text-cohab-terracotta bg-white border border-cohab-terracotta/30 hover:bg-cohab-terracotta hover:text-white transition items-center gap-1.5"><i class="fa-regular fa-trash-can"></i> Excluir</button>
           <div class="flex items-center gap-2 ml-auto">
-            <button type="button" onclick="closePautaModal()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-cohab-medium bg-white border border-cohab-border hover:bg-cohab-bg transition cursor-pointer">
-              Cancelar
-            </button>
-            <button type="submit" class="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white shadow-xs transition cursor-pointer">
-              Salvar Pauta
-            </button>
+            <button type="button" onclick="closePautaModal()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-cohab-medium bg-white border border-cohab-border hover:bg-cohab-bg transition" id="pautaCancelBtn">Cancelar</button>
+            <button type="submit" id="pautaSaveBtn" class="btn-primary px-5 py-2 text-xs sm:text-sm" title="Ctrl + Enter">Salvar Pauta</button>
           </div>
         </div>
       </form>
     </div>
   </div>
 
-  <script>
-    // =========================================================================
-    // CONSTANTES, METADADOS DE CORES E FERIADOS NACIONAIS / SERVIÇO PÚBLICO
-    // =========================================================================
-    const STORAGE_KEY_PAUTAS = 'cohab_minas_ascom_pautas_clean_v1';
-    const STORAGE_KEY_LOGS = 'cohab_minas_ascom_logs_clean_v1';
-    const STORAGE_KEY_SUGGESTIONS = 'cohab_minas_ascom_suggestions_clean_v1';
-    const STORAGE_KEY_MEMBER = 'cohab_minas_ascom_member_clean_v1';
-    const STORAGE_KEY_EDITORIAS = 'cohab_minas_ascom_editorias_clean_v1';
-
-    const DEFAULT_EDITORIAS = ['Serviços'];
-    const FORMAT_OPTIONS = ['Reels', 'Carrossel', 'Card Único', 'Story'];
-
-    function formatSentenceCase(str) {
-      if (!str) return '';
-      const trimmed = String(str).trim();
-      if (!trimmed) return '';
-      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
-    }
-
-    const MONTH_NAMES = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-
-    const TYPE_META = {
-      QUENTE: {
-        label: 'Pauta Quente',
-        dotClass: 'bg-red-500',
-        dotHex: '#EF4444',
-        badgeClass: 'bg-white border-cohab-border'
-      },
-      FRIA: {
-        label: 'Pauta Fria',
-        dotClass: 'bg-sky-400',
-        dotHex: '#38BDF8',
-        badgeClass: 'bg-white border-cohab-border'
-      }
-    };
-
-    const STATUS_META = {
-      'A Fazer': {
-        dotClass: 'bg-amber-400',
-        dotHex: '#FBBF24',
-        borderClass: 'border-l-amber-400',
-        badgeClass: 'bg-white border-cohab-border text-cohab-graphite'
-      },
-      'Produzindo': {
-        dotClass: 'bg-orange-500',
-        dotHex: '#F97316',
-        borderClass: 'border-l-orange-500',
-        badgeClass: 'bg-white border-cohab-border text-cohab-graphite'
-      },
-      'Aprovado': {
-        dotClass: 'bg-purple-500',
-        dotHex: '#A855F7',
-        borderClass: 'border-l-purple-500',
-        badgeClass: 'bg-white border-cohab-border text-cohab-graphite'
-      },
-      'Publicado': {
-        dotClass: 'bg-emerald-500',
-        dotHex: '#10B981',
-        borderClass: 'border-l-emerald-500',
-        badgeClass: 'bg-white border-cohab-border text-cohab-graphite'
-      }
-    };
-
-    function getPersonInitials(fullName) {
-      if (!fullName) return '';
-      const parts = String(fullName)
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-      if (parts.length === 0) return '';
-      return parts.map(part => part.charAt(0).toUpperCase()).join('');
-    }
-
-    function normalizeAssignees(rawResponsavel) {
-      if (Array.isArray(rawResponsavel)) {
-        return [...new Set(rawResponsavel.map(n => String(n || '').trim()).filter(Boolean))];
-      }
-      if (typeof rawResponsavel === 'string' && rawResponsavel.trim()) {
-        return [...new Set(rawResponsavel.split(',').map(n => n.trim()).filter(Boolean))];
-      }
-      return [];
-    }
-
-    function formatAssigneesFull(rawResponsavel) {
-      const list = normalizeAssignees(rawResponsavel);
-      return list.map(name => `${name} (${getPersonInitials(name)})`).join(', ');
-    }
-
-    function normalizeLegacyStatus(status) {
-      if (status === 'Em Produção') return 'Produzindo';
-      return status || 'A Fazer';
-    }
-
-    const DEFAULT_PAUTAS = [];
-    const DEFAULT_SUGGESTIONS = [];
-    const DEFAULT_LOGS = [];
-
-    let pautas = [];
-    let suggestions = [];
-    let logs = [];
-    let customEditorias = [...DEFAULT_EDITORIAS];
-    let modalAssignees = [];
-    let currentTab = 'calendar';
-    let currentYear = 2026;
-    let currentMonth = 10;
-    let searchCloseTimer = null;
-
-    function escapeHTML(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDateBR(isoDate) {
-      if (!isoDate) return '';
-      const parts = isoDate.split('-');
-      if (parts.length !== 3) return isoDate;
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-
-    function getCurrentMemberName() {
-      const sel = document.getElementById('teamMemberSelect');
-      if (!sel) return 'Fábio Felicio';
-      if (sel.value === 'CUSTOM') {
-        const custom = document.getElementById('customMemberInput')?.value.trim();
-        return custom || 'Membro Ascom';
-      }
-      return sel.value;
-    }
-
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toastContainer');
-      if (!container) return;
-      const toast = document.createElement('div');
-      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl shadow-lg border text-xs font-bold flex items-center gap-2 transition ${
-        type === 'error'
-          ? 'bg-red-50 text-red-800 border-red-200'
-          : 'bg-cohab-graphite text-white border-cohab-graphiteDark'
-      }`;
-      toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-400'}"></i><span>${escapeHTML(message)}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 250);
-      }, 3000);
-    }
-
-    let confirmCallback = null;
-    function openConfirmModal(title, message, onConfirm) {
-      document.getElementById('confirmTitle').textContent = title;
-      document.getElementById('confirmMessage').textContent = message;
-      confirmCallback = onConfirm;
-      const modal = document.getElementById('confirmModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeConfirmModal() {
-      const modal = document.getElementById('confirmModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      confirmCallback = null;
-    }
-
-    function savePautasToStorage() {
-      localStorage.setItem(STORAGE_KEY_PAUTAS, JSON.stringify(pautas));
-    }
-
-    function saveSuggestionsToStorage() {
-      localStorage.setItem(STORAGE_KEY_SUGGESTIONS, JSON.stringify(suggestions));
-    }
-
-    function saveLogsToStorage() {
-      localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
-    }
-
-    function addLogEntry(action, detail) {
-      const now = new Date();
-      const timestamp = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      logs.unshift({
-        id: 'log-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-        action,
-        detail,
-        member: getCurrentMemberName(),
-        timestamp
-      });
-      saveLogsToStorage();
-      updateBadges();
-      if (currentTab === 'logs') renderLogs();
-    }
-
-    function loadStateFromStorage() {
-      try {
-        const storedPautas = localStorage.getItem(STORAGE_KEY_PAUTAS);
-        if (storedPautas !== null) {
-          const parsed = JSON.parse(storedPautas);
-          pautas = Array.isArray(parsed)
-            ? parsed.map(p => ({
-                ...p,
-                status: normalizeLegacyStatus(p.status),
-                editoria: p.editoria ? formatSentenceCase(p.editoria) : 'Serviços',
-                responsavel: normalizeAssignees(p.responsavel)
-              }))
-            : [...DEFAULT_PAUTAS];
-        } else {
-          pautas = [...DEFAULT_PAUTAS];
-        }
-
-        const storedSuggestions = localStorage.getItem(STORAGE_KEY_SUGGESTIONS);
-        suggestions = storedSuggestions ? JSON.parse(storedSuggestions) : [...DEFAULT_SUGGESTIONS];
-
-        const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
-        logs = storedLogs ? JSON.parse(storedLogs) : [...DEFAULT_LOGS];
-
-        const storedEditorias = localStorage.getItem(STORAGE_KEY_EDITORIAS);
-        if (storedEditorias) {
-          const parsedEd = JSON.parse(storedEditorias);
-          if (Array.isArray(parsedEd) && parsedEd.length > 0) {
-            customEditorias = [...new Set(['Serviços', ...parsedEd.map(formatSentenceCase)])];
-          }
-        }
-
-        const storedMember = localStorage.getItem(STORAGE_KEY_MEMBER);
-        if (storedMember) {
-          const sel = document.getElementById('teamMemberSelect');
-          const opts = Array.from(sel.options).map(o => o.value);
-          if (opts.includes(storedMember)) {
-            sel.value = storedMember;
-          } else {
-            sel.value = 'CUSTOM';
-            const customInput = document.getElementById('customMemberInput');
-            customInput.classList.remove('hidden');
-            customInput.value = storedMember;
-          }
-        }
-      } catch (e) {
-        pautas = [...DEFAULT_PAUTAS];
-        suggestions = [...DEFAULT_SUGGESTIONS];
-        logs = [...DEFAULT_LOGS];
-      }
-    }
-
-    function handleTeamMemberChange() {
-      const sel = document.getElementById('teamMemberSelect');
-      const customInput = document.getElementById('customMemberInput');
-      if (sel.value === 'CUSTOM') {
-        customInput.classList.remove('hidden');
-        customInput.focus();
-      } else {
-        customInput.classList.add('hidden');
-        localStorage.setItem(STORAGE_KEY_MEMBER, sel.value);
-      }
-    }
-
-    function renderEditoriaOptions(selectedVal = 'Serviços') {
-      const normalized = formatSentenceCase(selectedVal) || 'Serviços';
-      if (!customEditorias.some(e => e.toLowerCase() === normalized.toLowerCase())) {
-        customEditorias.push(normalized);
-      }
-      ['pautaEditoria', 'sugEditoria'].forEach(selectId => {
-        const el = document.getElementById(selectId);
-        if (!el) return;
-        const currentVal = selectId === 'pautaEditoria' ? normalized : (formatSentenceCase(el.value) || 'Serviços');
-        el.innerHTML = customEditorias.map(ed => `<option value="${escapeHTML(ed)}">${escapeHTML(ed)}</option>`).join('') +
-          `<option value="__NEW__">+ Adicionar nova editoria...</option>`;
-        el.value = customEditorias.includes(currentVal) ? currentVal : 'Serviços';
-      });
-    }
-
-    function handleEditoriaSelectChange(selectId, wrapperId, inputId) {
-      const sel = document.getElementById(selectId);
-      const wrapper = document.getElementById(wrapperId);
-      const input = document.getElementById(inputId);
-      if (sel.value === '__NEW__') {
-        wrapper.classList.remove('hidden');
-        input.value = '';
-        input.focus();
-      } else {
-        wrapper.classList.add('hidden');
-      }
-    }
-
-    function confirmNewEditoria(selectId, wrapperId, inputId) {
-      const input = document.getElementById(inputId);
-      const formatted = formatSentenceCase(input.value);
-      if (!formatted) {
-        showToast('Digite o nome da nova editoria.', 'error');
-        return;
-      }
-      if (!customEditorias.some(e => e.toLowerCase() === formatted.toLowerCase())) {
-        customEditorias.push(formatted);
-        localStorage.setItem(STORAGE_KEY_EDITORIAS, JSON.stringify(customEditorias));
-      }
-      renderEditoriaOptions(formatted);
-      document.getElementById(selectId).value = formatted;
-      document.getElementById(wrapperId).classList.add('hidden');
-      showToast(`Editoria "${formatted}" adicionada!`);
-    }
-
-    function setFormatoSelectValue(selectId, value) {
-      const sel = document.getElementById(selectId);
-      if (!sel) return;
-      if (value && !FORMAT_OPTIONS.includes(value)) {
-        const opt = document.createElement('option');
-        opt.value = value;
-        opt.textContent = value;
-        sel.appendChild(opt);
-      }
-      sel.value = value || '';
-    }
-
-    function normalizePriorities(targetId = null, desiredPriority = null) {
-      const active = pautas
-        .filter(p => p.status !== 'Publicado')
-        .sort((a, b) => (a.prioridade || 999) - (b.prioridade || 999));
-
-      if (targetId && desiredPriority !== null) {
-        const idx = active.findIndex(p => p.id === targetId);
-        if (idx !== -1) {
-          const [moved] = active.splice(idx, 1);
-          const insertAt = Math.max(0, Math.min(active.length, desiredPriority - 1));
-          active.splice(insertAt, 0, moved);
-        }
-      }
-
-      active.forEach((item, idx) => {
-        item.prioridade = idx + 1;
-      });
-    }
-
-    function switchTab(tabName) {
-      currentTab = tabName;
-      ['calendar', 'suggestions', 'hierarchy', 'completed', 'logs'].forEach(name => {
-        const viewEl = document.getElementById(`view-${name}`);
-        const tabBtn = document.getElementById(`tab-${name}`);
-        if (viewEl) {
-          viewEl.classList.toggle('hidden', name !== tabName);
-        }
-        if (tabBtn) {
-          if (name === tabName) {
-            tabBtn.classList.add('active', 'bg-cohab-graphite', 'text-white', 'font-bold', 'shadow-2xs');
-            tabBtn.classList.remove('text-cohab-graphite', 'font-semibold', 'hover:bg-cohab-bg');
-          } else {
-            tabBtn.classList.remove('active', 'bg-cohab-graphite', 'text-white', 'font-bold', 'shadow-2xs');
-            tabBtn.classList.add('text-cohab-graphite', 'font-semibold', 'hover:bg-cohab-bg');
-          }
-        }
-      });
-      renderAll();
-    }
-
-    function openSearchOverlay(shouldFocus = false) {
-      if (searchCloseTimer) {
-        clearTimeout(searchCloseTimer);
-        searchCloseTimer = null;
-      }
-      const panel = document.getElementById('searchOverlayPanel');
-      const input = document.getElementById('searchInput');
-      if (!panel) return;
-      panel.classList.remove('invisible', 'opacity-0', 'scale-x-95', 'pointer-events-none');
-      if (shouldFocus && input) {
-        input.focus();
-      }
-    }
-
-    function handleSearchMouseLeave() {
-      const input = document.getElementById('searchInput');
-      const hasText = (input?.value || '').trim().length > 0;
-      const isFocused = document.activeElement === input;
-      if (hasText || isFocused) return;
-      searchCloseTimer = setTimeout(() => {
-        closeSearchOverlay(false);
-      }, 140);
-    }
-
-    function handleSearchBlur() {
-      const container = document.getElementById('navSearchContainer');
-      const input = document.getElementById('searchInput');
-      const hasText = (input?.value || '').trim().length > 0;
-      if (hasText) return;
-      setTimeout(() => {
-        if (!container?.matches(':hover') && document.activeElement !== input) {
-          closeSearchOverlay(false);
-        }
-      }, 120);
-    }
-
-    function closeSearchOverlay(clear = false) {
-      if (searchCloseTimer) {
-        clearTimeout(searchCloseTimer);
-        searchCloseTimer = null;
-      }
-      const panel = document.getElementById('searchOverlayPanel');
-      const input = document.getElementById('searchInput');
-      if (input && document.activeElement === input) {
-        input.blur();
-      }
-      panel.classList.add('invisible', 'opacity-0', 'scale-x-95', 'pointer-events-none');
-      if (clear) clearSearchInput();
-    }
-
-    function clearSearchInput() {
-      const input = document.getElementById('searchInput');
-      input.value = '';
-      applyFilters();
-    }
-
-    function toggleCustomDropdown(menuId, event) {
-      if (event) event.stopPropagation();
-      const target = document.getElementById(menuId);
-      if (!target) return;
-      const wasHidden = target.classList.contains('hidden');
-      document.querySelectorAll('[data-dropdown-menu]').forEach(m => m.classList.add('hidden'));
-      if (wasHidden) target.classList.remove('hidden');
-    }
-
-    function applyFilters() {
-      const q = (document.getElementById('searchInput')?.value || '').trim();
-      document.getElementById('clearSearchBtn')?.classList.toggle('hidden', !q);
-      document.getElementById('searchActiveDot')?.classList.toggle('hidden', !q);
-      renderAll();
-    }
-
-    function matchesSearchAndFilter(pauta) {
-      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-      if (!q) return true;
-
-      const normalizedStatus = normalizeLegacyStatus(pauta.status);
-      const tipoLabel = (pauta.tipo === 'QUENTE') ? 'pauta quente urgente' : 'pauta fria';
-      const prioText = normalizedStatus !== 'Publicado'
-        ? `#${pauta.prioridade || 1} prioridade ${pauta.prioridade || 1}`
-        : 'publicado concluido realizado';
-      const assignees = normalizeAssignees(pauta.responsavel);
-      const assigneesFull = assignees.join(' ');
-      const assigneesInitials = assignees.map(getPersonInitials).join(' ');
-      const dateBR = formatDateBR(pauta.data);
-      const dayNumber = pauta.data ? String(parseInt(pauta.data.split('-')[2], 10)) : '';
-      const monthName = pauta.data ? (MONTH_NAMES[parseInt(pauta.data.split('-')[1], 10) - 1] || '') : '';
-
-      const haystack = [
-        pauta.titulo,
-        pauta.editoria,
-        pauta.formato,
-        pauta.descricao,
-        normalizedStatus,
-        tipoLabel,
-        prioText,
-        assigneesFull,
-        assigneesInitials,
-        dateBR,
-        pauta.data,
-        dayNumber ? `dia ${dayNumber}` : '',
-        monthName
-      ].join(' ').toLowerCase();
-
-      const terms = q.split(/\s+/).filter(Boolean);
-      return terms.every(term => haystack.includes(term));
-    }
-
-    function stepMonth(delta) {
-      currentMonth += delta;
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      } else if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      }
-      document.getElementById('monthSelect').value = String(currentMonth);
-      document.getElementById('yearSelect').value = String(currentYear);
-      renderCalendar();
-    }
-
-    function handleMonthYearChange() {
-      currentMonth = parseInt(document.getElementById('monthSelect').value, 10);
-      currentYear = parseInt(document.getElementById('yearSelect').value, 10);
-      renderCalendar();
-    }
-
-    function getHolidaysForYear(year) {
-      return {
-        [`${year}-01-01`]: 'Confraternização Universal',
-        [`${year}-04-21`]: 'Tiradentes',
-        [`${year}-05-01`]: 'Dia do Trabalho',
-        [`${year}-09-07`]: 'Independência do Brasil',
-        [`${year}-10-12`]: 'Nossa Sra. Aparecida',
-        [`${year}-10-28`]: 'Dia do Servidor Público',
-        [`${year}-11-02`]: 'Finados',
-        [`${year}-11-15`]: 'Proclamação da República',
-        [`${year}-11-20`]: 'Consciência Negra',
-        [`${year}-12-25`]: 'Natal'
-      };
-    }
-
-    function quickChangeStatus(pautaId, newStatus) {
-      const pauta = pautas.find(p => p.id === pautaId);
-      if (!pauta) return;
-      const oldStatus = pauta.status;
-      pauta.status = newStatus;
-      normalizePriorities();
-      savePautasToStorage();
-      addLogEntry('STATUS', `Status de "${pauta.titulo}" alterado de "${oldStatus}" para "${newStatus}".`);
-      renderAll();
-    }
-
-    function renderCalendar() {
-      const grid = document.getElementById('calendarGrid');
-      if (!grid) return;
-      grid.innerHTML = '';
-
-      const firstDayWeekday = new Date(currentYear, currentMonth, 1).getDay();
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
-      const totalCells = Math.ceil((firstDayWeekday + daysInMonth) / 7) * 7;
-
-      const today = new Date();
-      const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      const holidays = getHolidaysForYear(currentYear);
-
-      for (let cellIdx = 0; cellIdx < totalCells; cellIdx++) {
-        const dayOffset = cellIdx - firstDayWeekday + 1;
-        let cellYear = currentYear;
-        let cellMonth = currentMonth;
-        let cellDay = dayOffset;
-        let isCurrentMonth = true;
-
-        if (dayOffset <= 0) {
-          isCurrentMonth = false;
-          cellDay = daysInPrevMonth + dayOffset;
-          cellMonth = currentMonth - 1;
-          if (cellMonth < 0) { cellMonth = 11; cellYear--; }
-        } else if (dayOffset > daysInMonth) {
-          isCurrentMonth = false;
-          cellDay = dayOffset - daysInMonth;
-          cellMonth = currentMonth + 1;
-          if (cellMonth > 11) { cellMonth = 0; cellYear++; }
-        }
-
-        const isoDate = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(cellDay).padStart(2, '0')}`;
-        const isToday = isoDate === todayISO;
-        const isPastDay = isoDate < todayISO && isCurrentMonth;
-        const holidayName = isCurrentMonth ? holidays[isoDate] : null;
-
-        const cell = document.createElement('div');
-        cell.className = `calendar-cell p-1.5 xl:p-2 flex flex-col justify-between ${
-          !isCurrentMonth
-            ? 'bg-neutral-100/80 text-cohab-medium/60'
-            : isPastDay
-              ? 'bg-[#EDEDED]'
-              : 'bg-white hover:bg-cohab-bg/30'
-        }`;
-
-        cell.ondblclick = () => openPautaModal(null, isoDate);
-
-        const header = document.createElement('div');
-        header.className = 'flex items-center justify-between gap-1 mb-1';
-        header.innerHTML = `
-          <div class="flex items-center gap-1">
-            <span class="text-xs font-extrabold ${
-              isToday
-                ? 'px-1.5 py-0.5 rounded-md bg-cohab-terracotta text-white'
-                : isPastDay
-                  ? 'line-through text-neutral-500'
-                  : isCurrentMonth
-                    ? 'text-cohab-graphite'
-                    : 'text-cohab-medium/60'
-            }">${cellDay}</span>
-            ${isToday ? '<span class="text-[9px] font-extrabold uppercase text-cohab-terracotta hidden sm:inline">Hoje</span>' : ''}
-          </div>
-          ${isCurrentMonth ? `
-            <button type="button" onclick="openPautaModal(null, '${isoDate}')" title="Adicionar pauta em ${formatDateBR(isoDate)}" class="w-5 h-5 rounded-md text-cohab-medium hover:text-cohab-terracotta hover:bg-cohab-terracottaLight flex items-center justify-center transition cursor-pointer opacity-70 hover:opacity-100">
-              <i class="fa-solid fa-plus text-[9px]"></i>
-            </button>
-          ` : ''}
-        `;
-        cell.appendChild(header);
-
-        if (holidayName) {
-          const hol = document.createElement('div');
-          hol.className = 'mb-1 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-[9px] font-bold text-amber-800 truncate';
-          hol.title = holidayName;
-          hol.innerHTML = `<i class="fa-regular fa-calendar-check mr-1"></i>${escapeHTML(holidayName)}`;
-          cell.appendChild(hol);
-        }
-
-        const cardsStack = document.createElement('div');
-        cardsStack.className = 'space-y-1.5 flex-1 min-w-0';
-
-        const dayPautas = pautas
-          .filter(p => p.data === isoDate && matchesSearchAndFilter(p))
-          .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
-
-        dayPautas.forEach(pauta => {
-          const statusInfo = STATUS_META[pauta.status] || STATUS_META['A Fazer'];
-          const typeInfo = TYPE_META[pauta.tipo] || TYPE_META.FRIA;
-          const isPublished = pauta.status === 'Publicado';
-          const assignees = normalizeAssignees(pauta.responsavel);
-
-          const card = document.createElement('div');
-          card.setAttribute('data-pauta-card', pauta.id);
-          card.onclick = (e) => {
-            if (e.target.closest('[data-dropdown-root]')) return;
-            openPautaModal(pauta.id);
-          };
-
-          card.className = `w-full rounded-lg border border-l-4 ${statusInfo.borderClass} p-1.5 xl:p-2 shadow-2xs transition cursor-pointer min-w-0 ${
-            isPastDay
-              ? 'bg-[#E5E5E5] border-neutral-300 hover:bg-white hover:border-cohab-border'
-              : 'bg-white border-cohab-border hover:shadow-sm'
-          }`;
-
-          const statusOptionsHTML = Object.keys(STATUS_META).map(stKey => {
-            const stMeta = STATUS_META[stKey];
-            const isSelected = pauta.status === stKey;
-            return `
-              <button
-                type="button"
-                onclick="event.stopPropagation(); quickChangeStatus('${pauta.id}', '${stKey}')"
-                class="w-full px-2.5 py-1.5 text-left text-[10.5px] whitespace-nowrap ${isSelected ? 'font-extrabold bg-cohab-bg' : 'font-semibold'} text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2 leading-none cursor-pointer"
-              >
-                <span class="w-2 h-2 rounded-full ${stMeta.dotClass} shrink-0"></span>
-                <span class="inline-flex items-center leading-none">${stKey}</span>
-              </button>
-            `;
-          }).join('');
-
-          const primaryInitials = assignees.length > 0 ? getPersonInitials(assignees[0]) : '—';
-          const extraCount = assignees.length > 1 ? ` +${assignees.length - 1}` : '';
-          const hasMultipleAssignees = assignees.length > 1;
-          const singleTooltip = assignees.length === 1 ? `Designado: ${escapeHTML(assignees[0])}` : 'Sem designação';
-
-          const assigneeBoxHTML = `
-            <div class="relative group/assignee inline-flex items-center shrink-0">
-              <span
-                ${!hasMultipleAssignees ? `title="${singleTooltip}"` : ''}
-                class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-white text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap text-cohab-graphite"
-              >
-                <span class="leading-none translate-y-[0.5px]">${escapeHTML(primaryInitials)}${extraCount}</span>
-              </span>
-              ${hasMultipleAssignees ? `
-                <div class="invisible opacity-0 group-hover/assignee:visible group-hover/assignee:opacity-100 transition-opacity duration-150 pointer-events-none absolute right-0 bottom-full mb-1.5 z-40 bg-cohab-graphiteDark text-white rounded-lg shadow-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap border border-black/10">
-                  <div class="text-[8.5px] font-extrabold uppercase tracking-wider text-neutral-300 mb-1">Responsáveis</div>
-                  <div class="space-y-0.5">
-                    ${assignees.map(person => `
-                      <div class="flex items-center gap-1.5 font-semibold">
-                        <span class="px-1 py-0.2 rounded bg-white/15 text-[9px] font-extrabold">${escapeHTML(getPersonInitials(person))}</span>
-                        <span>${escapeHTML(person)}</span>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-          `;
-
-          card.innerHTML = `
-            <p class="text-[10.5px] xl:text-[11.5px] font-bold leading-snug truncate ${isPastDay ? 'text-neutral-700' : 'text-cohab-graphiteDark'} ${isPublished ? 'line-through text-cohab-medium' : ''}" title="${escapeHTML(pauta.titulo)}">
-              ${escapeHTML(pauta.titulo)}
-            </p>
-
-            ${pauta.editoria ? `
-              <p class="mt-0.5 xl:mt-1 text-[9.5px] xl:text-[10px] font-semibold text-cohab-medium truncate flex items-center gap-1 leading-tight">
-                <i class="fa-solid fa-tag text-[8px] xl:text-[8.5px] text-cohab-graphite/70 shrink-0"></i>
-                <span class="truncate">${escapeHTML(pauta.editoria)}</span>
-              </p>
-            ` : ''}
-
-            ${pauta.formato ? `
-              <p class="mt-0.5 text-[9.5px] xl:text-[10px] text-cohab-medium truncate flex items-center gap-1 leading-tight">
-                <i class="fa-solid fa-clapperboard text-[8px] xl:text-[8.5px] text-cohab-graphite/70 shrink-0"></i>
-                <span class="truncate">${escapeHTML(pauta.formato)}</span>
-              </p>
-            ` : ''}
-
-            <div class="mt-1 xl:mt-1.5 pt-1 xl:pt-1.5 border-t ${isPastDay ? 'border-neutral-300' : 'border-cohab-border/70'} flex items-center justify-between gap-1 w-full min-w-0">
-              <div class="relative flex items-center min-w-0 flex-1" data-dropdown-root>
-                <button
-                  type="button"
-                  onclick="toggleCustomDropdown('statusMenu-${pauta.id}', event)"
-                  class="w-full h-5 xl:h-6 inline-flex items-center justify-between gap-1 text-[9px] xl:text-[9.5px] font-bold rounded-md px-1.5 xl:px-2 border cursor-pointer focus:outline-none ${statusInfo.badgeClass} hover:border-cohab-graphite/40 transition min-w-0"
-                >
-                  <span class="truncate leading-none translate-y-[0.5px]">${escapeHTML(pauta.status)}</span>
-                  <i class="fa-solid fa-chevron-down text-[6.5px] xl:text-[7px] text-cohab-medium leading-none shrink-0"></i>
-                </button>
-                <div
-                  id="statusMenu-${pauta.id}"
-                  data-dropdown-menu
-                  class="hidden absolute left-0 bottom-full mb-1 w-32 bg-white border border-cohab-border rounded-lg shadow-lg py-1 z-30"
-                >
-                  ${statusOptionsHTML}
-                </div>
-              </div>
-
-              <div class="flex items-center gap-1 shrink-0">
-                <span title="${typeInfo.label}" aria-label="${typeInfo.label}" class="w-5 h-5 xl:w-6 xl:h-6 inline-flex items-center justify-center rounded-md border ${typeInfo.badgeClass} shrink-0">
-                  <span class="w-1.5 h-1.5 xl:w-2 xl:h-2 rounded-full ${typeInfo.dotClass} shrink-0"></span>
-                </span>
-                <span title="${isPublished ? 'Conteúdo Publicado' : 'Prioridade #' + (pauta.prioridade || 1)}" class="h-5 xl:h-6 min-w-5 xl:min-w-6 px-1.5 inline-flex items-center justify-center rounded-md border border-cohab-border bg-white text-[9px] xl:text-[9.5px] font-extrabold leading-none whitespace-nowrap shrink-0 ${isPublished ? 'text-emerald-600' : 'text-cohab-graphite'}">
-                  <span class="leading-none translate-y-[0.5px]">${isPublished ? '<i class="fa-solid fa-check text-[8px]"></i>' : `#${pauta.prioridade || 1}`}</span>
-                </span>
-                ${assigneeBoxHTML}
-              </div>
-            </div>
-          `;
-
-          cardsStack.appendChild(card);
-        });
-
-        cell.appendChild(cardsStack);
-        grid.appendChild(cell);
-      }
-    }
-
-    function renderHierarchy() {
-      const list = document.getElementById('hierarchyList');
-      if (!list) return;
-      list.innerHTML = '';
-
-      const activePautas = pautas
-        .filter(p => p.status !== 'Publicado' && matchesSearchAndFilter(p))
-        .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
-
-      if (activePautas.length === 0) {
-        list.innerHTML = `<div class="p-8 text-center text-xs text-cohab-medium">Nenhuma demanda ativa encontrada.</div>`;
-        return;
-      }
-
-      activePautas.forEach((pauta, idx) => {
-        const statusInfo = STATUS_META[pauta.status] || STATUS_META['A Fazer'];
-        const typeInfo = TYPE_META[pauta.tipo] || TYPE_META.FRIA;
-        const assigneesLabel = formatAssigneesFull(pauta.responsavel);
-
-        const row = document.createElement('div');
-        row.className = `rounded-2xl border border-cohab-border border-l-4 ${statusInfo.borderClass} bg-white p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-2xs`;
-
-        row.innerHTML = `
-          <div class="flex items-start gap-3 min-w-0">
-            <div class="flex flex-col items-center gap-0.5 shrink-0">
-              <button type="button" onclick="movePriority('${pauta.id}', -1)" ${idx === 0 ? 'disabled' : ''} class="w-6 h-5 rounded bg-cohab-bg hover:bg-cohab-border/70 disabled:opacity-30 text-cohab-graphite text-[10px] flex items-center justify-center cursor-pointer">
-                <i class="fa-solid fa-chevron-up"></i>
-              </button>
-              <span class="text-xs font-extrabold text-cohab-terracotta">#${pauta.prioridade || idx + 1}</span>
-              <button type="button" onclick="movePriority('${pauta.id}', 1)" ${idx === activePautas.length - 1 ? 'disabled' : ''} class="w-6 h-5 rounded bg-cohab-bg hover:bg-cohab-border/70 disabled:opacity-30 text-cohab-graphite text-[10px] flex items-center justify-center cursor-pointer">
-                <i class="fa-solid fa-chevron-down"></i>
-              </button>
-            </div>
-
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <h4 class="font-extrabold text-sm text-cohab-graphiteDark">${escapeHTML(pauta.titulo)}</h4>
-                <span class="text-[11px] font-bold text-cohab-medium bg-cohab-bg px-2 py-0.5 rounded-md border border-cohab-border">
-                  <i class="fa-regular fa-calendar mr-1"></i>${formatDateBR(pauta.data)}
-                </span>
-                ${assigneesLabel ? `
-                  <span class="text-[11px] font-bold text-cohab-graphite bg-cohab-bg px-2 py-0.5 rounded-md border border-cohab-border inline-flex items-center gap-1">
-                    <i class="fa-solid fa-users text-[9px] text-cohab-terracotta"></i>${escapeHTML(assigneesLabel)}
-                  </span>
-                ` : ''}
-              </div>
-              <div class="mt-1 flex flex-wrap items-center gap-3 text-xs text-cohab-medium">
-                ${pauta.editoria ? `<span><i class="fa-solid fa-tag text-cohab-graphite/70 mr-1"></i>${escapeHTML(pauta.editoria)}</span>` : ''}
-                ${pauta.formato ? `<span><i class="fa-solid fa-clapperboard text-cohab-graphite/70 mr-1"></i>${escapeHTML(pauta.formato)}</span>` : ''}
-              </div>
-              ${pauta.descricao ? `<p class="mt-1.5 text-xs text-cohab-medium leading-relaxed">${escapeHTML(pauta.descricao)}</p>` : ''}
-            </div>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-cohab-border">
-            <div class="flex items-center gap-1.5">
-              <div class="relative flex items-center" data-dropdown-root>
-                <button
-                  type="button"
-                  onclick="toggleCustomDropdown('prioStatusMenu-${pauta.id}', event)"
-                  class="h-8 inline-flex items-center justify-center gap-2 rounded-xl px-3 border ${statusInfo.badgeClass} text-xs font-bold whitespace-nowrap text-cohab-graphite hover:border-cohab-graphite/40 transition cursor-pointer"
-                >
-                  <span class="w-2.5 h-2.5 rounded-full ${statusInfo.dotClass} shrink-0"></span>
-                  <span class="inline-flex items-center h-full leading-none whitespace-nowrap translate-y-[0.5px]">${escapeHTML(pauta.status)}</span>
-                  <i class="fa-solid fa-chevron-down text-[9px] text-cohab-medium inline-flex items-center leading-none shrink-0"></i>
-                </button>
-                <div
-                  id="prioStatusMenu-${pauta.id}"
-                  data-dropdown-menu
-                  class="hidden absolute right-0 mt-1 w-36 bg-white border border-cohab-border rounded-xl shadow-lg py-1 z-30"
-                >
-                  ${Object.keys(STATUS_META).map(stKey => {
-                    const stMeta = STATUS_META[stKey];
-                    const isSel = pauta.status === stKey;
-                    return `
-                      <button
-                        type="button"
-                        onclick="quickChangeStatus('${pauta.id}', '${stKey}')"
-                        class="w-full px-3 py-1.5 text-left text-xs whitespace-nowrap ${isSel ? 'font-extrabold bg-cohab-bg' : 'font-semibold'} text-cohab-graphite hover:bg-cohab-bg flex items-center gap-2 leading-none cursor-pointer"
-                      >
-                        <span class="w-2.5 h-2.5 rounded-full ${stMeta.dotClass} shrink-0"></span>
-                        <span class="inline-flex items-center leading-none whitespace-nowrap">${stKey}</span>
-                      </button>
-                    `;
-                  }).join('')}
-                </div>
-              </div>
-
-              <span title="${typeInfo.label}" aria-label="${typeInfo.label}" class="w-8 h-8 inline-flex items-center justify-center rounded-xl border ${typeInfo.badgeClass} shrink-0">
-                <span class="w-2.5 h-2.5 rounded-full ${typeInfo.dotClass} shrink-0"></span>
-              </span>
-            </div>
-
-            <button type="button" onclick="openPautaModal('${pauta.id}')" class="h-8 px-3 rounded-xl bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite text-xs font-bold border border-cohab-border transition inline-flex items-center gap-1.5 cursor-pointer leading-none">
-              <i class="fa-solid fa-pen"></i> Editar
-            </button>
-          </div>
-        `;
-
-        list.appendChild(row);
-      });
-    }
-
-    function movePriority(id, delta) {
-      const active = pautas
-        .filter(p => p.status !== 'Publicado')
-        .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
-      const index = active.findIndex(p => p.id === id);
-      const targetIndex = index + delta;
-      if (index < 0 || targetIndex < 0 || targetIndex >= active.length) return;
-
-      const temp = active[index];
-      active[index] = active[targetIndex];
-      active[targetIndex] = temp;
-
-      active.forEach((item, idx) => {
-        item.prioridade = idx + 1;
-      });
-
-      savePautasToStorage();
-      addLogEntry('HIERARQUIA', `Ordem de prioridade atualizada para "${temp.titulo}".`);
-      renderAll();
-    }
-
-    function sortByHotAndDate() {
-      const active = pautas.filter(p => p.status !== 'Publicado');
-      active.sort((a, b) => {
-        if (a.tipo !== b.tipo) return a.tipo === 'QUENTE' ? -1 : 1;
-        return (a.data || '').localeCompare(b.data || '');
-      });
-      active.forEach((item, idx) => {
-        item.prioridade = idx + 1;
-      });
-      savePautasToStorage();
-      addLogEntry('HIERARQUIA', 'Demandas ativas reordenadas automaticamente por Pautas Quentes + Data.');
-      showToast('Prioridades reorganizadas por Quentes + Data!');
-      renderAll();
-    }
-
-    function renderCompleted() {
-      const list = document.getElementById('completedList');
-      list.innerHTML = '';
-
-      const published = pautas
-        .filter(p => p.status === 'Publicado' && matchesSearchAndFilter(p))
-        .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-
-      if (published.length === 0) {
-        list.innerHTML = `
-          <div class="p-8 text-center text-xs text-cohab-medium">
-            Nenhum conteúdo publicado encontrado.
-          </div>
-        `;
-        return;
-      }
-
-      published.forEach(pauta => {
-        const item = document.createElement('div');
-        item.className = 'p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-cohab-bg/40 transition';
-        item.innerHTML = `
-          <div class="flex items-start sm:items-center gap-3 min-w-0">
-            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold shrink-0">
-              ${formatDateBR(pauta.data)}
-            </span>
-            <div class="min-w-0">
-              <h4 class="text-sm font-bold text-cohab-graphiteDark truncate">${escapeHTML(pauta.titulo)}</h4>
-              <div class="mt-0.5 flex flex-wrap items-center gap-3 text-xs text-cohab-medium">
-                ${pauta.editoria ? `<span><i class="fa-solid fa-tag text-cohab-graphite/70 mr-1"></i>${escapeHTML(pauta.editoria)}</span>` : ''}
-                ${pauta.formato ? `<span><i class="fa-solid fa-clapperboard text-cohab-graphite/70 mr-1"></i>${escapeHTML(pauta.formato)}</span>` : ''}
-              </div>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 shrink-0">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-cohab-border bg-white text-xs font-bold text-cohab-graphite">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-              <span>Publicado</span>
-            </span>
-            <button type="button" onclick="openPautaModal('${pauta.id}')" class="px-3 py-1 rounded-lg bg-cohab-bg hover:bg-cohab-border/70 text-cohab-graphite text-xs font-bold border border-cohab-border transition cursor-pointer">
-              Editar
-            </button>
-          </div>
-        `;
-        list.appendChild(item);
-      });
-    }
-
-    function renderSuggestions() {
-      const container = document.getElementById('suggestionsList');
-      container.innerHTML = '';
-
-      if (suggestions.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full text-center py-8 text-xs text-cohab-medium bg-cohab-bg/50 rounded-2xl border border-dashed border-cohab-border">
-            Nenhuma sugestão cadastrada ainda. Use o formulário acima para registrar ideias.
-          </div>
-        `;
-        return;
-      }
-
-      suggestions.forEach(sug => {
-        const typeInfo = TYPE_META[sug.tipo] || TYPE_META.FRIA;
-        const card = document.createElement('div');
-        card.className = 'rounded-2xl border border-cohab-border bg-white p-4 flex flex-col justify-between gap-3 shadow-2xs';
-        card.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between gap-2">
-              <h4 class="text-sm font-extrabold text-cohab-graphiteDark">${escapeHTML(sug.titulo)}</h4>
-              <span title="${typeInfo.label}" class="w-6 h-6 inline-flex items-center justify-center rounded-md border ${typeInfo.badgeClass} shrink-0">
-                <span class="w-2 h-2 rounded-full ${typeInfo.dotClass} shrink-0"></span>
-              </span>
-            </div>
-            <div class="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-cohab-medium">
-              ${sug.editoria ? `<span><i class="fa-solid fa-tag text-cohab-graphite/70 mr-1"></i>${escapeHTML(sug.editoria)}</span>` : ''}
-              ${sug.formato ? `<span><i class="fa-solid fa-clapperboard text-cohab-graphite/70 mr-1"></i>${escapeHTML(sug.formato)}</span>` : ''}
-            </div>
-            ${sug.descricao ? `<p class="mt-2 text-xs text-cohab-medium leading-relaxed">${escapeHTML(sug.descricao)}</p>` : ''}
-          </div>
-
-          <div class="pt-2.5 border-t border-cohab-border flex items-center justify-between gap-2 text-[11px] text-cohab-medium">
-            <span class="truncate">Por ${escapeHTML(sug.autor || 'Equipe Ascom')}</span>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button type="button" onclick="promoteSuggestionToPauta('${sug.id}')" class="px-2.5 py-1 rounded-lg bg-cohab-terracotta hover:bg-cohab-terracottaDark text-white font-bold transition cursor-pointer">
-                Agendar Pauta
-              </button>
-              <button type="button" onclick="deleteSuggestion('${sug.id}')" title="Excluir sugestão" class="w-7 h-7 rounded-lg bg-cohab-bg hover:bg-red-50 hover:text-red-600 text-cohab-medium flex items-center justify-center transition cursor-pointer">
-                <i class="fa-regular fa-trash-can"></i>
-              </button>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function addSuggestion(event) {
-      event.preventDefault();
-      const titulo = document.getElementById('sugTitulo').value.trim();
-      if (!titulo) return;
-
-      const nova = {
-        id: 'sug-' + Date.now(),
-        titulo,
-        tipo: document.getElementById('sugTipo').value,
-        formato: document.getElementById('sugFormato').value,
-        editoria: document.getElementById('sugEditoria').value === '__NEW__'
-          ? (formatSentenceCase(document.getElementById('sugNovaEditoriaInput').value) || 'Serviços')
-          : formatSentenceCase(document.getElementById('sugEditoria').value),
-        descricao: document.getElementById('sugDescricao').value.trim(),
-        autor: getCurrentMemberName(),
-        criadoEm: new Date().toLocaleDateString('pt-BR')
-      };
-
-      suggestions.unshift(nova);
-      saveSuggestionsToStorage();
-      addLogEntry('SUGESTÃO', `Nova sugestão adicionada: "${titulo}".`);
-
-      document.getElementById('sugTitulo').value = '';
-      document.getElementById('sugFormato').value = '';
-      document.getElementById('sugEditoria').value = 'Serviços';
-      document.getElementById('sugNovaEditoriaWrapper').classList.add('hidden');
-      document.getElementById('sugDescricao').value = '';
-
-      showToast('Sugestão adicionada com sucesso!');
-      renderAll();
-    }
-
-    function promoteSuggestionToPauta(sugId) {
-      const sug = suggestions.find(s => s.id === sugId);
-      if (!sug) return;
-
-      openPautaModal(null, `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-24`);
-      document.getElementById('modalTitle').textContent = 'Agendar Sugestão como Pauta';
-      document.getElementById('fromSuggestionId').value = sug.id;
-      document.getElementById('pautaTitulo').value = sug.titulo;
-      setFormatoSelectValue('pautaFormato', sug.formato || '');
-      renderEditoriaOptions(sug.editoria || 'Serviços');
-      document.getElementById('pautaDescricao').value = sug.descricao || '';
-
-      const radio = document.querySelector(`input[name="pautaTipo"][value="${sug.tipo}"]`);
-      if (radio) radio.checked = true;
-    }
-
-    function deleteSuggestion(sugId) {
-      const sug = suggestions.find(s => s.id === sugId);
-      if (!sug) return;
-      openConfirmModal('Excluir Sugestão', `Deseja remover a sugestão "${sug.titulo}"?`, () => {
-        suggestions = suggestions.filter(s => s.id !== sugId);
-        saveSuggestionsToStorage();
-        addLogEntry('SUGESTÃO', `Sugestão removida: "${sug.titulo}".`);
-        showToast('Sugestão removida.');
-        renderAll();
-      });
-    }
-
-    function renderLogs() {
-      const container = document.getElementById('logsContainer');
-      const filter = document.getElementById('logFilterAction').value;
-      container.innerHTML = '';
-
-      const filtered = filter === 'ALL' ? logs : logs.filter(l => l.action === filter);
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<p class="text-center py-8 text-xs text-cohab-medium">Nenhum registro encontrado para este filtro.</p>`;
-        return;
-      }
-
-      filtered.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'p-3 rounded-xl border border-cohab-border bg-cohab-bg/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs';
-        row.innerHTML = `
-          <div class="flex items-start sm:items-center gap-2.5">
-            <span class="px-2 py-0.5 rounded-md bg-white border border-cohab-border font-extrabold text-[10px] text-cohab-terracotta shrink-0">
-              ${escapeHTML(item.action)}
-            </span>
-            <span class="text-cohab-graphite font-medium">${escapeHTML(item.detail)}</span>
-          </div>
-          <div class="text-[11px] text-cohab-medium shrink-0">
-            <strong class="text-cohab-graphite">${escapeHTML(item.member)}</strong> &bull; ${escapeHTML(item.timestamp)}
-          </div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function addManualLogNote(event) {
-      event.preventDefault();
-      const input = document.getElementById('manualLogInput');
-      const text = input.value.trim();
-      if (!text) return;
-      addLogEntry('NOTA', text);
-      input.value = '';
-      showToast('Nota registrada no log.');
-    }
-
-    function selectModalStatus(statusVal) {
-      document.getElementById('pautaStatus').value = statusVal;
-      document.querySelectorAll('.modal-status-btn').forEach(btn => {
-        const isSelected = btn.getAttribute('data-status-val') === statusVal;
-        if (isSelected) {
-          btn.classList.add('bg-white', 'border-cohab-graphite', 'ring-1', 'ring-cohab-graphite/30', 'shadow-2xs');
-          btn.classList.remove('border-cohab-border', 'bg-cohab-bg/40');
-        } else {
-          btn.classList.remove('bg-white', 'border-cohab-graphite', 'ring-1', 'ring-cohab-graphite/30', 'shadow-2xs');
-          btn.classList.add('border-cohab-border', 'bg-cohab-bg/40');
-        }
-      });
-      syncModalFieldsVisibility();
-    }
-
-    function syncModalFieldsVisibility() {
-      const status = document.getElementById('pautaStatus').value;
-      const isPublished = status === 'Publicado';
-      const activeMetaRow = document.getElementById('modalActiveMetaRow');
-      if (isPublished) {
-        activeMetaRow.classList.add('hidden');
-      } else {
-        activeMetaRow.classList.remove('hidden');
-      }
-    }
-
-    function getSelectedPautaResponsavel() {
-      const select = document.getElementById('pautaResponsavel');
-      if (select.value === 'CUSTOM') {
-        return document.getElementById('pautaResponsavelCustom').value.trim();
-      }
-      return select.value;
-    }
-
-    function renderModalAssigneesList() {
-      const container = document.getElementById('pautaResponsaveisList');
-      if (!container) return;
-      if (modalAssignees.length === 0) {
-        container.innerHTML = `<span class="text-[11px] text-cohab-medium italic">Nenhuma pessoa designada ainda.</span>`;
-        return;
-      }
-      container.innerHTML = modalAssignees.map((person, index) => `
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-cohab-border bg-cohab-bg text-xs font-bold text-cohab-graphite">
-          <span class="px-1.5 py-0.5 rounded bg-white border border-cohab-border text-[10px] font-extrabold text-cohab-terracotta">${escapeHTML(getPersonInitials(person))}</span>
-          <span>${escapeHTML(person)}</span>
-          <button type="button" onclick="removeModalAssignee(${index})" title="Remover ${escapeHTML(person)}" class="text-cohab-medium hover:text-red-600 ml-0.5 cursor-pointer">
-            <i class="fa-solid fa-xmark text-[10px]"></i>
-          </button>
-        </span>
-      `).join('');
-    }
-
-    function addSelectedResponsavel() {
-      const select = document.getElementById('pautaResponsavel');
-      const customInput = document.getElementById('pautaResponsavelCustom');
-      const chosenName = select.value === 'CUSTOM'
-        ? customInput.value.trim()
-        : select.value.trim();
-
-      if (!chosenName) {
-        showToast('Digite ou selecione o nome do responsável.', 'error');
-        if (select.value === 'CUSTOM') customInput.focus();
-        return;
-      }
-
-      if (modalAssignees.some(p => p.toLowerCase() === chosenName.toLowerCase())) {
-        showToast(`${chosenName} já está designado(a) nesta demanda.`, 'error');
-        return;
-      }
-
-      modalAssignees.push(chosenName);
-      if (select.value === 'CUSTOM') {
-        customInput.value = '';
-      }
-      renderModalAssigneesList();
-    }
-
-    function removeModalAssignee(index) {
-      modalAssignees.splice(index, 1);
-      renderModalAssigneesList();
-    }
-
-    function handlePautaResponsavelChange() {
-      const select = document.getElementById('pautaResponsavel');
-      const customInput = document.getElementById('pautaResponsavelCustom');
-      if (select.value === 'CUSTOM') {
-        customInput.classList.remove('hidden');
-        customInput.focus();
-      } else {
-        customInput.classList.add('hidden');
-      }
-    }
-
-    function setPautaResponsavelField(responsavelValue) {
-      const select = document.getElementById('pautaResponsavel');
-      const customInput = document.getElementById('pautaResponsavelCustom');
-      select.value = 'Fábio Felicio';
-      customInput.classList.add('hidden');
-      customInput.value = '';
-      modalAssignees = normalizeAssignees(responsavelValue);
-      renderModalAssigneesList();
-    }
-
-    function openPautaModal(pautaId = null, prefillDate = null) {
-      const modal = document.getElementById('pautaModal');
-      const deleteBtn = document.getElementById('deletePautaBtn');
-      document.getElementById('fromSuggestionId').value = '';
-      document.getElementById('pautaNovaEditoriaWrapper').classList.add('hidden');
-
-      if (pautaId) {
-        const pauta = pautas.find(p => p.id === pautaId);
-        if (!pauta) return;
-
-        document.getElementById('modalTitle').textContent = 'Editar Pauta';
-        document.getElementById('pautaId').value = pauta.id;
-        document.getElementById('pautaTitulo').value = pauta.titulo;
-        document.getElementById('pautaData').value = pauta.data;
-        document.getElementById('pautaPrioridade').value = pauta.prioridade || 1;
-        selectModalStatus(normalizeLegacyStatus(pauta.status));
-        setPautaResponsavelField(pauta.responsavel);
-        setFormatoSelectValue('pautaFormato', pauta.formato || '');
-        renderEditoriaOptions(pauta.editoria || 'Serviços');
-        document.getElementById('pautaDescricao').value = pauta.descricao || '';
-
-        const radio = document.querySelector(`input[name="pautaTipo"][value="${pauta.tipo || 'FRIA'}"]`);
-        if (radio) radio.checked = true;
-
-        deleteBtn.classList.remove('hidden');
-        deleteBtn.classList.add('inline-flex');
-      } else {
-        document.getElementById('modalTitle').textContent = 'Nova Pauta';
-        document.getElementById('pautaId').value = '';
-        document.getElementById('pautaTitulo').value = '';
-        document.getElementById('pautaData').value = prefillDate || `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-24`;
-        const nextPrio = pautas.filter(p => p.status !== 'Publicado').length + 1;
-        document.getElementById('pautaPrioridade').value = nextPrio;
-        selectModalStatus('A Fazer');
-        setPautaResponsavelField(['Fábio Felicio']);
-        setFormatoSelectValue('pautaFormato', '');
-        renderEditoriaOptions('Serviços');
-        document.getElementById('pautaDescricao').value = '';
-
-        const radio = document.querySelector('input[name="pautaTipo"][value="QUENTE"]');
-        if (radio) radio.checked = true;
-
-        deleteBtn.classList.add('hidden');
-        deleteBtn.classList.remove('inline-flex');
-      }
-
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closePautaModal() {
-      const modal = document.getElementById('pautaModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function savePauta(event) {
-      event.preventDefault();
-
-      const id = document.getElementById('pautaId').value;
-      const fromSugId = document.getElementById('fromSuggestionId').value;
-      const titulo = document.getElementById('pautaTitulo').value.trim();
-      const data = document.getElementById('pautaData').value;
-      const tipo = document.querySelector('input[name="pautaTipo"]:checked')?.value || 'FRIA';
-      const prioridade = parseInt(document.getElementById('pautaPrioridade').value, 10) || 1;
-      const status = document.getElementById('pautaStatus').value;
-
-      // Caso o usuário tenha digitado um nome personalizado e não tenha clicado em "Adicionar", inclui automaticamente
-      const customPending = document.getElementById('pautaResponsavel').value === 'CUSTOM'
-        ? document.getElementById('pautaResponsavelCustom').value.trim()
-        : '';
-      if (customPending && !modalAssignees.some(p => p.toLowerCase() === customPending.toLowerCase())) {
-        modalAssignees.push(customPending);
-      }
-      const responsavel = [...modalAssignees];
-
-      const formato = document.getElementById('pautaFormato').value;
-      let editoria = document.getElementById('pautaEditoria').value;
-      if (editoria === '__NEW__') {
-        const typedEd = formatSentenceCase(document.getElementById('pautaNovaEditoriaInput').value);
-        if (typedEd) {
-          if (!customEditorias.some(e => e.toLowerCase() === typedEd.toLowerCase())) {
-            customEditorias.push(typedEd);
-            localStorage.setItem(STORAGE_KEY_EDITORIAS, JSON.stringify(customEditorias));
-          }
-          editoria = typedEd;
-        } else {
-          editoria = 'Serviços';
-        }
-      } else {
-        editoria = formatSentenceCase(editoria);
-      }
-      const descricao = document.getElementById('pautaDescricao').value.trim();
-
-      if (!titulo || !data) return;
-
-      let targetPautaId = id;
-
-      if (id) {
-        const index = pautas.findIndex(p => p.id === id);
-        if (index !== -1) {
-          pautas[index] = {
-            ...pautas[index],
-            titulo,
-            data,
-            tipo,
-            prioridade,
-            status,
-            responsavel,
-            formato,
-            editoria,
-            descricao
-          };
-          addLogEntry('EDIÇÃO', `Pauta "${titulo}" atualizada.`);
-          showToast('Pauta atualizada com sucesso!');
-        }
-      } else {
-        const newPauta = {
-          id: 'pauta-' + Date.now(),
-          titulo,
-          data,
-          tipo,
-          prioridade,
-          status,
-          responsavel,
-          formato,
-          editoria,
-          descricao
-        };
-        targetPautaId = newPauta.id;
-        pautas.push(newPauta);
-        addLogEntry('CRIAÇÃO', `Nova pauta criada: "${titulo}" (${formatDateBR(data)}).`);
-        showToast('Nova pauta criada!');
-
-        if (fromSugId) {
-          suggestions = suggestions.filter(s => s.id !== fromSugId);
-          saveSuggestionsToStorage();
-        }
-      }
-
-      normalizePriorities(status !== 'Publicado' ? targetPautaId : null, prioridade);
-      savePautasToStorage();
-      closePautaModal();
-
-      const [py, pm] = data.split('-').map(Number);
-      if (py && pm) {
-        currentYear = py;
-        currentMonth = pm - 1;
-        document.getElementById('yearSelect').value = String(currentYear);
-        document.getElementById('monthSelect').value = String(currentMonth);
-      }
-
-      renderAll();
-    }
-
-    function deleteCurrentPauta() {
-      const id = document.getElementById('pautaId').value;
-      const pauta = pautas.find(p => p.id === id);
-      if (!pauta) return;
-
-      openConfirmModal('Excluir Pauta', `Deseja realmente excluir a pauta "${pauta.titulo}"?`, () => {
-        pautas = pautas.filter(p => p.id !== id);
-        normalizePriorities();
-        savePautasToStorage();
-        addLogEntry('EDIÇÃO', `Pauta excluída: "${pauta.titulo}".`);
-        closePautaModal();
-        showToast('Pauta excluída.');
-        renderAll();
-      });
-    }
-
-    function updateBadges() {
-      const activeCount = pautas.filter(p => p.status !== 'Publicado').length;
-      const completedCount = pautas.filter(p => p.status === 'Publicado').length;
-      document.getElementById('badgeCountSuggestions').textContent = suggestions.length;
-      document.getElementById('badgeCountPautas').textContent = activeCount;
-      document.getElementById('badgeCountCompleted').textContent = completedCount;
-      document.getElementById('badgeCountLogs').textContent = logs.length;
-      const pill = document.getElementById('completedSummaryPill');
-      if (pill) {
-        pill.textContent = `${completedCount} ${completedCount === 1 ? 'conteúdo realizado' : 'conteúdos realizados'}`;
-      }
-    }
-
-    function renderAll() {
-      updateBadges();
-      renderCalendar();
-      renderHierarchy();
-      renderCompleted();
-      renderSuggestions();
-      renderLogs();
-    }
-
-    function getPresetDates(mode) {
-      if (mode === 'WEEK') {
-        const now = new Date();
-        const sun = new Date(now);
-        sun.setDate(now.getDate() - now.getDay());
-        const sat = new Date(sun);
-        sat.setDate(sun.getDate() + 6);
-        const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        return { start: fmt(sun), end: fmt(sat) };
-      }
-      const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const mm = String(currentMonth + 1).padStart(2, '0');
-      return {
-        start: `${currentYear}-${mm}-01`,
-        end: `${currentYear}-${mm}-${String(lastDay).padStart(2, '0')}`
-      };
-    }
-
-    function openExcelExportModal() {
-      setExcelPreset('MONTH');
-      const modal = document.getElementById('excelExportModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeExcelExportModal() {
-      const modal = document.getElementById('excelExportModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function setExcelPreset(mode) {
-      const { start, end } = getPresetDates(mode);
-      document.getElementById('excelStartDate').value = start;
-      document.getElementById('excelEndDate').value = end;
-    }
-
-    function exportToExcel(event) {
-      event.preventDefault();
-      const startStr = document.getElementById('excelStartDate').value;
-      const endStr = document.getElementById('excelEndDate').value;
-      if (!startStr || !endStr || startStr > endStr) {
-        showToast('Selecione um intervalo de datas válido.', 'error');
-        return;
-      }
-
-      const items = pautas
-        .filter(p => p.data >= startStr && p.data <= endStr)
-        .sort((a, b) => (a.data || '').localeCompare(b.data || '') || (a.prioridade || 99) - (b.prioridade || 99));
-
-      const rowsHTML = items.length === 0
-        ? `<tr><td colspan="8" style="padding:12px;text-align:center;color:#666;">Nenhuma pauta no período selecionado.</td></tr>`
-        : items.map((p, i) => `
-          <tr style="background:${i % 2 === 0 ? '#FFFFFF' : '#F8F8F8'};">
-            <td style="padding:8px;border:1px solid #DDD;">${formatDateBR(p.data)}</td>
-            <td style="padding:8px;border:1px solid #DDD;font-weight:bold;">${escapeHTML(p.titulo)}</td>
-            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(p.editoria || '-')}</td>
-            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(p.formato || '-')}</td>
-            <td style="padding:8px;border:1px solid #DDD;">${p.tipo === 'QUENTE' ? 'Pauta Quente' : 'Pauta Fria'}</td>
-            <td style="padding:8px;border:1px solid #DDD;">${p.status === 'Publicado' ? '-' : '#' + (p.prioridade || 1)}</td>
-            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(p.status)}</td>
-            <td style="padding:8px;border:1px solid #DDD;">${escapeHTML(formatAssigneesFull(p.responsavel) || '-')}</td>
-          </tr>
-        `).join('');
-
-      const html = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head><meta charset="UTF-8" /></head>
-        <body style="font-family:Arial,sans-serif;">
-          <table>
-            <tr><td colspan="8" style="background:#B84231;color:#FFF;font-size:15px;font-weight:bold;padding:12px;">COHAB MINAS &bull; Planejamento Editorial (${formatDateBR(startStr)} a ${formatDateBR(endStr)})</td></tr>
-            <tr style="background:#333;color:#FFF;font-weight:bold;">
-              <th style="padding:8px;border:1px solid #333;">Data</th>
-              <th style="padding:8px;border:1px solid #333;">Título da Pauta</th>
-              <th style="padding:8px;border:1px solid #333;">Editoria</th>
-              <th style="padding:8px;border:1px solid #333;">Formato</th>
-              <th style="padding:8px;border:1px solid #333;">Classificação</th>
-              <th style="padding:8px;border:1px solid #333;">Prioridade</th>
-              <th style="padding:8px;border:1px solid #333;">Status</th>
-              <th style="padding:8px;border:1px solid #333;">Designação</th>
-            </tr>
-            ${rowsHTML}
-          </table>
-        </body>
-        </html>
-      `;
-
-      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `planejamento_editorial_${startStr}_a_${endStr}.xls`;
-      a.click();
-      URL.revokeObjectURL(url);
-      closeExcelExportModal();
-      showToast('Planilha Excel exportada!');
-    }
-
-    function openPngExportModal() {
-      setPngPreset('MONTH');
-      const modal = document.getElementById('pngExportModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closePngExportModal() {
-      const modal = document.getElementById('pngExportModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function setPngPreset(mode) {
-      const { start, end } = getPresetDates(mode);
-      document.getElementById('pngStartDate').value = start;
-      document.getElementById('pngEndDate').value = end;
-    }
-
-    function generateCalendarPNG(event) {
-      event.preventDefault();
-      const startStr = document.getElementById('pngStartDate').value;
-      const endStr = document.getElementById('pngEndDate').value;
-      if (!startStr || !endStr || startStr > endStr) {
-        showToast('Selecione um intervalo de datas válido.', 'error');
-        return;
-      }
-
-      const [sy, sm, sd] = startStr.split('-').map(Number);
-      const [ey, em, ed] = endStr.split('-').map(Number);
-      const startDate = new Date(sy, sm - 1, sd);
-      const endDate = new Date(ey, em - 1, ed);
-
-      const gridStart = new Date(startDate);
-      gridStart.setDate(startDate.getDate() - startDate.getDay());
-      const gridEnd = new Date(endDate);
-      gridEnd.setDate(endDate.getDate() + (6 - endDate.getDay()));
-
-      const days = [];
-      for (let d = new Date(gridStart); d <= gridEnd; d.setDate(d.getDate() + 1)) {
-        days.push(new Date(d));
-      }
-
-      const weeks = Math.max(1, Math.ceil(days.length / 7));
-      const scale = 2;
-      const width = 1400;
-      const colW = (width - 80) / 7;
-      const headerH = 115;
-      const weekRowH = 175;
-      const height = headerH + 40 + weeks * weekRowH + 40;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width * scale;
-      canvas.height = height * scale;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(scale, scale);
-
-      ctx.fillStyle = '#F5F5F5';
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.fillStyle = '#B84231';
-      ctx.fillRect(0, 0, width, 8);
-
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 8, width, headerH - 8);
-
-      ctx.fillStyle = '#333333';
-      ctx.font = '800 24px Inter, sans-serif';
-      ctx.fillText('Planejamento Editorial • Cohab Minas', 40, 56);
-
-      ctx.fillStyle = '#7A7A7A';
-      ctx.font = '600 14px Inter, sans-serif';
-      ctx.fillText(`Assessoria de Comunicação Social  |  Período: ${formatDateBR(startStr)} a ${formatDateBR(endStr)}`, 40, 84);
-
-      const weekNames = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
-      const topY = headerH + 12;
-      ctx.fillStyle = '#EAEAEA';
-      ctx.fillRect(40, topY, width - 80, 32);
-      ctx.fillStyle = '#4A4A4A';
-      ctx.font = '800 11px Inter, sans-serif';
-      weekNames.forEach((w, i) => {
-        ctx.fillText(w, 40 + i * colW + 12, topY + 20);
-      });
-
-      days.forEach((d, idx) => {
-        const col = idx % 7;
-        const row = Math.floor(idx / 7);
-        const x = 40 + col * colW;
-        const y = topY + 32 + row * weekRowH;
-        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const inRange = iso >= startStr && iso <= endStr;
-
-        ctx.fillStyle = inRange ? '#FFFFFF' : '#EFEFEF';
-        ctx.fillRect(x, y, colW, weekRowH);
-        ctx.strokeStyle = '#DCDCDC';
-        ctx.strokeRect(x, y, colW, weekRowH);
-
-        ctx.fillStyle = inRange ? '#333333' : '#999999';
-        ctx.font = '800 13px Inter, sans-serif';
-        ctx.fillText(String(d.getDate()), x + 10, y + 22);
-
-        const dayItems = pautas
-          .filter(p => p.data === iso)
-          .sort((a, b) => (a.prioridade || 99) - (b.prioridade || 99));
-
-        let cursorY = y + 32;
-        dayItems.slice(0, 3).forEach(item => {
-          const st = STATUS_META[item.status] || STATUS_META['A Fazer'];
-          const tp = TYPE_META[item.tipo] || TYPE_META.FRIA;
-          const cardH = 40;
-
-          ctx.fillStyle = '#FAFAFA';
-          ctx.fillRect(x + 8, cursorY, colW - 16, cardH);
-          ctx.strokeStyle = '#E2E2E2';
-          ctx.strokeRect(x + 8, cursorY, colW - 16, cardH);
-
-          ctx.fillStyle = st.dotHex;
-          ctx.fillRect(x + 8, cursorY, 4, cardH);
-
-          ctx.fillStyle = '#333333';
-          ctx.font = '700 10px Inter, sans-serif';
-          const title = item.titulo.length > 24 ? item.titulo.slice(0, 23) + '…' : item.titulo;
-          ctx.fillText(title, x + 17, cursorY + 14);
-
-          ctx.fillStyle = '#666666';
-          ctx.font = '600 9px Inter, sans-serif';
-          const assignees = normalizeAssignees(item.responsavel);
-          const initials = assignees.length > 0
-            ? `${getPersonInitials(assignees[0])}${assignees.length > 1 ? ' +' + (assignees.length - 1) : ''}`
-            : '';
-          const sub = `${item.status}${item.status !== 'Publicado' ? ' • #' + (item.prioridade || 1) : ''}${initials ? ' • ' + initials : ''}`;
-          ctx.fillText(sub, x + 17, cursorY + 30);
-
-          ctx.fillStyle = tp.dotHex;
-          ctx.beginPath();
-          ctx.arc(x + colW - 16, cursorY + 12, 3.5, 0, Math.PI * 2);
-          ctx.fill();
-
-          cursorY += cardH + 5;
-        });
-      });
-
-      canvas.toBlob(blob => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `calendario_cohab_${startStr}_a_${endStr}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-        closePngExportModal();
-        showToast('Imagem PNG exportada!');
-      }, 'image/png');
-    }
-
-    function openReportModal() {
-      setReportPreset('MONTH');
-      const modal = document.getElementById('reportModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      generateEditorialReport();
-    }
-
-    function closeReportModal() {
-      const modal = document.getElementById('reportModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function setReportPreset(mode) {
-      const { start, end } = getPresetDates(mode);
-      document.getElementById('reportStartDate').value = start;
-      document.getElementById('reportEndDate').value = end;
-      generateEditorialReport();
-    }
-
-    function generateEditorialReport(event) {
-      if (event) event.preventDefault();
-      const startStr = document.getElementById('reportStartDate').value;
-      const endStr = document.getElementById('reportEndDate').value;
-      const container = document.getElementById('reportOutputContainer');
-
-      const items = pautas
-        .filter(p => p.data >= startStr && p.data <= endStr)
-        .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
-
-      const total = items.length;
-      const countBy = (fn) => items.reduce((acc, it) => {
-        const k = fn(it);
-        acc[k] = (acc[k] || 0) + 1;
-        return acc;
-      }, {});
-
-      const byStatus = countBy(i => i.status || 'A Fazer');
-      const byFormato = countBy(i => i.formato || 'Não definido');
-      const byEditoria = countBy(i => i.editoria || 'Serviços');
-      const quentes = items.filter(i => i.tipo === 'QUENTE').length;
-      const frias = total - quentes;
-      const publicados = byStatus['Publicado'] || 0;
-      const taxaConclusao = total > 0 ? Math.round((publicados / total) * 100) : 0;
-
-      const stopWords = new Set(['para', 'com', 'sobre', 'pela', 'pelo', 'das', 'dos', 'nos', 'nas', 'uma', 'uns', 'umas', 'que', 'por', 'como', 'mais', 'em', 'de', 'da', 'do', 'no', 'na', 'os', 'as', 'ao', 'aos']);
-      const wordFreq = {};
-      items.forEach(it => {
-        const words = `${it.titulo || ''} ${it.descricao || ''}`
-          .toLowerCase()
-          .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-          .split(/\s+/)
-          .filter(w => w.length > 3 && !stopWords.has(w));
-        words.forEach(w => { wordFreq[w] = (wordFreq[w] || 0) + 1; });
-      });
-
-      const topWords = Object.entries(wordFreq)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 20);
-
-      const renderBars = (obj) => {
-        const entries = Object.entries(obj).sort((a, b) => b[1] - a[1]);
-        if (entries.length === 0) return `<p class="text-xs text-cohab-medium">Sem dados no período.</p>`;
-        return entries.map(([label, count]) => {
-          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-          return `
-            <div class="space-y-1">
-              <div class="flex justify-between text-xs font-bold text-cohab-graphite">
-                <span>${escapeHTML(label)}</span>
-                <span>${count} (${pct}%)</span>
-              </div>
-              <div class="h-2 rounded-full bg-cohab-bg overflow-hidden">
-                <div class="h-full bg-cohab-terracotta rounded-full" style="width:${pct}%"></div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      };
-
-      container.innerHTML = `
-        <div class="bg-white rounded-2xl border border-cohab-border p-5 space-y-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-cohab-border">
-            <div>
-              <span class="text-[10px] font-extrabold uppercase tracking-wider text-cohab-terracotta">Relatório Executivo • Ascom Cohab Minas</span>
-              <h4 class="text-lg font-extrabold text-cohab-graphiteDark">Período: ${formatDateBR(startStr)} a ${formatDateBR(endStr)}</h4>
-            </div>
-            <span class="text-xs font-bold text-cohab-medium">Emitido por ${escapeHTML(getCurrentMemberName())}</span>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="p-3.5 rounded-xl bg-cohab-bg border border-cohab-border">
-              <div class="text-[11px] font-bold text-cohab-medium">Total de Conteúdos</div>
-              <div class="text-2xl font-extrabold text-cohab-graphiteDark mt-1">${total}</div>
-            </div>
-            <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
-              <div class="text-[11px] font-bold text-emerald-800">Publicados</div>
-              <div class="text-2xl font-extrabold text-emerald-700 mt-1">${publicados} <span class="text-xs">(${taxaConclusao}%)</span></div>
-            </div>
-            <div class="p-3.5 rounded-xl bg-red-50 border border-red-200">
-              <div class="text-[11px] font-bold text-red-800">Pautas Quentes</div>
-              <div class="text-2xl font-extrabold text-red-600 mt-1">${quentes}</div>
-            </div>
-            <div class="p-3.5 rounded-xl bg-sky-50 border border-sky-200">
-              <div class="text-[11px] font-bold text-sky-800">Pautas Frias</div>
-              <div class="text-2xl font-extrabold text-sky-600 mt-1">${frias}</div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 rounded-xl border border-cohab-border space-y-2.5">
-              <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Por Status</h5>
-              ${renderBars(byStatus)}
-            </div>
-            <div class="p-4 rounded-xl border border-cohab-border space-y-2.5">
-              <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Por Formato</h5>
-              ${renderBars(byFormato)}
-            </div>
-            <div class="p-4 rounded-xl border border-cohab-border space-y-2.5">
-              <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite">Por Editoria / Tópico</h5>
-              ${renderBars(byEditoria)}
-            </div>
-          </div>
-
-          <div class="p-4 rounded-xl border border-cohab-border">
-            <h5 class="text-xs font-extrabold uppercase tracking-wider text-cohab-graphite mb-2.5">Mapa de Palavras Utilizadas</h5>
-            <div class="flex flex-wrap gap-2">
-              ${topWords.length === 0
-                ? '<span class="text-xs text-cohab-medium">Nenhuma palavra relevante no período.</span>'
-                : topWords.map(([w, c]) => `
-                    <span class="px-2.5 py-1 rounded-lg bg-cohab-bg border border-cohab-border text-xs font-bold text-cohab-graphite">
-                      ${escapeHTML(w)} <span class="text-cohab-terracotta">(${c})</span>
-                    </span>
-                  `).join('')}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function printEditorialReport() {
-      const content = document.getElementById('reportOutputContainer').innerHTML;
-      const win = window.open('', '_blank');
-      if (!win) return;
-      win.document.write(`
-        <html><head><title>Relatório Editorial - Cohab Minas</title>
-        <script src="https://cdn.tailwindcss.com"><\/script>
-        </head><body class="p-6 bg-white">${content}<script>window.onload=function(){window.print();}<\/script></body></html>
-      `);
-      win.document.close();
-    }
-
-    function downloadReportHTML() {
-      const content = document.getElementById('reportOutputContainer').innerHTML;
-      const startStr = document.getElementById('reportStartDate').value;
-      const endStr = document.getElementById('reportEndDate').value;
-      const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Editorial - Cohab Minas</title><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-6 bg-neutral-100">${content}</body></html>`;
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `relatorio_editorial_${startStr}_a_${endStr}.html`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function initApp() {
-      const headers = document.querySelectorAll('header');
-      headers.forEach((h, idx) => {
-        if (idx > 0 || h.id !== 'institutionalHeader') h.remove();
-      });
-
-      document.getElementById('confirmCancelBtn').onclick = closeConfirmModal;
-      document.getElementById('confirmAcceptBtn').onclick = () => {
-        if (typeof confirmCallback === 'function') confirmCallback();
-        closeConfirmModal();
-      };
-
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('[data-dropdown-root]')) {
-          document.querySelectorAll('[data-dropdown-menu]').forEach(m => m.classList.add('hidden'));
-        }
-      });
-
-      loadStateFromStorage();
-      normalizePriorities();
-      renderEditoriaOptions('Serviços');
-      renderAll();
-    }
-
-    window.addEventListener('DOMContentLoaded', initApp);
-  </script>
+  <!-- Símbolo hexagonal Cohab reutilizável -->
+  <svg width="0" height="0" class="absolute" aria-hidden="true">
+    <defs>
+      <g id="cohabMark">
+        <polygon style="fill:var(--mk-d,#1F1F1F)" points="48,4 8,27 48,50" />
+        <polygon style="fill:var(--mk-d,#1F1F1F)" points="52,4 92,27 52,50" />
+        <polygon style="fill:var(--mk-d,#1F1F1F)" points="6,31 6,79 46,55" />
+        <polygon style="fill:var(--mk-r,#B84231)" points="94,31 94,79 54,55" />
+        <polygon style="fill:var(--mk-d,#1F1F1F)" points="8,83 48,106 48,60" />
+        <polygon style="fill:var(--mk-d,#1F1F1F)" points="92,83 52,106 52,60" />
+      </g>
+    </defs>
+  </svg>
+
+  <script src="assets/vendor/supabase/supabase.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>
