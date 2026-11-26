@@ -29,7 +29,7 @@ create table if not exists public.profiles (
   nome        text not null default '' check (char_length(nome) <= 120),
   email       text not null default '',
   role        public.app_role not null default 'leitor',
-  ativo       boolean not null default true,
+  ativo       boolean not null default false,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
@@ -53,6 +53,8 @@ create table if not exists public.pautas (
 );
 create index if not exists pautas_data_idx on public.pautas (data);
 create index if not exists pautas_status_idx on public.pautas (status);
+create index if not exists pautas_created_by_idx on public.pautas (created_by);
+create index if not exists pautas_updated_by_idx on public.pautas (updated_by);
 
 create table if not exists public.sugestoes (
   id          uuid primary key default gen_random_uuid(),
@@ -65,6 +67,7 @@ create table if not exists public.sugestoes (
   autor_nome  text,
   created_at  timestamptz not null default now()
 );
+create index if not exists sugestoes_autor_idx on public.sugestoes (autor_id);
 
 create table if not exists public.editorias (
   nome        text primary key check (char_length(btrim(nome)) between 1 and 60),
@@ -72,6 +75,7 @@ create table if not exists public.editorias (
   created_at  timestamptz not null default now()
 );
 create unique index if not exists editorias_nome_lower_idx on public.editorias (lower(nome));
+create index if not exists editorias_created_by_idx on public.editorias (created_by);
 insert into public.editorias (nome) values ('Serviços') on conflict do nothing;
 
 create table if not exists public.logs (
@@ -84,6 +88,7 @@ create table if not exists public.logs (
   created_at  timestamptz not null default now()
 );
 create index if not exists logs_created_idx on public.logs (created_at desc);
+create index if not exists logs_user_idx on public.logs (user_id);
 
 -- -----------------------------------------------------------------------------
 -- 3. FUNÇÕES AUXILIARES DE AUTORIZAÇÃO
@@ -92,7 +97,7 @@ create index if not exists logs_created_idx on public.logs (created_at desc);
 
 -- Altere para "select false" SOMENTE em emergência (ex.: admin perdeu o app autenticador).
 create or replace function public.mfa_required_for_admin()
-returns boolean language sql immutable as $$ select true $$;
+returns boolean language sql immutable set search_path = public as $$ select true $$;
 
 create or replace function public.current_app_role()
 returns public.app_role
@@ -138,17 +143,19 @@ end $$;
 -- 4. TRIGGERS
 -- -----------------------------------------------------------------------------
 
--- 4.1 Novo usuário no Auth → perfil "leitor" (papel NUNCA vem do metadata do cliente)
+-- 4.1 Novo usuário no Auth → perfil "leitor" DESATIVADO (papel nunca vem do cliente;
+--     só um administrador libera o acesso)
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  insert into public.profiles (id, nome, email, role)
+  insert into public.profiles (id, nome, email, role, ativo)
   values (
     new.id,
     left(coalesce(nullif(btrim(new.raw_user_meta_data ->> 'nome'), ''), split_part(coalesce(new.email, ''), '@', 1)), 120),
     coalesce(new.email, ''),
-    'leitor'
+    'leitor',
+    false
   )
   on conflict (id) do nothing;
   return new;
@@ -378,16 +385,12 @@ grant select, insert, delete    on public.sugestoes to authenticated;
 grant select, insert, delete    on public.editorias to authenticated;
 grant select, insert            on public.logs      to authenticated;
 
-revoke execute on function public.log_event(text, text)              from public, anon, authenticated;
-revoke execute on function public.handle_new_user()                  from public, anon, authenticated;
-revoke execute on function public.reordenar_prioridades(uuid[], text) from public, anon;
-revoke execute on function public.registrar_acesso()                 from public, anon;
+-- Nenhuma função interna exposta à API, exceto as necessárias
+revoke execute on all functions in schema public from public, anon, authenticated;
 grant  execute on function public.reordenar_prioridades(uuid[], text) to authenticated;
 grant  execute on function public.registrar_acesso()                 to authenticated;
 grant  execute on function public.is_admin(), public.can_edit(), public.is_member(),
                            public.current_app_role(), public.mfa_required_for_admin() to authenticated;
-revoke execute on function public.is_admin(), public.can_edit(), public.is_member(),
-                           public.current_app_role() from anon;
 
 -- -----------------------------------------------------------------------------
 -- 7. ROW LEVEL SECURITY
@@ -413,42 +416,42 @@ end $$;
 
 -- PROFILES
 create policy profiles_select on public.profiles for select to authenticated
-  using (id = auth.uid() or public.is_member());
+  using (id = (select auth.uid()) or (select public.is_member()));
 create policy profiles_update on public.profiles for update to authenticated
-  using ((id = auth.uid() and public.is_member()) or public.is_admin())
-  with check ((id = auth.uid() and public.is_member()) or public.is_admin());
+  using ((id = (select auth.uid()) and (select public.is_member())) or (select public.is_admin()))
+  with check ((id = (select auth.uid()) and (select public.is_member())) or (select public.is_admin()));
 
 -- PAUTAS
 create policy pautas_select on public.pautas for select to authenticated
-  using (public.is_member());
+  using ((select public.is_member()));
 create policy pautas_insert on public.pautas for insert to authenticated
-  with check (public.can_edit());
+  with check ((select public.can_edit()));
 create policy pautas_update on public.pautas for update to authenticated
-  using (public.can_edit()) with check (public.can_edit());
+  using ((select public.can_edit())) with check ((select public.can_edit()));
 create policy pautas_delete on public.pautas for delete to authenticated
-  using (public.is_admin());
+  using ((select public.is_admin()));
 
 -- SUGESTÕES
 create policy sugestoes_select on public.sugestoes for select to authenticated
-  using (public.is_member());
+  using ((select public.is_member()));
 create policy sugestoes_insert on public.sugestoes for insert to authenticated
-  with check (public.can_edit());
+  with check ((select public.can_edit()));
 create policy sugestoes_delete on public.sugestoes for delete to authenticated
-  using (public.can_edit());
+  using ((select public.can_edit()));
 
 -- EDITORIAS
 create policy editorias_select on public.editorias for select to authenticated
-  using (public.is_member());
+  using ((select public.is_member()));
 create policy editorias_insert on public.editorias for insert to authenticated
-  with check (public.can_edit());
+  with check ((select public.can_edit()));
 create policy editorias_delete on public.editorias for delete to authenticated
-  using (public.is_admin());
+  using ((select public.is_admin()));
 
 -- LOGS (imutáveis: sem update/delete)
 create policy logs_select on public.logs for select to authenticated
-  using (public.is_member());
+  using ((select public.is_member()));
 create policy logs_insert_nota on public.logs for insert to authenticated
-  with check (public.can_edit() and acao = 'NOTA');
+  with check ((select public.can_edit()) and acao = 'NOTA');
 
 -- -----------------------------------------------------------------------------
 -- 8. REALTIME (sincronização ao vivo entre a equipe — respeita RLS)
@@ -469,6 +472,6 @@ end $$;
 -- 9. PRIMEIRO ADMINISTRADOR (rode separadamente, depois de criar o usuário
 --    em Authentication → Users → Add user). Troque o e-mail:
 --
---    update public.profiles set role = 'admin', nome = 'Seu Nome'
+--    update public.profiles set role = 'admin', ativo = true, nome = 'Seu Nome'
 --    where email = 'seu.email@cohab.mg.gov.br';
 -- =============================================================================

@@ -10,8 +10,8 @@
  *     ou "secret" — ela dá acesso total e deve ficar só na Edge Function.
  * ========================================================================== */
 window.COHAB_CONFIG = Object.freeze({
-  SUPABASE_URL: 'https://SEU-PROJETO.supabase.co',
-  SUPABASE_ANON_KEY: 'SUA-CHAVE-ANON-PUBLICA',
+  SUPABASE_URL: 'https://vavexyomolwoljlsobeb.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_pfS9bel6hs2iB7e24XvAKA_TPQo2uow',
 
   // Desconecta automaticamente após X minutos sem atividade
   INACTIVITY_MINUTES: 30,

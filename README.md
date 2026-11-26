@@ -19,6 +19,7 @@ Sistema de planejamento editorial e gestão de pautas da **Assessoria de Comunic
 - Logout automático por inatividade (30 min, com aviso)
 - Sessão encerra ao fechar a aba (a menos que marque "Manter conectado")
 - Usuário desativado perde o acesso na hora
+- Toda conta nova nasce **desativada** até um administrador liberar (proteção extra caso o cadastro público fique ligado por engano)
 - Content Security Policy, proteção contra clickjacking e **nenhuma biblioteca carregada de CDN** (tudo hospedado no próprio projeto)
 - Exportação Excel protegida contra injeção de fórmulas
 - A chave secreta (`service_role`) fica só numa Edge Function no servidor
@@ -88,7 +89,7 @@ Em **Authentication**:
 1. **Authentication → Users → Add user → Create new user**: informe seu e-mail e uma senha forte, marque **Auto Confirm User**.
 2. No **SQL Editor**, rode (trocando o e-mail e o nome):
    ```sql
-   update public.profiles set role = 'admin', nome = 'Davi Caetano'
+   update public.profiles set role = 'admin', ativo = true, nome = 'Davi Caetano'
    where email = 'seu.email@cohab.mg.gov.br';
    ```
 3. Depois de entrar no sistema, vá em **Minha conta → Ativar 2FA** e escaneie o QR Code com Google Authenticator, Microsoft Authenticator ou Authy. Sem 2FA o administrador funciona como Editor.
